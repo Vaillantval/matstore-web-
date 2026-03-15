@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .faq_banner {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 80px 0 60px;
+        position: relative;
+        overflow: hidden;
+    }
+    .faq_banner::after {
+        content: '?';
+        position: absolute;
+        right: 5%;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 250px;
+        font-weight: 900;
+        color: rgba(255,87,34,0.05);
+        line-height: 1;
+        pointer-events: none;
+    }
+    .faq_banner h1 { font-size: 48px; font-weight: 700; color: #1a1a2e; }
+    .faq_banner p { font-size: 18px; color: #6c757d; }
+    .faq_banner .breadcrumb-item a { color: #ff5722; }
+
+    .faq_search_wrap {
+        position: relative;
+        max-width: 560px;
+        margin: 25px 0 0;
+    }
+    .faq_search_wrap input {
+        width: 100%;
+        padding: 14px 50px 14px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 50px;
+        font-size: 15px;
+        transition: all 0.3s;
+        outline: none;
+    }
+    .faq_search_wrap input:focus { border-color: #ff5722; box-shadow: 0 0 0 4px rgba(255,87,34,0.1); }
+    .faq_search_wrap button {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #ff5722;
+        border: none;
+        color: #fff;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .faq_search_wrap button:hover { background: #e64a19; }
+
+    .faq_section { padding: 60px 0; }
+
+    .faq_item {
+        background: #fff;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        border: 1.5px solid #f0f0f0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .faq_item:hover { border-color: rgba(255,87,34,0.3); }
+    .faq_item.active { border-color: #ff5722; box-shadow: 0 4px 20px rgba(255,87,34,0.1); }
+
+    .faq_question {
+        padding: 22px 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        gap: 15px;
+    }
+    .faq_question h6 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin: 0;
+        flex: 1;
+        line-height: 1.5;
+    }
+    .faq_item.active .faq_question h6 { color: #ff5722; }
+
+    .faq_toggle {
+        width: 32px;
+        height: 32px;
+        background: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.3s;
+        color: #6c757d;
+        font-size: 14px;
+    }
+    .faq_item.active .faq_toggle {
+        background: #ff5722;
+        color: #fff;
+        transform: rotate(45deg);
+    }
+
+    .faq_answer {
+        display: none;
+        padding: 0 25px 22px;
+        border-top: 1px solid #f0f0f0;
+        margin-top: 0;
+    }
+    .faq_answer p {
+        margin: 15px 0 0;
+        color: #6c757d;
+        line-height: 1.8;
+        font-size: 15px;
+    }
+    .faq_item.active .faq_answer { display: block; }
+
+    .faq_categories .cat_btn {
+        background: #f8f9fa;
+        border: 1.5px solid #e9ecef;
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #495057;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .faq_categories .cat_btn:hover,
+    .faq_categories .cat_btn.active {
+        background: #ff5722;
+        border-color: #ff5722;
+        color: #fff;
+    }
+
+    .faq_empty {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    .faq_empty i { font-size: 60px; color: #dee2e6; margin-bottom: 20px; display: block; }
+    .faq_empty h5 { color: #6c757d; margin-bottom: 8px; }
+    .faq_empty p { color: #adb5bd; margin-bottom: 25px; }
+
+    .contact_cta {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border-radius: 16px;
+        padding: 40px;
+        text-align: center;
+        color: #fff;
+    }
+    .contact_cta h5 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .contact_cta p { color: rgba(255,255,255,0.6); margin-bottom: 20px; }
+    .contact_cta .btn { background: #ff5722; color: #fff; border: none; border-radius: 8px; padding: 12px 30px; font-weight: 600; }
+    .contact_cta .btn:hover { background: #e64a19; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Banner -->
+<div class="faq_banner">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                <li class="breadcrumb-item active">FAQ</li>
+            </ol>
+        </nav>
+        <h1>Questions fréquentes</h1>
+        <p class="mt-2">Trouvez rapidement les réponses à vos questions</p>
+        <div class="faq_search_wrap">
+            <input type="text" id="faqSearch" placeholder="Rechercher une question..." autocomplete="off">
+            <button type="button"><i class="ion-ios-search-strong"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Section -->
+<section class="faq_section">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-8">
+
+                {% if faqs %}
+                <div id="faqList">
+                    {% for item in faqs %}
+                    <div class="faq_item{% if forloop.first %} active{% endif %}" data-question="{{ item.question|lower }}">
+                        <div class="faq_question" onclick="toggleFaq(this)">
+                            <h6>{{ item.question }}</h6>
+                            <div class="faq_toggle"><i class="ion-plus"></i></div>
+                        </div>
+                        <div class="faq_answer">
+                            <p>{{ item.answer|linebreaks }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div id="noResults" class="faq_empty" style="display:none;">
+                    <i class="linearicons-magnifier"></i>
+                    <h5>Aucun résultat trouvé</h5>
+                    <p>Essayez avec d'autres mots-clés ou contactez-nous directement.</p>
+                    <a href="{% url 'contact' %}" class="btn btn-fill-out btn-radius">Nous contacter</a>
+                </div>
+
+                {% else %}
+                <div class="faq_empty">
+                    <i class="ti-help-alt"></i>
+                    <h5>Aucune question pour le moment</h5>
+                    <p>Les questions fréquentes seront bientôt disponibles.</p>
+                    <a href="{% url 'contact' %}" class="btn btn-fill-out btn-radius">Posez votre question</a>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <div class="col-lg-4">
+                <div class="contact_cta mb-4">
+                    <i class="ti-headphone-alt" style="font-size:40px; color:#ff5722; margin-bottom:15px; display:block;"></i>
+                    <h5>Vous n'avez pas trouvé votre réponse ?</h5>
+                    <p>Notre équipe est disponible pour vous aider du lundi au samedi, de 9h à 18h.</p>
+                    <a href="{% url 'contact' %}" class="btn">Nous contacter</a>
+                </div>
+
+                <div class="p-4 bg-light rounded-3">
+                    <h6 class="fw-bold mb-3" style="color:#1a1a2e;">Infos utiles</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex align-items-center gap-2 mb-2">
+                            <i class="ti-check" style="color:#ff5722;"></i>
+                            <span style="font-size:14px; color:#6c757d;">Livraison gratuite dès 50€</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-2 mb-2">
+                            <i class="ti-check" style="color:#ff5722;"></i>
+                            <span style="font-size:14px; color:#6c757d;">Retours sous 30 jours</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-2 mb-2">
+                            <i class="ti-check" style="color:#ff5722;"></i>
+                            <span style="font-size:14px; color:#6c757d;">Paiement 100% sécurisé</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <i class="ti-check" style="color:#ff5722;"></i>
+                            <span style="font-size:14px; color:#6c757d;">Support 6j/7</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleFaq(el) {
+    const item = el.parentElement;
+    const isActive = item.classList.contains('active');
+    document.querySelectorAll('.faq_item').forEach(i => i.classList.remove('active'));
+    if (!isActive) item.classList.add('active');
+}
+
+document.getElementById('faqSearch').addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    const items = document.querySelectorAll('.faq_item');
+    let visible = 0;
+
+    items.forEach(item => {
+        const text = item.dataset.question + ' ' + item.querySelector('.faq_answer p').textContent.toLowerCase();
+        if (!query || text.includes(query)) {
+            item.style.display = '';
+            visible++;
+        } else {
+            item.style.display = 'none';
+            item.classList.remove('active');
+        }
+    });
+
+    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+    document.getElementById('faqList').style.display = visible === 0 ? 'none' : 'block';
+});
+</script>
+{% endblock %}

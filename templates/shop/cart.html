@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .cart-section { padding: 50px 0; min-height: 60vh; }
+
+    .cart-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+    .cart-card-header {
+        padding: 20px 28px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .cart-card-header h5 {
+        margin: 0;
+        font-weight: 700;
+        color: #1a1a2e;
+        font-size: 17px;
+    }
+
+    /* Table */
+    .cart-table { width: 100%; border-collapse: collapse; }
+    .cart-table thead th {
+        background: #f8f9fa;
+        padding: 13px 20px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: #6c757d;
+        font-weight: 700;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .cart-table tbody tr { border-bottom: 1px solid #f8f9fa; transition: background .15s; }
+    .cart-table tbody tr:hover { background: #fafafa; }
+    .cart-table tbody td { padding: 18px 20px; vertical-align: middle; }
+
+    .cart-product-img {
+        width: 68px; height: 68px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #f0f0f0;
+        flex-shrink: 0;
+    }
+    .cart-product-name {
+        font-weight: 600;
+        color: #1a1a2e;
+        font-size: 15px;
+        text-decoration: none;
+        transition: color .2s;
+    }
+    .cart-product-name:hover { color: #ff5722; }
+
+    /* Qty controls */
+    .qty-group {
+        display: inline-flex;
+        align-items: center;
+        border: 1.5px solid #e9ecef;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .qty-btn {
+        width: 34px; height: 34px;
+        border: none; background: #f8f9fa;
+        cursor: pointer; font-size: 16px; color: #495057;
+        transition: background .15s;
+    }
+    .qty-btn:hover { background: #e9ecef; }
+    .qty-input {
+        width: 50px; text-align: center;
+        border: none;
+        border-left: 1.5px solid #e9ecef;
+        border-right: 1.5px solid #e9ecef;
+        height: 34px;
+        font-size: 14px; font-weight: 600;
+        outline: none; color: #1a1a2e;
+    }
+
+    /* Remove btn */
+    .btn-remove {
+        background: none; border: none;
+        color: #ced4da; font-size: 20px;
+        cursor: pointer; padding: 4px;
+        transition: color .2s;
+    }
+    .btn-remove:hover { color: #dc3545; }
+
+    /* Summary */
+    .summary-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+        position: sticky;
+        top: 90px;
+    }
+    .summary-card-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f0f0f0;
+        font-weight: 700;
+        font-size: 16px;
+        color: #1a1a2e;
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        font-size: 14px;
+        color: #6c757d;
+        border-bottom: 1px dashed #f0f0f0;
+    }
+    .summary-row:last-of-type { border-bottom: none; }
+    .summary-row strong { color: #1a1a2e; font-size: 17px; }
+    .summary-row span { font-weight: 600; }
+
+    /* Empty cart */
+    .empty-cart {
+        text-align: center;
+        padding: 100px 0;
+    }
+    .empty-cart-icon {
+        font-size: 90px;
+        color: #dee2e6;
+        display: block;
+        margin-bottom: 24px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<div style="background:#f8f9fa; padding:13px 0; border-bottom:1px solid #e9ecef;">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}" style="color:#ff5722;">Accueil</a></li>
+                <li class="breadcrumb-item active">Mon panier</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="cart-section">
+    <div class="container">
+
+        {% if items %}
+        <div class="row g-4">
+
+            <!-- ── Items ── -->
+            <div class="col-lg-8">
+                <div class="cart-card">
+                    <div class="cart-card-header">
+                        <h5>Mon panier</h5>
+                        <span style="font-size:13px; color:#6c757d;">
+                            {{ cart_count }} article{{ cart_count|pluralize }}
+                        </span>
+                    </div>
+
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th style="width:46%">Produit</th>
+                                <th style="text-align:center">Prix</th>
+                                <th style="text-align:center">Quantité</th>
+                                <th style="text-align:center">Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr id="cart-row-{{ item.product_id }}">
+                                <!-- Product -->
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:14px;">
+                                        {% if item.image %}
+                                        <a href="{% url 'product_detail' item.slug %}">
+                                            <img src="{{ item.image }}" alt="{{ item.name }}" class="cart-product-img">
+                                        </a>
+                                        {% endif %}
+                                        <a href="{% url 'product_detail' item.slug %}" class="cart-product-name">
+                                            {{ item.name }}
+                                        </a>
+                                    </div>
+                                </td>
+                                <!-- Unit price -->
+                                <td style="text-align:center; color:#ff5722; font-weight:600;">
+                                    {{ item.display_price }}
+                                </td>
+                                <!-- Qty -->
+                                <td style="text-align:center;">
+                                    <div class="qty-group">
+                                        <button type="button" class="qty-btn"
+                                                onclick="updateQty({{ item.product_id }}, -1)">−</button>
+                                        <input type="number" class="qty-input"
+                                               id="qty-{{ item.product_id }}"
+                                               value="{{ item.qty }}" min="1"
+                                               onchange="setQty({{ item.product_id }}, this.value)">
+                                        <button type="button" class="qty-btn"
+                                                onclick="updateQty({{ item.product_id }}, 1)">+</button>
+                                    </div>
+                                </td>
+                                <!-- Line total -->
+                                <td style="text-align:center; font-weight:700; color:#1a1a2e;"
+                                    id="line-total-{{ item.product_id }}">
+                                    {{ item.display_total }}
+                                </td>
+                                <!-- Remove -->
+                                <td style="text-align:center;">
+                                    <button type="button" class="btn-remove btn-remove-cart"
+                                            data-product-id="{{ item.product_id }}"
+                                            data-url="{% url 'remove_from_cart' item.product_id %}"
+                                            title="Supprimer">
+                                        <i class="ti-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div style="padding:16px 24px; border-top:1px solid #f0f0f0;">
+                        <a href="{% url 'shop_list' %}"
+                           style="color:#ff5722; font-weight:600; text-decoration:none; font-size:14px;">
+                            ← Continuer mes achats
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Summary ── -->
+            <div class="col-lg-4">
+                <div class="summary-card">
+                    <div class="summary-card-header">Résumé de la commande</div>
+                    <div style="padding:20px 24px;">
+
+                        <!-- Sous-total HT -->
+                        <div class="summary-row">
+                            <span>Sous-total HT</span>
+                            <span id="s-ht">{% if summary %}{{ summary.sub_total_ht }}{% endif %}</span>
+                        </div>
+
+                        <!-- TVA -->
+                        <div class="summary-row">
+                            <span>TVA</span>
+                            <span id="s-tva">{% if summary %}{{ summary.taxe_amount }}{% endif %}</span>
+                        </div>
+
+                        <!-- Sous-total TTC -->
+                        <div class="summary-row" style="font-weight:600; color:#1a1a2e;">
+                            <span>Sous-total TTC</span>
+                            <span id="s-ttc">{% if summary %}{{ summary.sub_total_ttc }}{% endif %}</span>
+                        </div>
+
+                        <!-- Livraison -->
+                        <div class="summary-row">
+                            <span>
+                                Livraison
+                                {% if summary and summary.carrier_name %}
+                                <small style="display:block; color:#adb5bd; font-size:11px; font-weight:400;">
+                                    {{ summary.carrier_name }}
+                                </small>
+                                {% endif %}
+                            </span>
+                            {% if summary and summary.has_carrier %}
+                                {% if summary.shipping_is_free %}
+                                <span id="s-shipping" style="color:#28a745; font-weight:600;">Gratuit</span>
+                                {% else %}
+                                <span id="s-shipping">{{ summary.shipping_price }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span id="s-shipping" style="color:#6c757d; font-style:italic;">À calculer</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Séparateur + Total final -->
+                        <div class="summary-row"
+                             style="margin-top:10px; padding-top:14px; border-top:2px solid #f0f0f0;">
+                            <strong style="font-size:15px;">Total TTC</strong>
+                            <strong id="s-total" style="color:#ff5722; font-size:20px;">
+                                {% if summary %}{{ summary.sub_total_with_shipping }}{% endif %}
+                            </strong>
+                        </div>
+
+                        <button class="btn btn-fill-out w-100 mt-4"
+                                style="border-radius:10px; padding:14px; font-size:15px; font-weight:600;"
+                                onclick="showToast('Le paiement sera bientôt disponible.', 'info')">
+                            <i class="ti-lock" style="margin-right:8px;"></i>
+                            Procéder au paiement
+                        </button>
+
+                        <a href="{% url 'shop_list' %}" class="btn btn-fill-line w-100 mt-2"
+                           style="border-radius:10px; padding:12px; font-size:14px;">
+                            Continuer mes achats
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /row -->
+
+        {% else %}
+        <!-- Empty cart -->
+        <div class="empty-cart">
+            <i class="linearicons-cart empty-cart-icon"></i>
+            <h3 style="font-weight:700; color:#1a1a2e; margin-bottom:12px;">Votre panier est vide</h3>
+            <p style="color:#6c757d; margin-bottom:30px;">
+                Explorez notre boutique et ajoutez des produits à votre panier.
+            </p>
+            <a href="{% url 'shop_list' %}" class="btn btn-fill-out btn-radius"
+               style="padding:13px 40px; font-size:15px;">
+                Découvrir nos produits
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateQty(productId, delta) {
+    var input = document.getElementById('qty-' + productId);
+    var qty = Math.max(1, parseInt(input.value) + delta);
+    input.value = qty;
+    setQty(productId, qty);
+}
+
+function setQty(productId, qty) {
+    qty = parseInt(qty);
+    if (isNaN(qty) || qty < 1) qty = 1;
+
+    $.ajax({
+        url: '/cart/update/' + productId + '/',
+        method: 'POST',
+        data: { qty: qty },
+        success: function (data) {
+            if (!data.success) return;
+
+            /* Ligne produit */
+            if (data.line_total) {
+                $('#line-total-' + productId).text(data.line_total);
+            }
+
+            /* Badge header */
+            $('#cart-count-badge').text(data.cart_count);
+
+            /* Résumé financier */
+            if (data.summary) {
+                var s = data.summary;
+                $('#s-ht').text(s.sub_total_ht);
+                $('#s-tva').text(s.taxe_amount);
+                $('#s-ttc').text(s.sub_total_ttc);
+                if (s.has_carrier) {
+                    $('#s-shipping').text(s.shipping_is_free ? 'Gratuit' : s.shipping_price)
+                                    .css('color', s.shipping_is_free ? '#28a745' : '');
+                }
+                $('#s-total').text(s.sub_total_with_shipping);
+            }
+        }
+    });
+}
+
+/* Remove from cart (cart page — remove row) */
+$(document).on('click', '.btn-remove-cart', function (e) {
+    e.stopImmediatePropagation();   /* prevent global handler */
+    var btn   = $(this);
+    var url   = btn.data('url');
+    var rowId = '#cart-row-' + btn.data('product-id');
+
+    $.ajax({
+        url: url, method: 'POST',
+        success: function (data) {
+            if (data.success) {
+                $(rowId).fadeOut(300, function () {
+                    $(this).remove();
+                    $('#cart-count-badge').text(data.cart_count);
+                    if (data.cart_count === 0) { location.reload(); }
+                });
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

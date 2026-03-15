@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .terms_banner {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        padding: 80px 0 60px;
+        position: relative;
+        overflow: hidden;
+    }
+    .terms_banner::before {
+        content: '';
+        position: absolute;
+        bottom: -50%;
+        right: -5%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255,87,34,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .terms_banner h1 { font-size: 48px; font-weight: 700; color: #fff; }
+    .terms_banner p { font-size: 18px; color: rgba(255,255,255,0.6); }
+    .terms_banner .breadcrumb-item a { color: #ff5722; }
+    .terms_banner .breadcrumb-item.active { color: rgba(255,255,255,0.5); }
+    .terms_banner .breadcrumb-item + .breadcrumb-item::before { color: rgba(255,255,255,0.3); }
+    .terms_banner .last_updated {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 50px;
+        padding: 6px 16px;
+        color: rgba(255,255,255,0.6);
+        font-size: 13px;
+        margin-top: 15px;
+    }
+    .terms_banner .last_updated i { color: #ff5722; }
+
+    .terms_layout { padding: 60px 0; }
+
+    .terms_nav {
+        background: #fff;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        position: sticky;
+        top: 90px;
+        border: 1px solid #f0f0f0;
+    }
+    .terms_nav h6 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #adb5bd; margin-bottom: 15px; font-weight: 600; }
+    .terms_nav ul { list-style: none; padding: 0; margin: 0; }
+    .terms_nav ul li { margin-bottom: 4px; }
+    .terms_nav ul li a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: 8px;
+        color: #495057;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .terms_nav ul li a:hover,
+    .terms_nav ul li a.active {
+        background: rgba(255,87,34,0.08);
+        color: #ff5722;
+        padding-left: 16px;
+    }
+    .terms_nav ul li a i { font-size: 16px; width: 18px; color: #ff5722; opacity: 0.7; }
+    .terms_nav ul li a.active i { opacity: 1; }
+
+    .terms_content {
+        background: #fff;
+        border-radius: 12px;
+        padding: 50px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1px solid #f0f0f0;
+    }
+
+    .terms_section { margin-bottom: 50px; padding-bottom: 50px; border-bottom: 1px solid #f0f0f0; }
+    .terms_section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+    .section_num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: #ff5722;
+        color: #fff;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .section_header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .section_header h3 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+
+    .terms_body { color: #6c757d; line-height: 1.9; font-size: 15px; }
+    .terms_body p { margin-bottom: 15px; }
+    .terms_body ul { padding-left: 20px; margin-bottom: 15px; }
+    .terms_body ul li { margin-bottom: 8px; }
+    .terms_body strong { color: #1a1a2e; }
+    .terms_body h1, .terms_body h2, .terms_body h3, .terms_body h4 {
+        color: #1a1a2e;
+        margin-top: 25px;
+        margin-bottom: 12px;
+    }
+
+    .accept_box {
+        background: linear-gradient(135deg, rgba(255,87,34,0.06), rgba(255,138,101,0.04));
+        border: 1.5px solid rgba(255,87,34,0.2);
+        border-radius: 12px;
+        padding: 25px 30px;
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .accept_box i { font-size: 24px; color: #ff5722; margin-top: 3px; flex-shrink: 0; }
+    .accept_box p { color: #495057; margin: 0; font-size: 14px; line-height: 1.7; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Banner -->
+<div class="terms_banner">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                <li class="breadcrumb-item active">Conditions générales</li>
+            </ol>
+        </nav>
+        <h1>{% if page %}{{ page.name }}{% else %}Conditions Générales d'Utilisation{% endif %}</h1>
+        <p class="mt-2">{% if page and page.subtitle %}{{ page.subtitle }}{% else %}Veuillez lire attentivement ces conditions avant d'utiliser notre service.{% endif %}</p>
+        {% if page %}
+        <div class="last_updated">
+            <i class="ti-calendar"></i>
+            Dernière mise à jour : {{ page.updated_at|date:"d F Y" }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Content -->
+<section class="terms_layout">
+    <div class="container">
+        <div class="row g-4">
+
+            {% if not page %}
+            <!-- Navigation (static) -->
+            <div class="col-lg-3">
+                <div class="terms_nav">
+                    <h6>Sommaire</h6>
+                    <ul>
+                        <li><a href="#section1"><i class="ti-info-alt"></i>Acceptation</a></li>
+                        <li><a href="#section2"><i class="ti-user"></i>Utilisation</a></li>
+                        <li><a href="#section3"><i class="ti-package"></i>Commandes</a></li>
+                        <li><a href="#section4"><i class="ti-credit-card"></i>Paiement</a></li>
+                        <li><a href="#section5"><i class="ti-truck"></i>Livraison</a></li>
+                        <li><a href="#section6"><i class="ti-back-left"></i>Retours</a></li>
+                        <li><a href="#section7"><i class="ti-lock"></i>Confidentialité</a></li>
+                        <li><a href="#section8"><i class="ti-email"></i>Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Content (static) -->
+            <div class="col-lg-9">
+                <div class="terms_content">
+                    <div class="accept_box mb-5">
+                        <i class="ti-info-alt"></i>
+                        <p>En accédant et en utilisant ce site web, vous acceptez d'être lié par les présentes conditions générales d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser ce site.</p>
+                    </div>
+
+                    <div class="terms_section" id="section1">
+                        <div class="section_header"><div class="section_num">1</div><h3>Acceptation des conditions</h3></div>
+                        <div class="terms_body">
+                            <p>En utilisant le site MAT-STORE, vous confirmez avoir lu, compris et accepté l'ensemble des présentes conditions générales. Ces conditions s'appliquent à toutes les visites et utilisations du site.</p>
+                            <p>Nous nous réservons le droit de modifier ces conditions à tout moment. Les modifications entrent en vigueur dès leur publication sur le site.</p>
+                        </div>
+                    </div>
+
+                    <div class="terms_section" id="section2">
+                        <div class="section_header"><div class="section_num">2</div><h3>Utilisation du site</h3></div>
+                        <div class="terms_body">
+                            <p>Vous vous engagez à utiliser ce site uniquement à des fins licites et de manière à ne pas porter atteinte aux droits d'autrui.</p>
+                            <ul>
+                                <li>Ne pas tenter de compromettre la sécurité du site</li>
+                                <li>Ne pas diffuser de contenus illicites ou nuisibles</li>
+                                <li>Respecter les droits de propriété intellectuelle</li>
+                                <li>Ne pas usurper l'identité d'autrui</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="terms_section" id="section3">
+                        <div class="section_header"><div class="section_num">3</div><h3>Commandes</h3></div>
+                        <div class="terms_body">
+                            <p>Toute commande passée sur notre site constitue un contrat de vente entre vous et MAT-STORE. Nous nous réservons le droit d'annuler ou de refuser toute commande pour des raisons légitimes (rupture de stock, erreur de prix, etc.).</p>
+                            <p>Une confirmation de commande vous sera envoyée par email dans les minutes suivant votre achat.</p>
+                        </div>
+                    </div>
+
+                    <div class="terms_section" id="section4">
+                        <div class="section_header"><div class="section_num">4</div><h3>Paiement</h3></div>
+                        <div class="terms_body">
+                            <p>Nous acceptons les moyens de paiement suivants : carte bancaire (Visa, Mastercard, American Express), PayPal. Tous les paiements sont sécurisés et cryptés.</p>
+                            <p>Le débit est effectué au moment de la validation de votre commande. Les prix affichés sont en euros et incluent la TVA applicable.</p>
+                        </div>
+                    </div>
+
+                    <div class="terms_section" id="section5">
+                        <div class="section_header"><div class="section_num">5</div><h3>Livraison</h3></div>
+                        <div class="terms_body">
+                            <p>Les délais de livraison sont estimatifs et peuvent varier selon votre localisation. Nous nous engageons à expédier votre commande dans les 2 à 5 jours ouvrés.</p>
+                            <ul>
+                                <li><strong>Livraison standard :</strong> 3–5 jours ouvrés</li>
+                                <li><strong>Livraison express :</strong> 1–2 jours ouvrés</li>
+                                <li><strong>Livraison gratuite</strong> dès 50€ d'achat</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="terms_section" id="section6">
+                        <div class="section_header"><div class="section_num">6</div><h3>Retours & Remboursements</h3></div>
+                        <div class="terms_body">
+                            <p>Vous disposez d'un délai de 30 jours à compter de la réception de votre commande pour retourner un article. Les articles doivent être retournés dans leur état d'origine, non portés et avec leurs étiquettes.</p>
+                            <p>Le remboursement sera effectué sous 7 à 14 jours ouvrés après réception et vérification du retour.</p>
+                        </div>
+                    </div>
+
+                    <div class="terms_section" id="section7">
+                        <div class="section_header"><div class="section_num">7</div><h3>Confidentialité</h3></div>
+                        <div class="terms_body">
+                            <p>Nous collectons et traitons vos données personnelles conformément au RGPD. Vos données ne seront jamais vendues à des tiers. Pour plus d'informations, consultez notre politique de confidentialité.</p>
+                        </div>
+                    </div>
+
+                    <div class="terms_section" id="section8">
+                        <div class="section_header"><div class="section_num">8</div><h3>Contact</h3></div>
+                        <div class="terms_body">
+                            <p>Pour toute question relative aux présentes conditions générales, vous pouvez nous contacter :</p>
+                            <ul>
+                                <li><strong>Email :</strong> {% if site_email %}{{ site_email }}{% else %}contact@matstore.fr{% endif %}</li>
+                                <li><strong>Téléphone :</strong> {% if site_phone %}{{ site_phone }}{% else %}+33 7 49 31 69 74{% endif %}</li>
+                                <li><strong>Via notre formulaire :</strong> <a href="{% url 'contact' %}" style="color:#ff5722;">Page de contact</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Dynamic content from admin -->
+            <div class="col-12">
+                <div class="terms_content">
+                    <div class="terms_body">
+                        {{ page.content|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

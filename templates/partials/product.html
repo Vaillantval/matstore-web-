@@ -1,58 +1,82 @@
-<div class="product">
-    <div class="product_img"><a
-            href="shop-product-detail.html"><img
-            alt="{{product.name}}"
-            src="{{ product.images.first.image.url }}"></a>
+{% load static price_filters %}
+{% with first_img=product.images.first %}
+<div class="product"
+     onclick="if(!event.target.closest('.product_action_box')) window.location.href='{% url 'product_detail' product.slug %}'"
+     style="cursor:pointer;">
+    <div class="product_img">
+        <a href="{% url 'product_detail' product.slug %}" onclick="event.stopPropagation()">
+            {% if first_img %}
+            <img alt="{{ product.name }}" src="{{ first_img.image.url }}">
+            {% else %}
+            <img alt="{{ product.name }}"
+                 src="{% static 'assets/images/product_placeholder.jpg' %}"
+                 onerror="this.src='https://via.placeholder.com/300x300/f8f9fa/adb5bd?text=No+Image'">
+            {% endif %}
+        </a>
         <div class="product_action_box">
             <ul class="list_none pr_action_btn">
-                <li class="add-to-cart"><a
-                        href="#"><i
-
-                        class="icon-basket-loaded"></i> Add To Cart </a>
+                <li class="add-to-cart">
+                    <a href="#" class="btn-add-cart"
+                       data-product-id="{{ product.pk }}"
+                       data-url="{% url 'add_to_cart' product.pk %}"
+                       {% if not product.is_available or product.stock == 0 %}style="opacity:.5;pointer-events:none;" title="Rupture de stock"{% endif %}>
+                        <i class="icon-basket-loaded"></i> Ajouter au panier
+                    </a>
                 </li>
-                <li><a
-                        href="shop-compare.html"><i
-
-                        class="icon-shuffle"></i></a></li>
-                <li><a
-                        href="shop-quick-view.html"><i
-
-                        class="icon-magnifier-add"></i></a></li>
-                <li><a
-                        href="#"><i
-                        class="icon-heart"></i></a></li>
+                <li>
+                    <a href="#" title="Comparer"
+                       onclick="event.stopPropagation(); showToast('Comparaison bientôt disponible.', 'info'); return false;">
+                        <i class="icon-shuffle"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'product_detail' product.slug %}" title="Voir le produit"
+                       onclick="event.stopPropagation()">
+                        <i class="icon-magnifier-add"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="btn-toggle-wishlist"
+                       data-product-id="{{ product.pk }}"
+                       data-url="{% url 'toggle_wishlist' product.pk %}"
+                       title="Wishlist"
+                       style="{% if product.pk in wishlist_ids %}color:#ff5722;{% endif %}">
+                        <i class="icon-heart"></i>
+                    </a>
+                </li>
             </ul>
         </div>
+        {% if product.is_new_arrival %}<span class="pr_flash bg-success">Nouveau</span>{% endif %}
+        {% if product.is_special_offer %}<span class="pr_flash">Promo</span>{% endif %}
     </div>
-    <div class="product_info">
-        <h6 class="product_title"><a ng-reflect-router-link="/,product,bikini-unicolore-cte"
-                                     href="/product/bikini-unicolore-ctel-shop"> {{ product.name }}</a></h6>
-        <div class="product_price"><span
-                class="price">{{ product.regular_price }}</span>
-            <del
-            >{{ product.solde_price }}
-            </del>
-            <div class="on_sale"><span
-            >35% Off</span></div>
+    <div class="product_info" onclick="event.stopPropagation(); window.location.href='{% url 'product_detail' product.slug %}'">
+        <h6 class="product_title">
+            <a href="{% url 'product_detail' product.slug %}" onclick="event.stopPropagation()">{{ product.name }}</a>
+        </h6>
+        <div class="product_price">
+            <span class="price">{{ product.solde_price|price_convert }}</span>
+            {% if product.regular_price > product.solde_price %}
+            <del>{{ product.regular_price|price_convert }}</del>
+            {% with pct=product.solde_price|discount_percent:product.regular_price %}
+            {% if pct %}
+            <span style="color:#28a745; font-weight:700; font-size:13px; margin-left:4px;">-{{ pct }}%</span>
+            {% endif %}
+            {% endwith %}
+            {% endif %}
         </div>
         <div class="rating_wrap">
             <div class="rating">
-                <div class="product_rate"
-                     style="width: 80%;"></div>
+                <div class="product_rate" style="width:80%;"></div>
             </div>
-            <span
-                    class="rating_num">(21)</span>
         </div>
         <div class="pr_desc">
-            <p>{{product.description | safe }}</p>
+            <p>{{ product.description }}</p>
         </div>
-        <div class="pr_switch_wrap">
-            <div class="product_color_switch"><span
-                    data-color="#87554B"
-                    class="active"></span><span
-                    data-color="#333333"></span><span
-                    data-color="#DA323F"></span>
-            </div>
+        {% if not product.is_available or product.stock == 0 %}
+        <div class="mt-1">
+            <span class="badge bg-secondary" style="font-size:11px;">Rupture de stock</span>
         </div>
+        {% endif %}
     </div>
 </div>
+{% endwith %}

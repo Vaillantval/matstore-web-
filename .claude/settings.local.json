@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && python manage.py check 2>&1)",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore && C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\myenv\\\\Scripts\\\\python.exe manage.py check\")",
+      "Bash(C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\myenv\\\\Scripts\\\\python.exe C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\\\\manage.py makemigrations)",
+      "Read(//c/Users/wind/Desktop/Django_docs/e-commerce_Project_octobre2025/**)",
+      "Bash(source myenv/Scripts/activate)",
+      "Bash(python matstore/manage.py makemigrations)",
+      "Bash(python matstore/manage.py migrate)",
+      "Bash(cd \"/c/Users/wind/Desktop/Django_docs/e-commerce_Project_octobre2025\" && source myenv/Scripts/activate && python matstore/manage.py check 2>&1)",
+      "Bash(cd \"/c/Users/wind/Desktop/Django_docs/e-commerce_Project_octobre2025\" && source myenv/Scripts/activate && python matstore/manage.py fetch_rates --base=HTG 2>&1)",
+      "Bash(cd \"/c/Users/wind/Desktop/Django_docs/e-commerce_Project_octobre2025\" && source myenv/Scripts/activate && python -c \"\nimport django, os\nos.environ.setdefault\\('DJANGO_SETTINGS_MODULE', 'config.settings'\\)\nimport sys; sys.path.insert\\(0, 'matstore'\\)\ndjango.setup\\(\\)\nfrom shop.models.ExchangeRate import ExchangeRate\nfor r in ExchangeRate.objects.all\\(\\):\n    print\\(r\\)\n\" 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && python -c \"import django; import os; os.environ.setdefault\\('DJANGO_SETTINGS_MODULE', 'config.settings'\\); django.setup\\(\\); from shop.views.cart_view import add_to_cart, cart_detail, toggle_wishlist; print\\('OK'\\)\" 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && python -m django --version 2>&1 || py -m django --version 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && python3 -m django --version 2>&1 || where python3 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && ../myenv/Scripts/python.exe -c \"import os, sys; sys.path.insert\\(0,'.'\\); os.environ['DJANGO_SETTINGS_MODULE']='config.settings'; import django; django.setup\\(\\); from shop.views.cart_view import add_to_cart, cart_detail, toggle_wishlist; print\\('OK'\\)\" 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && ../myenv/Scripts/python.exe -c \"\nimport os, sys; sys.path.insert\\(0,'.'\\); os.environ['DJANGO_SETTINGS_MODULE']='config.settings'\nimport django; django.setup\\(\\)\nfrom django.test import RequestFactory\nfrom shop.views.shop_view import index\nrf = RequestFactory\\(\\); req = rf.get\\('/'\\); req.session = {}\nresp = index\\(req\\)\nprint\\('OK', resp.status_code\\)\n\" 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && ../myenv/Scripts/python.exe -c \"\nimport os, sys; sys.path.insert\\(0,'.'\\); os.environ['DJANGO_SETTINGS_MODULE']='config.settings'\nimport django; django.setup\\(\\)\nfrom django.test import RequestFactory\nfrom shop.views.shop_view import shop_list\nrf = RequestFactory\\(\\)\nreq = rf.get\\('/shop/'\\); req.session = {}\nresp = shop_list\\(req\\)\nprint\\('OK', resp.status_code, len\\(resp.content\\), 'octets'\\)\n\" 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && ../myenv/Scripts/python.exe manage.py check 2>&1)",
+      "WebFetch(domain:django-ckeditor.readthedocs.io)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\" && ./myenv/Scripts/pip install django-ckeditor-5 2>&1 | tail -5)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && ../myenv/Scripts/python.exe -c \"\nimport os, sys; sys.path.insert\\(0,'.'\\); os.environ['DJANGO_SETTINGS_MODULE']='config.settings'\nimport django; django.setup\\(\\)\nfrom django.test import RequestFactory\nfrom django.contrib.admin.sites import AdminSite\nfrom shop.admin import CarrierAdmin\nfrom shop.models.Carrier import Carrier\nsite = AdminSite\\(\\)\nma = CarrierAdmin\\(Carrier, site\\)\nfrom django.contrib.auth.models import User\nrf = RequestFactory\\(\\)\nreq = rf.get\\('/admin/shop/carrier/'\\)\nreq.user = User\\(is_staff=True, is_superuser=True\\)\ntry:\n    resp = ma.changeform_view\\(req\\)\n    print\\('OK'\\)\nexcept Exception as e:\n    import traceback; traceback.print_exc\\(\\)\n\" 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && ../myenv/Scripts/python.exe manage.py makemigrations 2>&1 && ../myenv/Scripts/python.exe manage.py migrate 2>&1)",
+      "Bash(cd:*)"
+    ]
+  }
+}

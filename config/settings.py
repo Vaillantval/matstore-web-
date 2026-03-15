@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_ckeditor_5',
     'shop',
 ]
 
@@ -63,6 +64,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'shop.context_processors.site_settings',
+                'shop.context_processors.cart_context',
             ],
         },
     },
@@ -128,3 +131,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# ── CKEditor 5 ──
+CKEDITOR_5_UPLOAD_PATH = 'ckeditor_uploads/'
+CKEDITOR_5_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': [
+            'heading', '|',
+            'bold', 'italic', 'underline', 'strikethrough', '|',
+            'bulletedList', 'numberedList', 'blockQuote', '|',
+            'link', 'insertImage', 'insertTable', '|',
+            'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+            'outdent', 'indent', 'alignment', '|',
+            'undo', 'redo',
+        ],
+        'image': {
+            'toolbar': ['imageTextAlternative', 'imageStyle:inline',
+                        'imageStyle:block', 'imageStyle:side'],
+        },
+        'height': '300px',
+        'width': '100%',
+    },
+}

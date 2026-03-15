@@ -1,6 +1,6 @@
 from django.db import models
 
-from shop.models import Product
+from shop.models.Product import Product
 
 
 class Image(models.Model):

@@ -1,0 +1,786 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .shop_banner {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 55px 0 45px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .shop_banner h1 { font-size: 36px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .shop_banner .breadcrumb-item a { color: #ff5722; }
+
+    /* Sidebar */
+    .shop_sidebar { position: sticky; top: 90px; }
+
+    .sidebar_widget {
+        background: #fff;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .sidebar_widget h5 {
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #1a1a2e;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .cat_list { list-style: none; padding: 0; margin: 0; }
+    .cat_list li a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 12px;
+        border-radius: 8px;
+        color: #495057;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .cat_list li a:hover, .cat_list li a.active {
+        background: rgba(255,87,34,0.08);
+        color: #ff5722;
+        padding-left: 16px;
+    }
+    .cat_list li a .count {
+        background: #f0f0f0;
+        color: #6c757d;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 50px;
+        font-weight: 600;
+    }
+    .cat_list li a.active .count { background: rgba(255,87,34,0.15); color: #ff5722; }
+
+    .filter_btn {
+        display: block;
+        padding: 9px 14px;
+        border-radius: 8px;
+        color: #495057;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.2s;
+        margin-bottom: 4px;
+    }
+    .filter_btn i { margin-right: 10px; width: 16px; color: #adb5bd; }
+    .filter_btn:hover, .filter_btn.active {
+        background: rgba(255,87,34,0.08);
+        color: #ff5722;
+        padding-left: 18px;
+    }
+    .filter_btn.active i { color: #ff5722; }
+
+    /* Toolbar */
+    .shop_toolbar {
+        background: #fff;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .shop_toolbar .result_count { font-size: 14px; color: #6c757d; }
+    .shop_toolbar .result_count strong { color: #1a1a2e; }
+    .toolbar_right { display: flex; align-items: center; gap: 12px; }
+    .sort_select {
+        border: 1.5px solid #e9ecef;
+        border-radius: 8px;
+        padding: 7px 30px 7px 12px;
+        font-size: 13px;
+        color: #495057;
+        background-color: #f8f9fa;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 12px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+    .sort_select:focus { outline: none; border-color: #ff5722; }
+
+    .view_btn {
+        width: 34px; height: 34px;
+        border: 1.5px solid #e9ecef;
+        border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: transparent;
+        font-size: 14px;
+    }
+    .view_btn.active, .view_btn:hover { border-color: #ff5722; color: #ff5722; background: rgba(255,87,34,0.06); }
+
+    /* ── Mode liste : override de la grille ── */
+    #products-view-container.view-list > .row > [class*="col-"] {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+    #products-view-container.view-list .pc {
+        flex-direction: row;
+    }
+    #products-view-container.view-list .pc-img {
+        width: 220px;
+        min-width: 220px;
+        padding-top: 0;
+        height: 210px;
+        flex-shrink: 0;
+    }
+    #products-view-container.view-list .pc-img > a {
+        position: absolute; inset: 0;
+    }
+    #products-view-container.view-list .pc-overlay {
+        display: none; /* overlay inutile en mode liste */
+    }
+    #products-view-container.view-list .pc-body {
+        padding: 18px 22px;
+        justify-content: center;
+    }
+    @media (max-width: 575px) {
+        #products-view-container.view-list .pc { flex-direction: column; }
+        #products-view-container.view-list .pc-img { width: 100%; min-width: 0; height: 180px; }
+    }
+
+    /* Search bar in page */
+    .page_search {
+        display: flex;
+        border: 1.5px solid #e9ecef;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: border-color 0.2s;
+    }
+    .page_search:focus-within { border-color: #ff5722; }
+    .page_search input {
+        border: none;
+        padding: 8px 14px;
+        font-size: 13px;
+        flex: 1;
+        outline: none;
+        background: transparent;
+    }
+    .page_search button {
+        background: #ff5722;
+        border: none;
+        color: #fff;
+        padding: 0 14px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    /* Active filters */
+    .active_filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .filter_tag {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255,87,34,0.1);
+        color: #ff5722;
+        border: 1px solid rgba(255,87,34,0.2);
+        border-radius: 50px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+    }
+    .filter_tag i { font-size: 10px; }
+
+    /* ══ Vertical product card (grille boutique) ══ */
+    .pc {
+        position: relative;
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        cursor: pointer;
+        transition: box-shadow 0.3s ease, transform 0.25s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .pc:hover {
+        box-shadow: 0 10px 35px rgba(0,0,0,0.10);
+        transform: translateY(-3px);
+    }
+
+    /* Image */
+    .pc-img {
+        position: relative;
+        width: 100%;
+        padding-top: 75%;   /* ratio 4:3 */
+        background: #f8f9fa;
+        overflow: hidden;
+    }
+    .pc-img > a { position: absolute; inset: 0; }
+    .pc-img img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.45s ease;
+    }
+    .pc:hover .pc-img img { transform: scale(1.07); }
+
+    /* Badges */
+    .pc-badges {
+        position: absolute; top: 10px; left: 10px;
+        display: flex; flex-direction: column; gap: 4px; z-index: 2;
+    }
+    .pc-badge {
+        font-size: 10px; font-weight: 700; padding: 3px 9px;
+        border-radius: 50px; text-transform: uppercase; letter-spacing: .4px;
+    }
+    .pc-new   { background: #28a745; color: #fff; }
+    .pc-promo { background: #ff5722; color: #fff; }
+    .pc-hot   { background: #ffc107; color: #1a1a2e; }
+
+    /* % réduction */
+    .pc-discount-img {
+        position: absolute; top: 10px; right: 10px; z-index: 2;
+        background: #28a745; color: #fff;
+        font-size: 11px; font-weight: 700;
+        padding: 3px 8px; border-radius: 50px;
+    }
+
+    /* Overlay hover */
+    .pc-overlay {
+        position: absolute; inset: 0; z-index: 3;
+        background: rgba(26,26,46,0.45);
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+    .pc:hover .pc-overlay { opacity: 1; }
+    .pc-ov-btn {
+        width: 40px; height: 40px;
+        background: #fff; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: #1a1a2e; font-size: 16px; text-decoration: none;
+        transition: all 0.2s; transform: translateY(8px);
+    }
+    .pc:hover .pc-ov-btn { transform: translateY(0); }
+    .pc-ov-btn:hover { background: #ff5722; color: #fff; }
+
+    /* Body */
+    .pc-body {
+        flex: 1; padding: 14px 16px 16px;
+        display: flex; flex-direction: column; gap: 6px;
+    }
+
+    .pc-cats { display: flex; flex-wrap: wrap; gap: 4px; }
+    .pc-cat {
+        font-size: 10px; font-weight: 600; color: #ff5722;
+        background: rgba(255,87,34,0.08);
+        border: 1px solid rgba(255,87,34,0.18);
+        border-radius: 50px; padding: 1px 8px;
+        text-decoration: none; transition: all 0.2s;
+    }
+    .pc-cat:hover { background: #ff5722; color: #fff; }
+
+    .pc-name {
+        font-size: 15px; font-weight: 700; color: #1a1a2e;
+        margin: 0; line-height: 1.35;
+    }
+    .pc-name a { color: inherit; text-decoration: none; }
+    .pc-name a:hover { color: #ff5722; }
+
+    .pc-desc {
+        font-size: 12px; color: #6c757d; line-height: 1.55; margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .pc-stars { font-size: 11px; color: #ffc107; display: flex; align-items: center; gap: 2px; }
+    .pc-stars i { font-size: 11px; }
+    .pc-rating { color: #6c757d; margin-left: 4px; }
+    .pc-brand  { color: #adb5bd; }
+
+    .pc-price-row  { display: flex; align-items: baseline; gap: 7px; }
+    .pc-price-main { font-size: 18px; font-weight: 800; color: #ff5722; }
+    .pc-price-old  { font-size: 12px; color: #adb5bd; text-decoration: line-through; }
+
+    .pc-stock { font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .pc-in    { color: #28a745; }
+    .pc-out   { color: #dc3545; }
+
+    /* Boutons */
+    .pc-actions { display: flex; gap: 7px; margin-top: 4px; }
+    .pc-btn-cart {
+        flex: 1;
+        background: linear-gradient(135deg, #ff5722, #ff8a65);
+        color: #fff !important; border: none; border-radius: 7px;
+        padding: 8px 10px; font-size: 12px; font-weight: 600;
+        text-decoration: none !important;
+        display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+        transition: all 0.25s; white-space: nowrap;
+    }
+    .pc-btn-cart:hover { box-shadow: 0 4px 14px rgba(255,87,34,0.4); transform: translateY(-1px); }
+    .pc-btn-detail {
+        flex: 1;
+        background: #fff; color: #ff5722 !important;
+        border: 1.5px solid #ff5722; border-radius: 7px;
+        padding: 7px 10px; font-size: 12px; font-weight: 600;
+        text-decoration: none !important;
+        display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+        transition: all 0.2s; white-space: nowrap;
+    }
+    .pc-btn-detail:hover { background: #ff5722; color: #fff !important; }
+
+    /* ══ List product card ══ */
+    .plc {
+        position: relative;
+        display: flex;
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        cursor: pointer;
+        transition: box-shadow 0.3s ease, transform 0.25s ease;
+    }
+    .plc:hover {
+        box-shadow: 0 10px 35px rgba(0,0,0,0.09);
+        transform: translateY(-2px);
+    }
+
+    /* Image */
+    .plc-img {
+        position: relative;
+        width: 230px;
+        min-width: 230px;
+        background: #f8f9fa;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .plc-img a { display: block; width: 100%; height: 100%; }
+    .plc-img img {
+        width: 100%; height: 100%;
+        object-fit: cover; display: block;
+        transition: transform 0.45s ease;
+    }
+    .plc:hover .plc-img img { transform: scale(1.06); }
+
+    .plc-badges {
+        position: absolute; top: 10px; left: 10px;
+        display: flex; flex-direction: column; gap: 4px;
+    }
+    .plc-badge {
+        font-size: 10px; font-weight: 700; padding: 3px 9px;
+        border-radius: 50px; text-transform: uppercase; letter-spacing: .4px;
+    }
+    .plc-new   { background: #28a745; color: #fff; }
+    .plc-promo { background: #ff5722; color: #fff; }
+    .plc-hot   { background: #ffc107; color: #1a1a2e; }
+
+    /* Body */
+    .plc-body {
+        flex: 1; padding: 20px 24px;
+        display: flex; flex-direction: column; gap: 7px;
+        min-width: 0;
+    }
+
+    .plc-cats { display: flex; flex-wrap: wrap; gap: 5px; }
+    .plc-cat {
+        font-size: 11px; font-weight: 600; color: #ff5722;
+        background: rgba(255,87,34,0.08);
+        border: 1px solid rgba(255,87,34,0.2);
+        border-radius: 50px; padding: 2px 10px;
+        text-decoration: none; transition: all 0.2s;
+    }
+    .plc-cat:hover { background: #ff5722; color: #fff; }
+
+    .plc-name {
+        font-size: 17px; font-weight: 700; color: #1a1a2e;
+        margin: 0; line-height: 1.35;
+    }
+    .plc-name a { color: inherit; text-decoration: none; }
+    .plc-name a:hover { color: #ff5722; }
+
+    .plc-desc {
+        font-size: 13px; color: #6c757d; line-height: 1.6; margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .plc-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+    .plc-stars { color: #ffc107; display: flex; align-items: center; gap: 2px; }
+    .plc-stars i { font-size: 12px; }
+    .plc-rating-num { color: #6c757d; margin-left: 4px; }
+    .plc-sep { color: #dee2e6; }
+    .plc-brand { color: #adb5bd; font-size: 12px; }
+
+    .plc-price-row { display: flex; align-items: baseline; gap: 8px; }
+    .plc-price-main { font-size: 22px; font-weight: 800; color: #ff5722; }
+    .plc-price-old  { font-size: 14px; color: #adb5bd; text-decoration: line-through; }
+    .plc-discount   { font-size: 12px; font-weight: 700; color: #28a745; }
+
+    .plc-stock { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+    .plc-instock  { color: #28a745; }
+    .plc-outstock { color: #dc3545; }
+
+    /* Actions */
+    .plc-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+    .plc-btn-cart {
+        background: linear-gradient(135deg, #ff5722, #ff8a65);
+        color: #fff !important;
+        border: none; border-radius: 8px;
+        padding: 9px 18px; font-size: 13px; font-weight: 600;
+        text-decoration: none !important;
+        display: inline-flex; align-items: center; gap: 7px;
+        transition: all 0.3s; white-space: nowrap;
+    }
+    .plc-btn-cart:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(255,87,34,0.35); }
+
+    .plc-btn-detail {
+        background: #fff; color: #ff5722 !important;
+        border: 1.5px solid #ff5722; border-radius: 8px;
+        padding: 8px 16px; font-size: 13px; font-weight: 600;
+        text-decoration: none !important;
+        display: inline-flex; align-items: center; gap: 6px;
+        transition: all 0.2s; white-space: nowrap;
+    }
+    .plc-btn-detail:hover { background: #ff5722; color: #fff !important; }
+
+    .plc-icon-btn {
+        width: 36px; height: 36px;
+        border: 1.5px solid #e9ecef; border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #6c757d; text-decoration: none !important;
+        font-size: 15px; transition: all 0.2s; flex-shrink: 0;
+    }
+    .plc-icon-btn:hover { border-color: #ff5722; color: #ff5722; }
+
+    /* Mobile: stack */
+    @media (max-width: 575px) {
+        .plc { flex-direction: column; }
+        .plc-img { width: 100%; min-width: 0; height: 200px; }
+        .plc-body { padding: 14px 16px; }
+    }
+
+    /* Empty state */
+    .empty_products {
+        text-align: center;
+        padding: 80px 20px;
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+    }
+    .empty_products i { font-size: 60px; color: #dee2e6; display: block; margin-bottom: 20px; }
+    .empty_products h5 { color: #1a1a2e; margin-bottom: 8px; }
+    .empty_products p { color: #6c757d; margin-bottom: 20px; }
+
+    /* Pagination */
+    .pagination .page-link {
+        color: #ff5722;
+        border-color: #e9ecef;
+        border-radius: 8px !important;
+        margin: 0 3px;
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #ff5722;
+        border-color: #ff5722;
+        color: #fff;
+    }
+    .pagination .page-link:hover { background: rgba(255,87,34,0.1); border-color: #ff5722; color: #ff5722; }
+    .pagination .page-item.disabled .page-link { color: #adb5bd; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Banner -->
+<div class="shop_banner">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h1>
+                    {% if active_category %}{{ active_category.name }}
+                    {% elif q %}Résultats pour "{{ q }}"
+                    {% elif filter_type == 'best_seller' %}Meilleures ventes
+                    {% elif filter_type == 'new_arrival' %}Nouveautés
+                    {% elif filter_type == 'special_offer' %}Offres spéciales
+                    {% elif filter_type == 'featured' %}Produits vedettes
+                    {% else %}Tous les produits{% endif %}
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                        {% if active_category %}
+                        <li class="breadcrumb-item"><a href="{% url 'shop_list' %}">Boutique</a></li>
+                        <li class="breadcrumb-item active">{{ active_category.name }}</li>
+                        {% else %}
+                        <li class="breadcrumb-item active">Boutique</li>
+                        {% endif %}
+                    </ol>
+                </nav>
+            </div>
+            <form method="GET" action="{% url 'shop_list' %}" class="page_search" style="min-width:260px;">
+                {% if category_slug %}<input type="hidden" name="category" value="{{ category_slug }}">{% endif %}
+                {% if filter_type %}<input type="hidden" name="filter" value="{{ filter_type }}">{% endif %}
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un produit...">
+                <button type="submit"><i class="ion-ios-search-strong"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<section class="section py-5">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="shop_sidebar">
+
+                    <!-- Categories -->
+                    <div class="sidebar_widget">
+                        <h5>Catégories</h5>
+                        <ul class="cat_list">
+                            <li>
+                                <a href="{% url 'shop_list' %}{% if q %}?q={{ q }}{% endif %}"
+                                   class="{% if not category_slug %}active{% endif %}">
+                                    Toutes les catégories
+                                    <span class="count">{{ categories.count }}</span>
+                                </a>
+                            </li>
+                            {% for cat in categories %}
+                            <li>
+                                <a href="{% url 'shop_list' %}?category={{ cat.slug }}{% if q %}&q={{ q }}{% endif %}"
+                                   class="{% if category_slug == cat.slug %}active{% endif %}">
+                                    {{ cat.name }}
+                                    <span class="count">{{ cat.product_set.count }}</span>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Filtres -->
+                    <div class="sidebar_widget">
+                        <h5>Filtrer par</h5>
+                        <a href="{% url 'shop_list' %}{% if category_slug %}?category={{ category_slug }}{% endif %}"
+                           class="filter_btn {% if not filter_type %}active{% endif %}">
+                            <i class="ti-view-grid"></i> Tous les produits
+                        </a>
+                        <a href="{% url 'shop_list' %}?filter=new_arrival{% if category_slug %}&category={{ category_slug }}{% endif %}"
+                           class="filter_btn {% if filter_type == 'new_arrival' %}active{% endif %}">
+                            <i class="ti-star"></i> Nouveautés
+                        </a>
+                        <a href="{% url 'shop_list' %}?filter=best_seller{% if category_slug %}&category={{ category_slug }}{% endif %}"
+                           class="filter_btn {% if filter_type == 'best_seller' %}active{% endif %}">
+                            <i class="ti-crown"></i> Meilleures ventes
+                        </a>
+                        <a href="{% url 'shop_list' %}?filter=featured{% if category_slug %}&category={{ category_slug }}{% endif %}"
+                           class="filter_btn {% if filter_type == 'featured' %}active{% endif %}">
+                            <i class="ti-bookmark"></i> Produits vedettes
+                        </a>
+                        <a href="{% url 'shop_list' %}?filter=special_offer{% if category_slug %}&category={{ category_slug }}{% endif %}"
+                           class="filter_btn {% if filter_type == 'special_offer' %}active{% endif %}">
+                            <i class="ti-tag"></i> Offres spéciales
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div class="col-lg-9">
+
+                <!-- Toolbar -->
+                <div class="shop_toolbar">
+                    <p class="result_count mb-0">
+                        <strong>{{ total }}</strong> produit{{ total|pluralize }} trouvé{{ total|pluralize }}
+                        {% if q %} pour <em>"{{ q }}"</em>{% endif %}
+                    </p>
+                    <div class="toolbar_right">
+
+                        <!-- Boutons grille / liste -->
+                        <div class="d-flex gap-1" style="margin-right:4px;">
+                            <button type="button" class="view_btn active" id="btn-view-grid"
+                                    title="Vue grille" onclick="setView('grid')">
+                                <i class="ti-layout-grid2"></i>
+                            </button>
+                            <button type="button" class="view_btn" id="btn-view-list"
+                                    title="Vue liste" onclick="setView('list')">
+                                <i class="ti-view-list-alt"></i>
+                            </button>
+                        </div>
+
+                        <!-- Séparateur -->
+                        <span style="width:1px;height:20px;background:#e9ecef;display:inline-block;"></span>
+
+                        <form method="GET" action="{% url 'shop_list' %}" id="sortForm">
+                            {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+                            {% if category_slug %}<input type="hidden" name="category" value="{{ category_slug }}">{% endif %}
+                            {% if filter_type %}<input type="hidden" name="filter" value="{{ filter_type }}">{% endif %}
+                            <select name="sort" class="sort_select" onchange="document.getElementById('sortForm').submit()">
+                                <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Plus récents</option>
+                                <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Prix croissant</option>
+                                <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
+                                <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Nom A–Z</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Active filters tags -->
+                {% if q or category_slug or filter_type %}
+                <div class="active_filters">
+                    {% if q %}
+                    <a href="{% url 'shop_list' %}{% if category_slug %}?category={{ category_slug }}{% endif %}" class="filter_tag">
+                        Recherche: "{{ q }}" <i class="ti-close"></i>
+                    </a>
+                    {% endif %}
+                    {% if active_category %}
+                    <a href="{% url 'shop_list' %}{% if q %}?q={{ q }}{% endif %}" class="filter_tag">
+                        {{ active_category.name }} <i class="ti-close"></i>
+                    </a>
+                    {% endif %}
+                    {% if filter_type %}
+                    <a href="{% url 'shop_list' %}{% if category_slug %}?category={{ category_slug }}{% endif %}" class="filter_tag">
+                        {% if filter_type == 'new_arrival' %}Nouveautés
+                        {% elif filter_type == 'best_seller' %}Meilleures ventes
+                        {% elif filter_type == 'featured' %}Vedettes
+                        {% elif filter_type == 'special_offer' %}Offres spéciales
+                        {% endif %} <i class="ti-close"></i>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'shop_list' %}" class="filter_tag" style="background:#fff3cd; color:#856404; border-color:#ffc107;">
+                        Réinitialiser tout <i class="ti-close"></i>
+                    </a>
+                </div>
+                {% endif %}
+
+                {% if page_obj.object_list %}
+
+                <!-- Grille responsive : 3 col xl, 2 col md, 1 col xs -->
+                <div id="products-view-container">
+                <div class="row g-3">
+                    {% for product in page_obj %}
+                    <div class="col-xl-4 col-md-6 col-12">
+                        {% include "partials/product_card.html" with product=product %}
+                    </div>
+                    {% endfor %}
+                </div>
+                </div><!-- /products-view-container -->
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="d-flex justify-content-center align-items-center mt-5 gap-2 flex-wrap">
+
+                    <!-- Précédent -->
+                    {% if page_obj.has_previous %}
+                    <a class="page-link rounded-pill px-3"
+                       href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">
+                        <i class="ion-ios-arrow-left"></i>
+                    </a>
+                    {% else %}
+                    <span class="page-link rounded-pill px-3 disabled" style="opacity:.4;">
+                        <i class="ion-ios-arrow-left"></i>
+                    </span>
+                    {% endif %}
+
+                    <!-- Numéros de pages -->
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span class="page-link rounded-pill px-3 active"
+                              style="background:#ff5722;border-color:#ff5722;color:#fff;font-weight:700;">
+                            {{ num }}
+                        </span>
+                        {% elif num == 1 or num == page_obj.paginator.num_pages or num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                        <a class="page-link rounded-pill px-3"
+                           href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">
+                            {{ num }}
+                        </a>
+                        {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                        <span class="page-link rounded-pill px-2" style="opacity:.5;pointer-events:none;">…</span>
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- Suivant -->
+                    {% if page_obj.has_next %}
+                    <a class="page-link rounded-pill px-3"
+                       href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">
+                        <i class="ion-ios-arrow-right"></i>
+                    </a>
+                    {% else %}
+                    <span class="page-link rounded-pill px-3 disabled" style="opacity:.4;">
+                        <i class="ion-ios-arrow-right"></i>
+                    </span>
+                    {% endif %}
+
+                </div>
+                <!-- Info pagination -->
+                <p class="text-center mt-3" style="font-size:13px;color:#6c757d;">
+                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                    &nbsp;·&nbsp; {{ total }} produit{{ total|pluralize }} au total
+                </p>
+                {% endif %}
+
+                {% else %}
+                <div class="empty_products">
+                    <i class="linearicons-magnifier"></i>
+                    <h5>Aucun produit trouvé</h5>
+                    <p>
+                        {% if q %}Aucun résultat pour "{{ q }}". Essayez d'autres mots-clés.
+                        {% else %}Aucun produit ne correspond à ce filtre.{% endif %}
+                    </p>
+                    <a href="{% url 'shop_list' %}" class="btn btn-fill-out btn-radius">Voir tous les produits</a>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+var STORAGE_KEY = 'matstore_view';
+
+function setView(mode) {
+    var container = document.getElementById('products-view-container');
+    var btnGrid   = document.getElementById('btn-view-grid');
+    var btnList   = document.getElementById('btn-view-list');
+    if (!container) return;
+
+    if (mode === 'list') {
+        container.classList.add('view-list');
+        btnList.classList.add('active');
+        btnGrid.classList.remove('active');
+    } else {
+        container.classList.remove('view-list');
+        btnGrid.classList.add('active');
+        btnList.classList.remove('active');
+    }
+    try { localStorage.setItem(STORAGE_KEY, mode); } catch(e) {}
+}
+
+$(document).ready(function () {
+    var saved;
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch(e) {}
+    if (saved === 'list') {
+        setView('list');
+    }
+    /* grille = défaut, rien à faire */
+});
+</script>
+{% endblock %}

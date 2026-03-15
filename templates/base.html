@@ -49,6 +49,121 @@
 <script src="{% static 'assets/js/slick.min.js' %}"></script>
 <script src="{% static 'assets/js/jquery.elevatezoom.js' %}"></script>
 <script src="{% static 'assets/js/scripts.js' %}"></script>
+
+<!-- Toast container -->
+<div id="toast-container" style="position:fixed;top:85px;right:20px;z-index:99999;min-width:300px;max-width:360px;"></div>
+
+<script>
+var CART_URL = "{% url 'cart' %}";
+$(document).ready(function () {
+
+    /* ── CSRF setup global ── */
+    function getCsrfToken() {
+        var match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
+    $.ajaxSetup({
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    });
+
+    /* ── Toast notification ── */
+    window.showToast = function (message, type) {
+        type = type || 'success';
+        var colors = { success: '#28a745', error: '#dc3545', info: '#17a2b8', warning: '#e67e22' };
+        var icons  = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
+        var color  = colors[type] || colors.success;
+        var icon   = icons[type]  || '✓';
+        var toast  = $('<div>')
+            .css({
+                background: '#fff', borderRadius: '10px', padding: '14px 18px',
+                marginBottom: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.13)',
+                borderLeft: '4px solid ' + color,
+                display: 'flex', alignItems: 'center', gap: '12px',
+                opacity: 0, transform: 'translateX(30px)', transition: 'all 0.3s ease'
+            })
+            .html('<span style="color:' + color + ';font-size:18px;font-weight:700;flex-shrink:0">' + icon + '</span>'
+                + '<span style="font-size:14px;color:#333;flex:1">' + message + '</span>'
+                + '<span style="cursor:pointer;color:#adb5bd;font-size:18px;line-height:1" onclick="$(this).closest(\'div\').remove()">×</span>');
+        $('#toast-container').append(toast);
+        setTimeout(function () { toast.css({ opacity: 1, transform: 'translateX(0)' }); }, 10);
+        setTimeout(function () {
+            toast.css({ opacity: 0, transform: 'translateX(30px)' });
+            setTimeout(function () { toast.remove(); }, 300);
+        }, 3500);
+    };
+
+    /* ── Ajouter au panier (cartes produit — accueil, boutique, catégorie) ── */
+    $(document).on('click', '.btn-add-cart', function (e) {
+        e.preventDefault();
+        var btn = $(this);
+        if (btn.data('loading')) return;
+        btn.data('loading', true);
+        btn.html('<i class="ti-reload"></i>');
+        $.ajax({
+            url: btn.data('url'), method: 'POST', data: { qty: 1 },
+            success: function (data) {
+                /* Produit ajouté ou déjà présent → redirection vers le panier */
+                window.location.href = CART_URL;
+            },
+            error: function (xhr) {
+                var d = xhr.responseJSON || {};
+                showToast(d.message || 'Produit indisponible.', d.msg_type || 'error');
+                btn.data('loading', false).html(btn.data('orig') || btn.html());
+            }
+        });
+    });
+
+    /* ── Liste de souhaits (boutons toggle partout) ── */
+    $(document).on('click', '.btn-toggle-wishlist', function (e) {
+        e.preventDefault();
+        var btn = $(this);
+        $.ajax({
+            url: btn.data('url'), method: 'POST',
+            success: function (data) {
+                /* Badge compteur dans le header */
+                var badge = $('#wishlist-count-badge');
+                badge.text(data.wishlist_count);
+                if (data.wishlist_count > 0) {
+                    badge.css('display', 'inline-flex');
+                } else {
+                    badge.css('display', 'none');
+                }
+
+                if (data.in_wishlist) {
+                    btn.css('color', '#ff5722');
+                    showToast('Ajouté à votre liste de souhaits !', 'success');
+                } else {
+                    btn.css('color', '');
+                    showToast('Retiré de votre liste de souhaits.', 'info');
+                }
+            }
+        });
+    });
+
+    /* ── Supprimer du panier (aperçu header) ── */
+    $(document).on('click', '.btn-remove-cart-header', function (e) {
+        e.preventDefault();
+        var btn = $(this);
+        btn.prop('disabled', true);
+        $.ajax({
+            url: btn.data('url'), method: 'POST',
+            success: function (data) {
+                var item = btn.closest('.hd-cp-item');
+                item.fadeOut(250, function () {
+                    $(this).remove();
+                    $('#cart-count-badge').text(data.cart_count);
+                    if (data.cart_count === 0) { location.reload(); }
+                });
+            },
+            error: function () { btn.prop('disabled', false); }
+        });
+    });
+
+});
+</script>
 </body>
 
 {% block scripts %}{% endblock %}

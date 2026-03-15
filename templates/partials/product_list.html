@@ -1,0 +1,97 @@
+{% load static price_filters %}
+{% with first_img=product.images.first pct=product.solde_price|discount_percent:product.regular_price %}
+
+<div class="plc" onclick="if(!event.target.closest('.plc-actions')) window.location.href='{% url 'product_detail' product.slug %}'"
+
+    <!-- ── Image ── -->
+    <div class="plc-img">
+        <a href="{% url 'product_detail' product.slug %}" onclick="event.stopPropagation()">
+            {% if first_img %}
+            <img src="{{ first_img.image.url }}" alt="{{ product.name }}">
+            {% else %}
+            <img src="{% static 'assets/images/product_placeholder.jpg' %}" alt="{{ product.name }}"
+                 onerror="this.src='https://via.placeholder.com/240x240/f8f9fa/adb5bd?text=No+Image'">
+            {% endif %}
+        </a>
+        <div class="plc-badges">
+            {% if product.is_new_arrival %}<span class="plc-badge plc-new">Nouveau</span>{% endif %}
+            {% if product.is_special_offer %}<span class="plc-badge plc-promo">Promo</span>{% endif %}
+            {% if product.is_best_seller %}<span class="plc-badge plc-hot">Top vente</span>{% endif %}
+        </div>
+    </div>
+
+    <!-- ── Infos ── -->
+    <div class="plc-body">
+
+        <!-- Catégories -->
+        <div class="plc-cats" onclick="event.stopPropagation()">
+            {% for cat in product.categories.all %}
+            <a href="{% url 'shop_list' %}?category={{ cat.slug }}" class="plc-cat">{{ cat.name }}</a>
+            {% endfor %}
+        </div>
+
+        <!-- Nom -->
+        <h5 class="plc-name">
+            <a href="{% url 'product_detail' product.slug %}" onclick="event.stopPropagation()">
+                {{ product.name }}
+            </a>
+        </h5>
+
+        <!-- Description -->
+        <p class="plc-desc">{{ product.description }}</p>
+
+        <!-- Stars + marque -->
+        <div class="plc-meta">
+            <span class="plc-stars">
+                <i class="ion-ios-star"></i><i class="ion-ios-star"></i><i class="ion-ios-star"></i>
+                <i class="ion-ios-star"></i><i class="ion-ios-star-half"></i>
+                <span class="plc-rating-num">4.5</span>
+            </span>
+            <span class="plc-sep">·</span>
+            <span class="plc-brand">{{ product.brand }}</span>
+        </div>
+
+        <!-- Prix -->
+        <div class="plc-price-row">
+            <span class="plc-price-main">{{ product.solde_price|price_convert }}</span>
+            {% if product.regular_price > product.solde_price %}
+            <span class="plc-price-old">{{ product.regular_price|price_convert }}</span>
+            {% if pct %}<span class="plc-discount">-{{ pct }}%</span>{% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Stock -->
+        {% if product.is_available and product.stock > 0 %}
+        <span class="plc-stock plc-instock"><i class="ti-check"></i> En stock ({{ product.stock }})</span>
+        {% else %}
+        <span class="plc-stock plc-outstock"><i class="ti-close"></i> Rupture de stock</span>
+        {% endif %}
+
+        <!-- Boutons (stopPropagation pour ne pas déclencher le clic carte) -->
+        <div class="plc-actions">
+            <a href="#" class="plc-btn-cart btn-add-cart"
+               data-product-id="{{ product.pk }}"
+               data-url="{% url 'add_to_cart' product.pk %}"
+               {% if not product.is_available or product.stock == 0 %}
+                   style="opacity:.5; pointer-events:none;" title="Rupture de stock"
+               {% endif %}>
+                <i class="icon-basket-loaded"></i> Ajouter au panier
+            </a>
+
+            <a href="{% url 'product_detail' product.slug %}" class="plc-btn-detail">
+                Voir les détails <i class="ti-arrow-right"></i>
+            </a>
+
+            <a href="#" class="plc-icon-btn btn-toggle-wishlist"
+               data-product-id="{{ product.pk }}"
+               data-url="{% url 'toggle_wishlist' product.pk %}"
+               title="Wishlist"
+               style="{% if product.pk in wishlist_ids %}color:#ff5722;border-color:#ff5722;{% endif %}">
+                <i class="icon-heart"></i>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+{% endwith %}

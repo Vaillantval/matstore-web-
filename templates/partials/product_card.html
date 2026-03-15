@@ -1,0 +1,112 @@
+{% load static price_filters %}
+{% with first_img=product.images.first pct=product.solde_price|discount_percent:product.regular_price %}
+
+<div class="pc" onclick="if(!event.target.closest('.pc-overlay, .pc-actions')) window.location.href='{% url 'product_detail' product.slug %}'"
+
+    <!-- ── Image ── -->
+    <div class="pc-img">
+        <a href="{% url 'product_detail' product.slug %}" onclick="event.stopPropagation()">
+            {% if first_img %}
+            <img src="{{ first_img.image.url }}" alt="{{ product.name }}">
+            {% else %}
+            <img src="{% static 'assets/images/product_placeholder.jpg' %}" alt="{{ product.name }}"
+                 onerror="this.src='https://via.placeholder.com/400x400/f8f9fa/adb5bd?text=No+Image'">
+            {% endif %}
+        </a>
+
+        <!-- Badges -->
+        <div class="pc-badges">
+            {% if product.is_new_arrival %}<span class="pc-badge pc-new">Nouveau</span>{% endif %}
+            {% if product.is_special_offer %}<span class="pc-badge pc-promo">Promo</span>{% endif %}
+            {% if product.is_best_seller %}<span class="pc-badge pc-hot">Top vente</span>{% endif %}
+        </div>
+
+        <!-- % réduction sur l'image -->
+        {% if pct %}
+        <span class="pc-discount-img">-{{ pct }}%</span>
+        {% endif %}
+
+        <!-- Overlay actions au survol -->
+        <div class="pc-overlay">
+            <a href="#" class="pc-ov-btn btn-add-cart"
+               data-product-id="{{ product.pk }}"
+               data-url="{% url 'add_to_cart' product.pk %}"
+               {% if not product.is_available or product.stock == 0 %}style="opacity:.5;pointer-events:none;"{% endif %}
+               title="Ajouter au panier">
+                <i class="icon-basket-loaded"></i>
+            </a>
+            <a href="{% url 'product_detail' product.slug %}" class="pc-ov-btn" title="Voir le produit"
+               onclick="event.stopPropagation()">
+                <i class="icon-magnifier-add"></i>
+            </a>
+            <a href="#" class="pc-ov-btn btn-toggle-wishlist"
+               data-product-id="{{ product.pk }}"
+               data-url="{% url 'toggle_wishlist' product.pk %}"
+               title="Wishlist"
+               style="{% if product.pk in wishlist_ids %}color:#ff5722;{% endif %}">
+                <i class="icon-heart"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Infos ── -->
+    <div class="pc-body">
+
+        <!-- Catégories -->
+        <div class="pc-cats" onclick="event.stopPropagation()">
+            {% for cat in product.categories.all %}
+            <a href="{% url 'shop_list' %}?category={{ cat.slug }}" class="pc-cat">{{ cat.name }}</a>
+            {% endfor %}
+        </div>
+
+        <!-- Nom -->
+        <h6 class="pc-name">
+            <a href="{% url 'product_detail' product.slug %}" onclick="event.stopPropagation()">
+                {{ product.name }}
+            </a>
+        </h6>
+
+        <!-- Description -->
+        <p class="pc-desc">{{ product.description }}</p>
+
+        <!-- Stars -->
+        <div class="pc-stars">
+            <i class="ion-ios-star"></i><i class="ion-ios-star"></i><i class="ion-ios-star"></i>
+            <i class="ion-ios-star"></i><i class="ion-ios-star-half"></i>
+            <span class="pc-rating">4.5</span>
+            <span class="pc-brand">· {{ product.brand }}</span>
+        </div>
+
+        <!-- Prix -->
+        <div class="pc-price-row">
+            <span class="pc-price-main">{{ product.solde_price|price_convert }}</span>
+            {% if product.regular_price > product.solde_price %}
+            <span class="pc-price-old">{{ product.regular_price|price_convert }}</span>
+            {% endif %}
+        </div>
+
+        <!-- Stock -->
+        {% if product.is_available and product.stock > 0 %}
+        <span class="pc-stock pc-in"><i class="ti-check"></i> En stock</span>
+        {% else %}
+        <span class="pc-stock pc-out"><i class="ti-close"></i> Rupture de stock</span>
+        {% endif %}
+
+        <!-- Boutons -->
+        <div class="pc-actions">
+            <a href="#" class="pc-btn-cart btn-add-cart"
+               data-product-id="{{ product.pk }}"
+               data-url="{% url 'add_to_cart' product.pk %}"
+               {% if not product.is_available or product.stock == 0 %}style="opacity:.5;pointer-events:none;"{% endif %}>
+                <i class="icon-basket-loaded"></i> Ajouter
+            </a>
+            <a href="{% url 'product_detail' product.slug %}" class="pc-btn-detail"
+               onclick="event.stopPropagation()">
+                Détails <i class="ti-arrow-right"></i>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+{% endwith %}

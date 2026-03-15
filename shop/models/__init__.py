@@ -3,3 +3,9 @@ from .Collection import Collection
 from .Category import Category
 from .Product import Product
 from .Image import Image
+from .Setting import Setting
+from .Page import Page
+from .FAQ import FAQ
+from .ContactMessage import ContactMessage
+from .ExchangeRate import ExchangeRate
+from .Carrier import Carrier

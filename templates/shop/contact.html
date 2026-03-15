@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .contact_banner {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 80px 0 60px;
+        position: relative;
+        overflow: hidden;
+    }
+    .contact_banner::before {
+        content: '';
+        position: absolute;
+        top: -30%;
+        left: -5%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255,87,34,0.07) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .contact_banner h1 { font-size: 48px; font-weight: 700; color: #1a1a2e; }
+    .contact_banner p { font-size: 18px; color: #6c757d; }
+    .contact_banner .breadcrumb-item a { color: #ff5722; }
+
+    .contact_info_card {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border-radius: 16px;
+        padding: 40px;
+        color: #fff;
+        height: 100%;
+    }
+    .contact_info_card h4 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .contact_info_card > p { color: rgba(255,255,255,0.6); margin-bottom: 35px; }
+
+    .contact_info_item {
+        display: flex;
+        align-items: flex-start;
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+    .contact_info_item .icon_box {
+        width: 48px;
+        height: 48px;
+        background: rgba(255,87,34,0.2);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border: 1px solid rgba(255,87,34,0.3);
+    }
+    .contact_info_item .icon_box i { font-size: 20px; color: #ff5722; }
+    .contact_info_item .info_text span {
+        display: block;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 4px;
+    }
+    .contact_info_item .info_text strong {
+        font-size: 15px;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .social_links_contact { display: flex; gap: 12px; margin-top: 10px; }
+    .social_links_contact a {
+        width: 40px;
+        height: 40px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        transition: all 0.3s;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .social_links_contact a:hover { background: #ff5722; color: #fff; border-color: #ff5722; }
+
+    .contact_form_card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 45px 40px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+        height: 100%;
+    }
+    .contact_form_card h4 { font-size: 24px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+    .contact_form_card > p { color: #6c757d; margin-bottom: 30px; }
+
+    .form-control {
+        border: 1.5px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 14px;
+        transition: all 0.3s;
+        background: #f8f9fa;
+    }
+    .form-control:focus {
+        border-color: #ff5722;
+        box-shadow: 0 0 0 3px rgba(255,87,34,0.1);
+        background: #fff;
+    }
+    .form-label { font-size: 13px; font-weight: 600; color: #1a1a2e; margin-bottom: 6px; }
+
+    .btn_submit {
+        background: linear-gradient(135deg, #ff5722, #ff8a65);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 14px 35px;
+        font-size: 15px;
+        font-weight: 600;
+        transition: all 0.3s;
+        width: 100%;
+    }
+    .btn_submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,87,34,0.4); color: #fff; }
+
+    .success_message {
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        border: 1px solid #b8dab9;
+        border-radius: 10px;
+        padding: 20px 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .success_message i { font-size: 28px; color: #28a745; }
+    .success_message h6 { margin: 0; color: #155724; font-weight: 600; }
+    .success_message p { margin: 0; color: #1e7e34; font-size: 14px; }
+
+    .map_section { border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Banner -->
+<div class="contact_banner">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                <li class="breadcrumb-item active">Contact</li>
+            </ol>
+        </nav>
+        <h1>Contactez-nous</h1>
+        <p class="mt-2">Nous sommes là pour vous aider. N'hésitez pas à nous écrire !</p>
+    </div>
+</div>
+
+<!-- Contact Section -->
+<section class="section py-5">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- Info Card -->
+            <div class="col-lg-4">
+                <div class="contact_info_card">
+                    <h4>Informations de contact</h4>
+                    <p>Plusieurs façons de nous joindre</p>
+
+                    <div class="contact_info_item">
+                        <div class="icon_box"><i class="ti-location-pin"></i></div>
+                        <div class="info_text">
+                            <span>Adresse</span>
+                            <strong>
+                                {% if site_street %}{{ site_street }},<br>{{ site_city }}{% if site_code_postal %} {{ site_code_postal }}{% endif %}{% if site_state %}, {{ site_state }}{% endif %}{% else %}21 Rue Rubens, 59800 Lille{% endif %}
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="contact_info_item">
+                        <div class="icon_box"><i class="ti-mobile"></i></div>
+                        <div class="info_text">
+                            <span>Téléphone</span>
+                            <strong>{% if site_phone %}{{ site_phone }}{% else %}+33 7 49 31 69 74{% endif %}</strong>
+                        </div>
+                    </div>
+
+                    <div class="contact_info_item">
+                        <div class="icon_box"><i class="ti-email"></i></div>
+                        <div class="info_text">
+                            <span>Email</span>
+                            <strong>{% if site_email %}{{ site_email }}{% else %}contact@matstore.fr{% endif %}</strong>
+                        </div>
+                    </div>
+
+                    <div class="contact_info_item">
+                        <div class="icon_box"><i class="ti-time"></i></div>
+                        <div class="info_text">
+                            <span>Horaires</span>
+                            <strong>Lun – Sam : 9h – 18h</strong>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <p style="color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:12px;">Suivez-nous</p>
+                        <div class="social_links_contact">
+                            <a href="#"><i class="ion-social-facebook"></i></a>
+                            <a href="#"><i class="ion-social-instagram-outline"></i></a>
+                            <a href="#"><i class="ion-social-youtube-outline"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Card -->
+            <div class="col-lg-8">
+                <div class="contact_form_card">
+                    <h4>Envoyez-nous un message</h4>
+                    <p>Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.</p>
+
+                    {% if success %}
+                    <div class="success_message mb-4">
+                        <i class="ti-check-box"></i>
+                        <div>
+                            <h6>Message envoyé avec succès !</h6>
+                            <p>Merci de nous avoir contactés. Nous vous répondrons dans les 24 à 48 heures.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nom complet <span class="text-danger">*</span></label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="text-danger mt-1" style="font-size:12px;">{{ form.name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Adresse email <span class="text-danger">*</span></label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="text-danger mt-1" style="font-size:12px;">{{ form.email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Sujet <span class="text-danger">*</span></label>
+                                {{ form.subject }}
+                                {% if form.subject.errors %}
+                                <div class="text-danger mt-1" style="font-size:12px;">{{ form.subject.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Message <span class="text-danger">*</span></label>
+                                {{ form.message }}
+                                {% if form.message.errors %}
+                                <div class="text-danger mt-1" style="font-size:12px;">{{ form.message.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn_submit">
+                                    <i class="ti-email me-2"></i> Envoyer le message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,645 @@
+{% extends "base.html" %}
+{% load static price_filters %}
+
+{% block styles %}
+<style>
+    .product_detail_section { padding: 50px 0; }
+    .breadcrumb-item a { color: #ff5722; }
+
+    /* ── Gallery ── */
+    .product_gallery_box { position: sticky; top: 90px; }
+
+    /* Main image */
+    .main_img_wrap {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #f8f9fa;
+        border: 1px solid #ebebeb;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: zoom-in;
+    }
+    .main_img_wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 0.45s cubic-bezier(.25,.46,.45,.94), opacity 0.25s ease;
+        will-change: transform;
+    }
+    .main_img_wrap:hover img { transform: scale(1.09); }
+    .main_img_wrap img.fading { opacity: 0; transform: scale(1.04); }
+
+    /* Zoom hint badge */
+    .zoom_hint {
+        position: absolute;
+        bottom: 12px; right: 14px;
+        background: rgba(0,0,0,0.45);
+        color: #fff;
+        font-size: 11px;
+        padding: 4px 9px;
+        border-radius: 20px;
+        display: flex; align-items: center; gap: 5px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .main_img_wrap:hover .zoom_hint { opacity: 1; }
+
+    /* Thumbnail strip */
+    .thumb_strip {
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: #ddd transparent;
+    }
+    .thumb_strip::-webkit-scrollbar { height: 4px; }
+    .thumb_strip::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+
+    .thumb_item {
+        flex-shrink: 0;
+        width: 74px;
+        height: 74px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 2.5px solid transparent;
+        cursor: pointer;
+        background: #f8f9fa;
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .thumb_item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb_item:hover { border-color: rgba(255,87,34,0.5); transform: translateY(-2px); }
+    .thumb_item.active {
+        border-color: #ff5722;
+        box-shadow: 0 4px 12px rgba(255,87,34,0.25);
+    }
+
+    /* Product Info */
+    .product_info_wrap { padding-left: 20px; }
+
+    .product_category_tags { margin-bottom: 12px; }
+    .product_category_tags a {
+        display: inline-block;
+        background: rgba(255,87,34,0.08);
+        color: #ff5722;
+        border-radius: 50px;
+        padding: 3px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        margin-right: 6px;
+        margin-bottom: 6px;
+        border: 1px solid rgba(255,87,34,0.2);
+        transition: all 0.2s;
+    }
+    .product_category_tags a:hover { background: #ff5722; color: #fff; }
+
+    .product_title_main {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1a1a2e;
+        line-height: 1.3;
+        margin-bottom: 12px;
+    }
+
+    .product_rating_row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+    .rating_stars { display: flex; gap: 2px; }
+    .rating_stars i { color: #ffc107; font-size: 15px; }
+    .rating_count { font-size: 13px; color: #6c757d; }
+
+    .product_price_main {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .product_price_main .current_price {
+        font-size: 32px;
+        font-weight: 800;
+        color: #ff5722;
+    }
+    .product_price_main .old_price {
+        font-size: 18px;
+        color: #adb5bd;
+        text-decoration: line-through;
+    }
+    .discount_badge {
+        background: #ff5722;
+        color: #fff;
+        border-radius: 6px;
+        padding: 3px 10px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .product_short_desc {
+        font-size: 15px;
+        color: #6c757d;
+        line-height: 1.8;
+        margin-bottom: 22px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .stock_status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 50px;
+        margin-bottom: 22px;
+    }
+    .stock_status.in_stock { background: rgba(40,167,69,0.1); color: #28a745; }
+    .stock_status.out_stock { background: rgba(220,53,69,0.1); color: #dc3545; }
+    .stock_status i { font-size: 10px; }
+
+    .qty_wrap {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 22px;
+    }
+    .qty_wrap label { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+    .qty_input_group {
+        display: flex;
+        align-items: center;
+        border: 1.5px solid #e9ecef;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .qty_btn {
+        width: 38px;
+        height: 38px;
+        background: #f8f9fa;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #495057;
+    }
+    .qty_btn:hover { background: #e9ecef; }
+    .qty_num {
+        width: 50px;
+        text-align: center;
+        border: none;
+        border-left: 1.5px solid #e9ecef;
+        border-right: 1.5px solid #e9ecef;
+        height: 38px;
+        font-size: 15px;
+        font-weight: 600;
+        outline: none;
+        color: #1a1a2e;
+    }
+
+    /* ── Action buttons ── */
+    .action_buttons_row1 { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .action_buttons_row2 { display: flex; gap: 10px; margin-bottom: 25px; }
+
+    .btn_add_cart, .btn_buy_now {
+        flex: 1;
+        min-width: 150px;
+        border-radius: 10px;
+        padding: 14px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 2px solid #ff5722;
+    }
+    .btn_add_cart {
+        background: linear-gradient(135deg, #ff5722, #ff8a65);
+        color: #fff;
+        border-color: transparent;
+    }
+    .btn_buy_now {
+        background: #fff;
+        color: #ff5722;
+    }
+    .btn_add_cart:hover  { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,87,34,0.35); }
+    .btn_buy_now:hover   { background: #ff5722; color: #fff; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,87,34,0.25); }
+    .btn_add_cart:disabled, .btn_buy_now:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn_wishlist, .btn_compare {
+        width: 48px; height: 48px;
+        border: 1.5px solid #e9ecef;
+        border-radius: 10px;
+        background: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; color: #6c757d;
+        cursor: pointer; transition: all 0.2s;
+    }
+    .btn_wishlist:hover, .btn_compare:hover { border-color: #ff5722; color: #ff5722; }
+
+    .product_meta {
+        font-size: 13px;
+        color: #6c757d;
+        padding-top: 18px;
+        border-top: 1px solid #f0f0f0;
+    }
+    .product_meta span { display: block; margin-bottom: 6px; }
+    .product_meta strong { color: #1a1a2e; margin-right: 6px; }
+    .product_meta a { color: #ff5722; text-decoration: none; }
+
+    /* Tabs */
+    .product_tabs_section { padding: 50px 0; background: #f8f9fa; }
+    .product_tabs .nav-tabs { border-bottom: 2px solid #e9ecef; margin-bottom: 30px; }
+    .product_tabs .nav-link {
+        color: #6c757d;
+        font-weight: 600;
+        padding: 12px 24px;
+        border: none;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        border-radius: 0;
+        font-size: 14px;
+    }
+    .product_tabs .nav-link.active, .product_tabs .nav-link:hover {
+        color: #ff5722;
+        border-bottom-color: #ff5722;
+        background: transparent;
+    }
+    .tab_content_body {
+        background: #fff;
+        border-radius: 12px;
+        padding: 35px;
+        border: 1px solid #f0f0f0;
+        font-size: 15px;
+        line-height: 1.9;
+        color: #6c757d;
+    }
+    .tab_content_body h4, .tab_content_body h5 { color: #1a1a2e; margin-bottom: 12px; }
+
+    /* Related Products */
+    .related_section { padding: 50px 0; }
+    .section_title_row { margin-bottom: 30px; }
+    .section_title_row h3 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1a1a2e;
+        position: relative;
+        padding-bottom: 12px;
+        display: inline-block;
+    }
+    .section_title_row h3::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: #ff5722;
+        border-radius: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<div style="background:#f8f9fa; padding:14px 0; border-bottom:1px solid #e9ecef;">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'shop_list' %}">Boutique</a></li>
+                {% for cat in product.categories.all %}
+                <li class="breadcrumb-item">
+                    <a href="{% url 'shop_list' %}?category={{ cat.slug }}">{{ cat.name }}</a>
+                </li>
+                {% endfor %}
+                <li class="breadcrumb-item active">{{ product.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Product Detail -->
+<section class="product_detail_section">
+    <div class="container">
+        <div class="row g-5">
+
+            <!-- Gallery -->
+            <div class="col-lg-5">
+                <div class="product_gallery_box">
+
+                    <!-- Main image -->
+                    <div class="main_img_wrap" id="mainImgWrap">
+                        {% with first_img=images.first %}
+                        {% if first_img %}
+                        <img src="{{ first_img.image.url }}" alt="{{ product.name }}" id="mainImg">
+                        {% else %}
+                        <img src="https://via.placeholder.com/520x520/f8f9fa/adb5bd?text={{ product.name }}" alt="{{ product.name }}" id="mainImg">
+                        {% endif %}
+                        {% endwith %}
+                        <span class="zoom_hint">
+                            <i class="ti-search" style="font-size:10px;"></i> Zoom
+                        </span>
+                    </div>
+
+                    <!-- Thumbnail strip — always visible -->
+                    <div class="thumb_strip" id="thumbStrip">
+                        {% for img in images %}
+                        <div class="thumb_item {% if forloop.first %}active{% endif %}"
+                             onclick="switchImage('{{ img.image.url }}', this)"
+                             title="Image {{ forloop.counter }}">
+                            <img src="{{ img.image.url }}" alt="{{ product.name }} {{ forloop.counter }}">
+                        </div>
+                        {% empty %}
+                        <div class="thumb_item active">
+                            <img src="https://via.placeholder.com/74x74/f8f9fa/adb5bd?text=." alt="">
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="col-lg-7">
+                <div class="product_info_wrap">
+
+                    <!-- Categories -->
+                    <div class="product_category_tags">
+                        {% for cat in product.categories.all %}
+                        <a href="{% url 'shop_list' %}?category={{ cat.slug }}">{{ cat.name }}</a>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Badges -->
+                    <div class="mb-2" style="display:flex; gap:8px; flex-wrap:wrap;">
+                        {% if product.is_new_arrival %}<span class="badge bg-success">Nouveau</span>{% endif %}
+                        {% if product.is_best_seller %}<span class="badge bg-warning text-dark">Best Seller</span>{% endif %}
+                        {% if product.is_special_offer %}<span class="badge bg-danger">Offre spéciale</span>{% endif %}
+                        {% if product.is_featured %}<span class="badge bg-info text-dark">Vedette</span>{% endif %}
+                    </div>
+
+                    <h1 class="product_title_main">{{ product.name }}</h1>
+
+                    <!-- Rating -->
+                    <div class="product_rating_row">
+                        <div class="rating_stars">
+                            <i class="ion-ios-star"></i>
+                            <i class="ion-ios-star"></i>
+                            <i class="ion-ios-star"></i>
+                            <i class="ion-ios-star"></i>
+                            <i class="ion-ios-star-half"></i>
+                        </div>
+                        <span class="rating_count">(4.5 / 5)</span>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="product_price_main">
+                        <span class="current_price">{{ product.solde_price|price_convert }}</span>
+                        {% if product.regular_price > product.solde_price %}
+                        <span class="old_price">{{ product.regular_price|price_convert }}</span>
+                        <span class="discount_badge">-{{ discount }}%</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Short Description -->
+                    <p class="product_short_desc">{{ product.description }}</p>
+
+                    <!-- Stock -->
+                    {% if product.is_available and product.stock > 0 %}
+                    <div class="stock_status in_stock">
+                        <i class="ti-check"></i>
+                        En stock ({{ product.stock }} disponibles)
+                    </div>
+                    {% else %}
+                    <div class="stock_status out_stock">
+                        <i class="ti-close"></i> Rupture de stock
+                    </div>
+                    {% endif %}
+
+                    <!-- Qty + Actions -->
+                    <div class="qty_wrap">
+                        <label>Quantité :</label>
+                        <div class="qty_input_group">
+                            <button class="qty_btn" type="button" onclick="changeQty(-1)">−</button>
+                            <input class="qty_num" type="number" id="qty" value="1" min="1" max="{{ product.stock }}">
+                            <button class="qty_btn" type="button" onclick="changeQty(1)">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Ligne 1 : Ajouter au panier + Acheter maintenant -->
+                    <div class="action_buttons_row1">
+                        <button class="btn_add_cart" id="btn-add-cart"
+                                data-url="{% url 'add_to_cart' product.pk %}"
+                                {% if not product.is_available or product.stock == 0 %}disabled{% endif %}>
+                            <i class="icon-basket-loaded"></i>
+                            {% if product.is_available and product.stock > 0 %}Ajouter au panier{% else %}Indisponible{% endif %}
+                        </button>
+                        <button type="button" class="btn_buy_now"
+                                {% if not product.is_available or product.stock == 0 %}disabled{% endif %}
+                                onclick="showToast('Le paiement direct sera bientôt disponible.', 'info')">
+                            <i class="ti-bolt-alt"></i>
+                            Acheter maintenant
+                        </button>
+                    </div>
+
+                    <!-- Ligne 2 : Wishlist + Comparer -->
+                    <div class="action_buttons_row2">
+                        <button type="button" class="btn_wishlist" id="btn-wishlist"
+                                data-url="{% url 'toggle_wishlist' product.pk %}"
+                                title="{% if in_wishlist %}Retirer de la wishlist{% else %}Ajouter à la wishlist{% endif %}"
+                                {% if in_wishlist %}style="border-color:#ff5722; color:#ff5722;"{% endif %}>
+                            <i class="icon-heart"></i>
+                        </button>
+                        <button type="button" class="btn_compare" title="Comparer"
+                                onclick="showToast('Fonctionnalité de comparaison bientôt disponible.', 'info')">
+                            <i class="icon-shuffle"></i>
+                        </button>
+                        <span style="display:flex; align-items:center; gap:6px; margin-left:8px; font-size:12px; color:#6c757d;">
+                            <i class="ti-shield" style="color:#28a745;"></i> Paiement sécurisé
+                            &nbsp;·&nbsp;
+                            <i class="ti-truck" style="color:#17a2b8;"></i> Livraison rapide
+                        </span>
+                    </div>
+
+                    <!-- Meta -->
+                    <div class="product_meta">
+                        <span><strong>Marque :</strong> {{ product.brand }}</span>
+                        {% if product.categories.all %}
+                        <span>
+                            <strong>Catégories :</strong>
+                            {% for cat in product.categories.all %}
+                            <a href="{% url 'shop_list' %}?category={{ cat.slug }}">{{ cat.name }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tabs Description -->
+<section class="product_tabs_section">
+    <div class="container">
+        <div class="product_tabs">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#tab_desc">Description</a>
+                </li>
+                {% if product.additional_info %}
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#tab_info">Informations supplémentaires</a>
+                </li>
+                {% endif %}
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab_desc">
+                    <div class="tab_content_body">
+                        {% if product.more_description %}
+                        {{ product.more_description|linebreaks }}
+                        {% else %}
+                        <p>{{ product.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if product.additional_info %}
+                <div class="tab-pane fade" id="tab_info">
+                    <div class="tab_content_body">
+                        {{ product.additional_info|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Products -->
+{% if related %}
+<section class="related_section">
+    <div class="container">
+        <div class="section_title_row">
+            <h3>Produits similaires</h3>
+        </div>
+        <div class="row shop_container">
+            {% for prod in related %}
+            <div class="col-lg-3 col-md-4 col-6">
+                {% include "partials/product.html" with product=prod %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── Gallery: switch image avec fade ── */
+function switchImage(url, el) {
+    var img = document.getElementById('mainImg');
+
+    // fade out
+    img.classList.add('fading');
+
+    setTimeout(function () {
+        img.src = url;
+        img.onload = function () {
+            img.classList.remove('fading');
+        };
+        // fallback si onload ne se déclenche pas (cache)
+        if (img.complete) img.classList.remove('fading');
+    }, 200);
+
+    document.querySelectorAll('.thumb_item').forEach(function (t) {
+        t.classList.remove('active');
+    });
+    el.classList.add('active');
+
+    // scroll le thumbnail actif dans le strip
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+/* ── Quantité ── */
+function changeQty(delta) {
+    var input = document.getElementById('qty');
+    var max = parseInt(input.max) || 99;
+    var val = parseInt(input.value) + delta;
+    if (val < 1) val = 1;
+    if (val > max) val = max;
+    input.value = val;
+}
+
+$(document).ready(function () {
+
+    /* ── Ajouter au panier (page produit) ── */
+    $('#btn-add-cart').on('click', function () {
+        var btn = $(this);
+        if (btn.data('loading')) return;
+        btn.data('loading', true);
+        var qty = parseInt($('#qty').val()) || 1;
+        var origHtml = btn.html();
+        btn.html('<i class="ti-reload"></i> Chargement...');
+        $.ajax({
+            url: btn.data('url'),
+            method: 'POST',
+            data: { qty: qty },
+            success: function (data) {
+                showToast(data.message, data.msg_type || 'success');
+                $('#cart-count-badge').text(data.cart_count);
+                if (data.already_in_cart) {
+                    btn.html('<i class="ti-reload"></i> Quantité mise à jour');
+                } else {
+                    btn.html('<i class="ti-check"></i> Ajouté au panier !');
+                }
+                setTimeout(function () {
+                    btn.html('<i class="icon-basket-loaded"></i> Ajouter au panier').data('loading', false);
+                }, 2500);
+            },
+            error: function (xhr) {
+                var d = xhr.responseJSON || {};
+                showToast(d.message || 'Une erreur s\'est produite.', d.msg_type || 'error');
+                btn.html(origHtml).data('loading', false);
+            }
+        });
+    });
+
+    /* ── Wishlist ── */
+    $('#btn-wishlist').on('click', function () {
+        var btn = $(this);
+        $.ajax({
+            url: btn.data('url'),
+            method: 'POST',
+            success: function (data) {
+                if (data.in_wishlist) {
+                    btn.css({ borderColor: '#ff5722', color: '#ff5722' });
+                    btn.attr('title', 'Retirer de la wishlist');
+                    showToast('Ajouté à votre wishlist !', 'success');
+                } else {
+                    btn.css({ borderColor: '', color: '' });
+                    btn.attr('title', 'Ajouter à la wishlist');
+                    showToast('Retiré de votre wishlist.', 'info');
+                }
+            }
+        });
+    });
+
+});
+</script>
+{% endblock %}

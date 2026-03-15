@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<style>
+    .about_banner {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 80px 0 60px;
+        position: relative;
+        overflow: hidden;
+    }
+    .about_banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(255,87,34,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .about_banner .page_title h1 {
+        font-size: 48px;
+        font-weight: 700;
+        color: #1a1a2e;
+        line-height: 1.2;
+    }
+    .about_banner .page_title p {
+        font-size: 18px;
+        color: #6c757d;
+        max-width: 600px;
+    }
+    .about_banner .breadcrumb-item a { color: #ff5722; }
+    .about_banner .breadcrumb-item.active { color: #6c757d; }
+
+    .section_title h2 {
+        font-size: 36px;
+        font-weight: 700;
+        color: #1a1a2e;
+        position: relative;
+        display: inline-block;
+    }
+    .section_title h2::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: #ff5722;
+        border-radius: 2px;
+    }
+    .section_title.text-center h2::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .section_title p {
+        color: #6c757d;
+        font-size: 16px;
+        margin-top: 20px;
+    }
+
+    .value_card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid #f0f0f0;
+    }
+    .value_card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        border-color: #ff5722;
+    }
+    .value_card .icon_wrap {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #ff5722, #ff8a65);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    .value_card .icon_wrap i {
+        font-size: 28px;
+        color: #fff;
+    }
+    .value_card h5 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 12px;
+    }
+    .value_card p {
+        color: #6c757d;
+        font-size: 14px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    .stat_item {
+        text-align: center;
+        padding: 30px 20px;
+    }
+    .stat_item h3 {
+        font-size: 48px;
+        font-weight: 800;
+        color: #ff5722;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    .stat_item p {
+        color: #6c757d;
+        font-size: 15px;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .about_img_wrap {
+        position: relative;
+    }
+    .about_img_wrap img {
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+    .about_img_wrap .badge_floating {
+        position: absolute;
+        bottom: -20px;
+        right: -20px;
+        background: #ff5722;
+        color: #fff;
+        border-radius: 12px;
+        padding: 20px 25px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(255,87,34,0.4);
+    }
+    .about_img_wrap .badge_floating span {
+        display: block;
+        font-size: 36px;
+        font-weight: 800;
+        line-height: 1;
+    }
+    .about_img_wrap .badge_floating small {
+        font-size: 12px;
+        opacity: 0.9;
+    }
+
+    .page_content_block {
+        font-size: 16px;
+        line-height: 1.9;
+        color: #495057;
+    }
+    .page_content_block h1, .page_content_block h2, .page_content_block h3 {
+        color: #1a1a2e;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .team_card {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+    }
+    .team_card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.12); }
+    .team_card .team_img img { width: 100%; height: 280px; object-fit: cover; }
+    .team_card .team_info { padding: 20px; background: #fff; text-align: center; }
+    .team_card .team_info h5 { font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+    .team_card .team_info span { color: #ff5722; font-size: 13px; font-weight: 500; }
+
+    .stats_section { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+    .stats_section .stat_item h3 { color: #ff5722; }
+    .stats_section .stat_item p { color: rgba(255,255,255,0.7); }
+    .stats_section .divider { width: 1px; background: rgba(255,255,255,0.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Banner -->
+<div class="about_banner">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="page_title">
+                    <nav aria-label="breadcrumb" class="mb-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                            <li class="breadcrumb-item active">À propos</li>
+                        </ol>
+                    </nav>
+                    <h1>{% if page and page.name %}{{ page.name }}{% else %}À propos de nous{% endif %}</h1>
+                    <p class="mt-3">{% if page and page.subtitle %}{{ page.subtitle }}{% else %}Découvrez notre histoire, nos valeurs et notre engagement envers vous.{% endif %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<section class="section pt-5 pb-5">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="about_img_wrap">
+                    {% if page and page.image %}
+                    <img src="{{ page.image.url }}" alt="{{ page.name }}" class="img-fluid">
+                    {% else %}
+                    <img src="{% static 'assets/images/about_img.jpg' %}" alt="À propos de MAT-STORE" class="img-fluid"
+                         onerror="this.src='https://via.placeholder.com/600x450/f8f9fa/1a1a2e?text=MAT-STORE'">
+                    {% endif %}
+                    <div class="badge_floating">
+                        <span>5+</span>
+                        <small>Ans d'expérience</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="section_title mb-4">
+                    <h2>Notre histoire</h2>
+                </div>
+                {% if page and page.content %}
+                <div class="page_content_block">
+                    {{ page.content|linebreaks }}
+                </div>
+                {% else %}
+                <div class="page_content_block">
+                    <p>Bienvenue chez <strong>MAT-STORE</strong>, votre destination mode incontournable depuis plus de 5 ans. Nous sommes passionnés par la mode et nous nous engageons à vous offrir des produits de qualité à des prix accessibles.</p>
+                    <p>Notre équipe sélectionne avec soin chaque article pour vous proposer les dernières tendances en matière de vêtements, accessoires et bien plus encore.</p>
+                    <p>Chez MAT-STORE, chaque client est unique. C'est pourquoi nous mettons tout en œuvre pour vous offrir une expérience d'achat exceptionnelle, en ligne comme en boutique.</p>
+                </div>
+                {% endif %}
+                <div class="mt-4">
+                    <a href="{% url 'contact' %}" class="btn btn-fill-out btn-radius">Contactez-nous</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="stats_section py-5">
+    <div class="container">
+        <div class="row text-center g-0">
+            <div class="col-6 col-md-3">
+                <div class="stat_item">
+                    <h3>5000+</h3>
+                    <p>Clients satisfaits</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat_item">
+                    <h3>1200+</h3>
+                    <p>Produits disponibles</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat_item">
+                    <h3>50+</h3>
+                    <p>Marques partenaires</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat_item">
+                    <h3>5+</h3>
+                    <p>Années d'expérience</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Nos valeurs -->
+<section class="section pt-5 pb-5 bg-light">
+    <div class="container">
+        <div class="section_title text-center mb-5">
+            <h2>Nos valeurs</h2>
+            <p>Ce qui nous guide au quotidien dans tout ce que nous faisons</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="value_card">
+                    <div class="icon_wrap"><i class="ti-crown"></i></div>
+                    <h5>Qualité</h5>
+                    <p>Chaque produit est soigneusement sélectionné pour garantir les meilleurs standards de qualité.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="value_card">
+                    <div class="icon_wrap"><i class="ti-heart"></i></div>
+                    <h5>Satisfaction client</h5>
+                    <p>Votre satisfaction est notre priorité absolue. Nous sommes là pour vous à chaque étape.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="value_card">
+                    <div class="icon_wrap"><i class="ti-lock"></i></div>
+                    <h5>Confiance</h5>
+                    <p>Vos données et vos achats sont protégés. Nous garantissons des transactions sécurisées.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="value_card">
+                    <div class="icon_wrap"><i class="ti-truck"></i></div>
+                    <h5>Livraison rapide</h5>
+                    <p>Nous livrons vos commandes dans les meilleurs délais, partout en France et en Europe.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="section py-5" style="background: linear-gradient(135deg, #ff5722 0%, #ff8a65 100%);">
+    <div class="container text-center text-white">
+        <h2 class="fw-bold mb-3" style="color:#fff;">Prêt à découvrir notre collection ?</h2>
+        <p class="mb-4" style="color:rgba(255,255,255,0.85); font-size:17px;">Des milliers de produits vous attendent. Livraison gratuite dès 50€ d'achat.</p>
+        <a href="{% url 'home' %}" class="btn btn-light btn-radius px-4 py-2 fw-semibold" style="color:#ff5722;">Voir la boutique</a>
+    </div>
+</section>
+
+{% endblock %}
