@@ -8,7 +8,7 @@ from accounts.forms.CustomLoginForm import CustomLoginForm
 
 def signin(request):
     if request.user.is_authenticated:
-        return redirect('shop:home')
+        return redirect('home')
     if request.method == "POST":
         form = CustomLoginForm(data=request.POST)
         if form.is_valid():
@@ -20,7 +20,7 @@ def signin(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, 'You are successfully logged in')
-                return redirect('shop:home')
+                return redirect('home')
             else:
                 messages.error(request, 'Incorrect username or password.')
         else:
@@ -32,7 +32,7 @@ def signin(request):
 
 def signup(request):
     if request.user.is_authenticated:
-        return redirect('shop:home')
+        return redirect('home')
     if request.method == "POST":
         form = CustomUserRegisterForm(request.POST)
         if form.is_valid():

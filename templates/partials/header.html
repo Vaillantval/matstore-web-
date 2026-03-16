@@ -1,289 +1,289 @@
 {% load static %}
 <style>
 
-/* ════════════════════════════════════════
-   Aperçu panier (hover)
-   ════════════════════════════════════════ */
+    /* ════════════════════════════════════════
+       Aperçu panier (hover)
+       ════════════════════════════════════════ */
 
-.hd-cart-wrap {
-    position: relative;
-    list-style: none;
-}
+    .hd-cart-wrap {
+        position: relative;
+        list-style: none;
+    }
 
-/* Icône panier */
-.hd-cart-trigger {
-    position: relative;
-    display: inline-flex !important;
-    align-items: center;
-    padding: 6px 10px !important;
-    cursor: pointer;
-    color: inherit;
-    text-decoration: none;
-}
-.hd-cart-trigger:hover { color: #ff5722; }
+    /* Icône panier */
+    .hd-cart-trigger {
+        position: relative;
+        display: inline-flex !important;
+        align-items: center;
+        padding: 6px 10px !important;
+        cursor: pointer;
+        color: inherit;
+        text-decoration: none;
+    }
+    .hd-cart-trigger:hover { color: #ff5722; }
 
-/* Boîte aperçu */
-.hd-cart-preview {
-    position: absolute;
-    top: 100%;          /* colle directement au bas du li — pas de gap */
-    right: 0;
-    width: 340px;
-    padding-top: 12px;  /* espace visuel géré en padding, hover continu */
-    background: transparent;
-    z-index: 9999;
-    /* Animation */
-    visibility: hidden;
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity .22s ease, transform .22s ease, visibility 0s .22s;
-    pointer-events: none;
-}
-/* Contenu de la boîte */
-.hd-cart-preview-inner {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.14);
-    border: 1px solid #f0f0f0;
-    overflow: hidden;
-    position: relative;
-}
-/* Petite flèche */
-.hd-cart-preview-inner::before {
-    content: '';
-    position: absolute;
-    top: -7px;
-    right: 18px;
-    width: 13px; height: 13px;
-    background: #fff;
-    border-left: 1px solid #f0f0f0;
-    border-top: 1px solid #f0f0f0;
-    transform: rotate(45deg);
-    border-radius: 2px 0 0 0;
-}
-.hd-cart-wrap:hover .hd-cart-preview {
-    visibility: visible;
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity .22s ease, transform .22s ease, visibility 0s 0s;
-    pointer-events: auto;
-}
+    /* Boîte aperçu */
+    .hd-cart-preview {
+        position: absolute;
+        top: 100%;          /* colle directement au bas du li — pas de gap */
+        right: 0;
+        width: 340px;
+        padding-top: 12px;  /* espace visuel géré en padding, hover continu */
+        background: transparent;
+        z-index: 9999;
+        /* Animation */
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(6px);
+        transition: opacity .22s ease, transform .22s ease, visibility 0s .22s;
+        pointer-events: none;
+    }
+    /* Contenu de la boîte */
+    .hd-cart-preview-inner {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.14);
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        position: relative;
+    }
+    /* Petite flèche */
+    .hd-cart-preview-inner::before {
+        content: '';
+        position: absolute;
+        top: -7px;
+        right: 18px;
+        width: 13px; height: 13px;
+        background: #fff;
+        border-left: 1px solid #f0f0f0;
+        border-top: 1px solid #f0f0f0;
+        transform: rotate(45deg);
+        border-radius: 2px 0 0 0;
+    }
+    .hd-cart-wrap:hover .hd-cart-preview {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity .22s ease, transform .22s ease, visibility 0s 0s;
+        pointer-events: auto;
+    }
 
-/* En-tête */
-.hd-cp-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px 14px;
-    border-bottom: 1px solid #f5f5f5;
-}
-.hd-cp-title {
-    font-weight: 700;
-    font-size: 15px;
-    color: #1a1a2e;
-}
-.hd-cp-badge {
-    background: rgba(255,87,34,.10);
-    color: #ff5722;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 50px;
-    border: 1px solid rgba(255,87,34,.18);
-}
+    /* En-tête */
+    .hd-cp-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px 14px;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    .hd-cp-title {
+        font-weight: 700;
+        font-size: 15px;
+        color: #1a1a2e;
+    }
+    .hd-cp-badge {
+        background: rgba(255,87,34,.10);
+        color: #ff5722;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 50px;
+        border: 1px solid rgba(255,87,34,.18);
+    }
 
-/* Liste articles */
-.hd-cp-list {
-    list-style: none;
-    margin: 0;
-    padding: 8px 0;
-    max-height: 260px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #e9ecef transparent;
-}
-.hd-cp-list::-webkit-scrollbar { width: 4px; }
-.hd-cp-list::-webkit-scrollbar-track { background: transparent; }
-.hd-cp-list::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
+    /* Liste articles */
+    .hd-cp-list {
+        list-style: none;
+        margin: 0;
+        padding: 8px 0;
+        max-height: 260px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #e9ecef transparent;
+    }
+    .hd-cp-list::-webkit-scrollbar { width: 4px; }
+    .hd-cp-list::-webkit-scrollbar-track { background: transparent; }
+    .hd-cp-list::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
 
-.hd-cp-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 20px;
-    transition: background .15s;
-}
-.hd-cp-item:hover { background: #fafafa; }
+    .hd-cp-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        transition: background .15s;
+    }
+    .hd-cp-item:hover { background: #fafafa; }
 
-/* Image miniature */
-.hd-cp-img-wrap {
-    flex-shrink: 0;
-    width: 52px; height: 52px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #f0f0f0;
-    background: #f8f9fa;
-    display: flex; align-items: center; justify-content: center;
-    text-decoration: none;
-}
-.hd-cp-img-wrap img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform .3s;
-}
-.hd-cp-item:hover .hd-cp-img-wrap img { transform: scale(1.06); }
-.hd-cp-img-placeholder { color: #adb5bd; font-size: 20px; }
+    /* Image miniature */
+    .hd-cp-img-wrap {
+        flex-shrink: 0;
+        width: 52px; height: 52px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+        background: #f8f9fa;
+        display: flex; align-items: center; justify-content: center;
+        text-decoration: none;
+    }
+    .hd-cp-img-wrap img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform .3s;
+    }
+    .hd-cp-item:hover .hd-cp-img-wrap img { transform: scale(1.06); }
+    .hd-cp-img-placeholder { color: #adb5bd; font-size: 20px; }
 
-/* Infos produit */
-.hd-cp-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-.hd-cp-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #1a1a2e;
-    text-decoration: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: color .2s;
-}
-.hd-cp-name:hover { color: #ff5722; }
-.hd-cp-qty {
-    font-size: 12px;
-    color: #6c757d;
-}
-.hd-cp-qty strong { color: #ff5722; }
+    /* Infos produit */
+    .hd-cp-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .hd-cp-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1a1a2e;
+        text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color .2s;
+    }
+    .hd-cp-name:hover { color: #ff5722; }
+    .hd-cp-qty {
+        font-size: 12px;
+        color: #6c757d;
+    }
+    .hd-cp-qty strong { color: #ff5722; }
 
-/* Bouton supprimer */
-.hd-cp-remove {
-    flex-shrink: 0;
-    width: 26px; height: 26px;
-    background: none;
-    border: 1.5px solid #e9ecef;
-    border-radius: 6px;
-    color: #adb5bd;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .2s;
-    padding: 0;
-}
-.hd-cp-remove:hover { border-color: #dc3545; color: #dc3545; background: #fff5f5; }
+    /* Bouton supprimer */
+    .hd-cp-remove {
+        flex-shrink: 0;
+        width: 26px; height: 26px;
+        background: none;
+        border: 1.5px solid #e9ecef;
+        border-radius: 6px;
+        color: #adb5bd;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all .2s;
+        padding: 0;
+    }
+    .hd-cp-remove:hover { border-color: #dc3545; color: #dc3545; background: #fff5f5; }
 
-/* Pied de page */
-.hd-cp-foot {
-    padding: 14px 20px 18px;
-    border-top: 1px solid #f5f5f5;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.hd-cp-subtotal {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    color: #6c757d;
-    padding-bottom: 8px;
-    border-bottom: 1px dashed #f0f0f0;
-}
-.hd-cp-subtotal strong { color: #1a1a2e; font-size: 16px; font-weight: 800; }
+    /* Pied de page */
+    .hd-cp-foot {
+        padding: 14px 20px 18px;
+        border-top: 1px solid #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .hd-cp-subtotal {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #6c757d;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed #f0f0f0;
+    }
+    .hd-cp-subtotal strong { color: #1a1a2e; font-size: 16px; font-weight: 800; }
 
-.hd-cp-btn-cart {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 10px 16px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none !important;
-    transition: all .2s;
-    background: #f8f9fa;
-    color: #1a1a2e !important;
-    border: 1.5px solid #e9ecef;
-}
-.hd-cp-btn-cart:hover {
-    background: #1a1a2e;
-    color: #fff !important;
-    border-color: #1a1a2e;
-}
-.hd-cp-btn-checkout {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 11px 16px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none !important;
-    background: linear-gradient(135deg, #ff5722, #ff8a65);
-    color: #fff !important;
-    border: none;
-    transition: all .2s;
-    cursor: pointer;
-}
-.hd-cp-btn-checkout:hover {
-    box-shadow: 0 6px 18px rgba(255,87,34,.40);
-    transform: translateY(-1px);
-}
+    .hd-cp-btn-cart {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 16px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: all .2s;
+        background: #f8f9fa;
+        color: #1a1a2e !important;
+        border: 1.5px solid #e9ecef;
+    }
+    .hd-cp-btn-cart:hover {
+        background: #1a1a2e;
+        color: #fff !important;
+        border-color: #1a1a2e;
+    }
+    .hd-cp-btn-checkout {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 11px 16px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none !important;
+        background: linear-gradient(135deg, #ff5722, #ff8a65);
+        color: #fff !important;
+        border: none;
+        transition: all .2s;
+        cursor: pointer;
+    }
+    .hd-cp-btn-checkout:hover {
+        box-shadow: 0 6px 18px rgba(255,87,34,.40);
+        transform: translateY(-1px);
+    }
 
-/* État vide */
-.hd-cp-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 32px 20px;
-    text-align: center;
-}
-.hd-cp-empty-icon {
-    font-size: 44px;
-    color: #dee2e6;
-    display: block;
-    margin-bottom: 12px;
-}
-.hd-cp-empty p {
-    color: #6c757d;
-    font-size: 14px;
-    margin-bottom: 16px;
-}
+    /* État vide */
+    .hd-cp-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 32px 20px;
+        text-align: center;
+    }
+    .hd-cp-empty-icon {
+        font-size: 44px;
+        color: #dee2e6;
+        display: block;
+        margin-bottom: 12px;
+    }
+    .hd-cp-empty p {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
 
-/* ── Header compact ── */
-.top-header                { padding: 4px 0 !important; font-size: 11px !important; }
-.top-header .contact_detail,
-.top-header .header_list   { font-size: 11px !important; }
-.bottom_header             { padding: 0 !important; }
-.bottom_header .navbar     { padding-top: 4px !important; padding-bottom: 4px !important; min-height: unset !important; }
+    /* ── Header compact ── */
+    .top-header                { padding: 4px 0 !important; font-size: 11px !important; }
+    .top-header .contact_detail,
+    .top-header .header_list   { font-size: 11px !important; }
+    .bottom_header             { padding: 0 !important; }
+    .bottom_header .navbar     { padding-top: 4px !important; padding-bottom: 4px !important; min-height: unset !important; }
 
-/* ── Logo flottant (hors flux) ── */
-.header_wrap,
-.bottom_header,
-.bottom_header .navbar,
-.bottom_header .navbar > .container { overflow: visible !important; }
+    /* ── Logo flottant (hors flux) ── */
+    .header_wrap,
+    .bottom_header,
+    .bottom_header .navbar,
+    .bottom_header .navbar > .container { overflow: visible !important; }
 
-/* Le navbar laisse de la place à gauche pour le logo absolu */
-.bottom_header .navbar         { position: relative !important; padding-left: 210px !important; }
+    /* Le navbar laisse de la place à gauche pour le logo absolu */
+    .bottom_header .navbar         { position: relative !important; padding-left: 210px !important; }
 
-.navbar-brand {
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    z-index: 300;
-    background: #fff;
-    border-radius: 0 0 14px 14px;
-    padding: 0 18px 16px !important;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.13);
-    transition: box-shadow 0.25s ease;
-    /* Hors du flux : n'influe pas sur la hauteur du header */
-}
-.navbar-brand:hover { box-shadow: 0 12px 36px rgba(0,0,0,0.20); }
-.navbar-brand img   { max-height: 148px !important; width: auto; display: block; }
+    .navbar-brand {
+        position: absolute !important;
+        top: 0;
+        left: 0;
+        z-index: 300;
+        background: #fff;
+        border-radius: 0 0 14px 14px;
+        padding: 0 18px 16px !important;
+        box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+        transition: box-shadow 0.25s ease;
+        /* Hors du flux : n'influe pas sur la hauteur du header */
+    }
+    .navbar-brand:hover { box-shadow: 0 12px 36px rgba(0,0,0,0.20); }
+    .navbar-brand img   { max-height: 148px !important; width: auto; display: block; }
 </style>
 <header class="header_wrap fixed-top header_with_topbar active">
 
@@ -356,8 +356,29 @@
                                     {% endif %}
                                 </a>
                             </li>
-                            <li><a href="#"><i class="ti-user"></i><span>Connexion</span></a></li>
-                            <li><a href="#"><i class="ti-user"></i><span>Inscription</span></a></li>
+                            {% if user.is_authenticated %}
+                            <li>
+                                <a href="#">
+                                    <i class="ti-user"></i><span>{{ user.username }}</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'accounts:logout' %}">
+                                    <i class="ti-power-off"></i><span>Déconnexion</span>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a href="{% url 'accounts:signin' %}">
+                                    <i class="ti-user"></i><span>Connexion</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'accounts:signup' %}">
+                                    <i class="ti-pencil-alt"></i><span>Inscription</span>
+                                </a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
@@ -557,78 +578,78 @@
 
                         <!-- Aperçu panier (survol) -->
                         <div class="hd-cart-preview">
-                        <div class="hd-cart-preview-inner">
+                            <div class="hd-cart-preview-inner">
 
-                            <!-- En-tête -->
-                            <div class="hd-cp-head">
+                                <!-- En-tête -->
+                                <div class="hd-cp-head">
                                 <span class="hd-cp-title">
                                     <i class="linearicons-cart" style="margin-right:6px;"></i>
                                     Mon panier
                                 </span>
-                                <span class="hd-cp-badge">{{ cart_count|default:0 }} article{{ cart_count|default:0|pluralize }}</span>
-                            </div>
+                                    <span class="hd-cp-badge">{{ cart_count|default:0 }} article{{ cart_count|default:0|pluralize }}</span>
+                                </div>
 
-                            {% if cart_header_items %}
+                                {% if cart_header_items %}
 
-                            <!-- Liste articles -->
-                            <ul class="hd-cp-list">
-                                {% for item in cart_header_items %}
-                                <li class="hd-cp-item">
-                                    <!-- Image -->
-                                    <a href="{% url 'product_detail' item.slug %}" class="hd-cp-img-wrap">
-                                        {% if item.image %}
-                                        <img src="{{ item.image }}" alt="{{ item.name }}">
-                                        {% else %}
-                                        <div class="hd-cp-img-placeholder"><i class="ti-image"></i></div>
-                                        {% endif %}
-                                    </a>
-                                    <!-- Infos -->
-                                    <div class="hd-cp-info">
-                                        <a href="{% url 'product_detail' item.slug %}" class="hd-cp-name">
-                                            {{ item.name }}
+                                <!-- Liste articles -->
+                                <ul class="hd-cp-list">
+                                    {% for item in cart_header_items %}
+                                    <li class="hd-cp-item">
+                                        <!-- Image -->
+                                        <a href="{% url 'product_detail' item.slug %}" class="hd-cp-img-wrap">
+                                            {% if item.image %}
+                                            <img src="{{ item.image }}" alt="{{ item.name }}">
+                                            {% else %}
+                                            <div class="hd-cp-img-placeholder"><i class="ti-image"></i></div>
+                                            {% endif %}
                                         </a>
-                                        <span class="hd-cp-qty">
+                                        <!-- Infos -->
+                                        <div class="hd-cp-info">
+                                            <a href="{% url 'product_detail' item.slug %}" class="hd-cp-name">
+                                                {{ item.name }}
+                                            </a>
+                                            <span class="hd-cp-qty">
                                             {{ item.qty }} × <strong>{{ item.display_price }}</strong>
                                         </span>
+                                        </div>
+                                        <!-- Supprimer -->
+                                        <button class="hd-cp-remove btn-remove-cart-header"
+                                                data-url="{% url 'remove_from_cart' item.product_id %}"
+                                                title="Retirer">
+                                            <i class="ion-close"></i>
+                                        </button>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+
+                                <!-- Pied -->
+                                <div class="hd-cp-foot">
+                                    <div class="hd-cp-subtotal">
+                                        <span>Sous-total</span>
+                                        <strong>{{ cart_header_subtotal }}</strong>
                                     </div>
-                                    <!-- Supprimer -->
-                                    <button class="hd-cp-remove btn-remove-cart-header"
-                                            data-url="{% url 'remove_from_cart' item.product_id %}"
-                                            title="Retirer">
-                                        <i class="ion-close"></i>
-                                    </button>
-                                </li>
-                                {% endfor %}
-                            </ul>
-
-                            <!-- Pied -->
-                            <div class="hd-cp-foot">
-                                <div class="hd-cp-subtotal">
-                                    <span>Sous-total</span>
-                                    <strong>{{ cart_header_subtotal }}</strong>
+                                    <a href="{% url 'cart' %}" class="hd-cp-btn-cart">
+                                        <i class="linearicons-cart"></i> Voir le panier
+                                    </a>
+                                    <a href="#" class="hd-cp-btn-checkout"
+                                       onclick="showToast('Le paiement sera bientôt disponible.', 'info'); return false;">
+                                        <i class="ti-lock"></i> Commander
+                                    </a>
                                 </div>
-                                <a href="{% url 'cart' %}" class="hd-cp-btn-cart">
-                                    <i class="linearicons-cart"></i> Voir le panier
-                                </a>
-                                <a href="#" class="hd-cp-btn-checkout"
-                                   onclick="showToast('Le paiement sera bientôt disponible.', 'info'); return false;">
-                                    <i class="ti-lock"></i> Commander
-                                </a>
-                            </div>
 
-                            {% else %}
+                                {% else %}
 
-                            <!-- Panier vide -->
-                            <div class="hd-cp-empty">
-                                <i class="linearicons-cart hd-cp-empty-icon"></i>
-                                <p>Votre panier est vide</p>
-                                <a href="{% url 'shop_list' %}" class="hd-cp-btn-cart">
-                                    Découvrir la boutique
-                                </a>
-                            </div>
+                                <!-- Panier vide -->
+                                <div class="hd-cp-empty">
+                                    <i class="linearicons-cart hd-cp-empty-icon"></i>
+                                    <p>Votre panier est vide</p>
+                                    <a href="{% url 'shop_list' %}" class="hd-cp-btn-cart">
+                                        Découvrir la boutique
+                                    </a>
+                                </div>
 
-                            {% endif %}
-                        </div><!-- /.hd-cart-preview-inner -->
+                                {% endif %}
+                            </div><!-- /.hd-cart-preview-inner -->
                         </div><!-- /.hd-cart-preview -->
                     </li>
 
