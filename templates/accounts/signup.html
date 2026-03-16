@@ -2,6 +2,30 @@
 
 {% block content %}
 
+<style>
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 42px !important; }
+    .pw-eye {
+        position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer;
+        color: #8a94a6; font-size: 17px; line-height: 1; padding: 2px;
+        transition: color .16s;
+    }
+    .pw-eye:hover { color: #1a1a2e; }
+    .pw-eye.visible { color: #ff5722; }
+
+    .pw-reqs { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .pw-req {
+        display: flex; align-items: center; gap: 7px;
+        font-size: 12px; color: #8a94a6; transition: color .2s;
+    }
+    .pw-req i { font-size: 12px; transition: color .2s; }
+    .pw-req.ok   { color: #15803d; }
+    .pw-req.ok i { color: #22c55e; }
+    .pw-req.fail   { color: #dc2626; }
+    .pw-req.fail i { color: #ef4444; }
+</style>
+
 <div style="background:#f8f9fa; padding:18px 0; border-bottom:1px solid #e9ecef;">
     <div class="container">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -20,81 +44,109 @@
     <div class="login_register_wrap section">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-xl-6 col-md-10">
+                <div class="col-xl-5 col-md-8">
                     <div class="login_wrap">
                         <div class="padding_eight_all bg-white">
-                            <div class="heading_s1">
-                                <h3>Create an Account</h3>
+
+                            <div class="heading_s1 text-center mb-3">
+                                <h3>Créer un compte</h3>
+                                <p style="font-size:13.5px;color:#718096;">Rejoignez MAT-STORE dès aujourd'hui</p>
                             </div>
-                            <form method="post">
+
+                            {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                            {% endfor %}
+                            {% endif %}
+
+                            <form method="post" novalidate>
                                 {% csrf_token %}
+
                                 <div class="form-group mb-3">
+                                    <label style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:5px;display:block;">
+                                        Nom d'utilisateur <span style="color:#ff5722;">*</span>
+                                    </label>
                                     {{ form.username }}
-
-                                    {% if form.username.errors %}
                                     {% for error in form.username.errors %}
-                                    <div class="text-danger">
-                                        {{error}}
-                                    </div>
+                                    <div class="text-danger" style="font-size:12px;margin-top:4px;">{{ error }}</div>
                                     {% endfor %}
-                                    {% endif %}
                                 </div>
+
                                 <div class="form-group mb-3">
+                                    <label style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:5px;display:block;">
+                                        Adresse e-mail <span style="color:#ff5722;">*</span>
+                                    </label>
                                     {{ form.email }}
-
-                                    {% if form.email.errors %}
                                     {% for error in form.email.errors %}
-                                    <div class="text-danger">
-                                        {{error}}
-                                    </div>
+                                    <div class="text-danger" style="font-size:12px;margin-top:4px;">{{ error }}</div>
                                     {% endfor %}
-                                    {% endif %}
                                 </div>
-                                <div class="form-group mb-3">
-                                    {{ form.password1 }}
 
-                                    {% if form.password1.errors %}
+                                <!-- Mot de passe -->
+                                <div class="form-group mb-3">
+                                    <label style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:5px;display:block;">
+                                        Mot de passe <span style="color:#ff5722;">*</span>
+                                    </label>
+                                    <div class="pw-wrap">
+                                        {{ form.password1 }}
+                                        <button type="button" class="pw-eye" data-target="{{ form.password1.id_for_label }}" tabindex="-1">
+                                            <i class="ion-eye"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Exigences -->
+                                    <div class="pw-reqs" id="signupPwReqs">
+                                        <div class="pw-req" data-rule="len"><i class="ti-close"></i> Au moins 8 caractères</div>
+                                        <div class="pw-req" data-rule="upper"><i class="ti-close"></i> Une lettre majuscule (A–Z)</div>
+                                        <div class="pw-req" data-rule="digit"><i class="ti-close"></i> Un chiffre (0–9)</div>
+                                        <div class="pw-req" data-rule="special"><i class="ti-close"></i> Un caractère spécial (!@#$…)</div>
+                                    </div>
                                     {% for error in form.password1.errors %}
-                                    <div class="text-danger">
-                                        {{error}}
-                                    </div>
+                                    <div class="text-danger" style="font-size:12px;margin-top:4px;">{{ error }}</div>
                                     {% endfor %}
-                                    {% endif %}
                                 </div>
+
+                                <!-- Confirmation -->
                                 <div class="form-group mb-3">
-                                    {{ form.password2 }}
-
-                                    {% if form.password2.errors %}
+                                    <label style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:5px;display:block;">
+                                        Confirmer le mot de passe <span style="color:#ff5722;">*</span>
+                                    </label>
+                                    <div class="pw-wrap">
+                                        {{ form.password2 }}
+                                        <button type="button" class="pw-eye" data-target="{{ form.password2.id_for_label }}" tabindex="-1">
+                                            <i class="ion-eye"></i>
+                                        </button>
+                                    </div>
                                     {% for error in form.password2.errors %}
-                                    <div class="text-danger">
-                                        {{error}}
-                                    </div>
+                                    <div class="text-danger" style="font-size:12px;margin-top:4px;">{{ error }}</div>
                                     {% endfor %}
-                                    {% endif %}
                                 </div>
-                                <div class="form-group mb-3 form-check form-switch">
+
+                                <div class="form-group mb-3" style="display:flex;align-items:flex-start;gap:10px;">
                                     {{ form.agree_terms }}
-                                    <span>I agree to
-                                        terms &amp; Policy.</span>
-
-                                    {% if form.agree_terms.errors %}
-                                    {% for error in form.agree_terms.errors %}
-                                    <div class="text-danger">
-                                        {{error}}
-                                    </div>
-                                    {% endfor %}
-                                    {% endif %}
+                                    <label for="{{ form.agree_terms.id_for_label }}" style="font-size:13px;color:#555;cursor:pointer;margin:0;">
+                                        J'accepte les
+                                        <a href="{% url 'terms' %}" style="color:#ff5722;">conditions générales</a>
+                                        <span style="color:#ff5722;">*</span>
+                                    </label>
                                 </div>
+                                {% for error in form.agree_terms.errors %}
+                                <div class="text-danger" style="font-size:12px;margin-top:-8px;margin-bottom:10px;">{{ error }}</div>
+                                {% endfor %}
 
-
-                                <div class="form-group mb-3"><button type="submit" name="register"
-                                        class="btn btn-fill-out btn-block">Register</button></div>
+                                <div class="form-group mb-3">
+                                    <button type="submit" class="btn btn-fill-out btn-block">
+                                        Créer mon compte
+                                    </button>
+                                </div>
                             </form>
-                         
-                            <div class="form-note text-center">
-                                Already have an account? 
-                                <a href="{% url 'accounts:signin' %}">Log in</a>
-                            </div> 
+
+                            <div class="form-note text-center" style="font-size:13.5px;">
+                                Déjà un compte ?
+                                <a href="{% url 'accounts:signin' %}" style="color:#ff5722;font-weight:600;">
+                                    Se connecter
+                                </a>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -102,5 +154,41 @@
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    // ── Eye toggle ──
+    document.querySelectorAll('.pw-eye').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = document.getElementById(btn.dataset.target);
+            if (!input) return;
+            var isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.querySelector('i').className = isHidden ? 'ion-eye-disabled' : 'ion-eye';
+            btn.classList.toggle('visible', isHidden);
+        });
+    });
+
+    // ── Password requirements ──
+    var pwd = document.getElementById('{{ form.password1.id_for_label }}');
+    var rules = {
+        len:     function (v) { return v.length >= 8; },
+        upper:   function (v) { return /[A-Z]/.test(v); },
+        digit:   function (v) { return /[0-9]/.test(v); },
+        special: function (v) { return /[^A-Za-z0-9]/.test(v); }
+    };
+    if (pwd) {
+        pwd.addEventListener('input', function () {
+            var val = pwd.value;
+            document.querySelectorAll('#signupPwReqs .pw-req').forEach(function (row) {
+                var ok = rules[row.dataset.rule](val);
+                row.classList.toggle('ok',   ok);
+                row.classList.toggle('fail', val.length > 0 && !ok);
+                row.querySelector('i').className = ok ? 'ti-check' : 'ti-close';
+            });
+        });
+    }
+})();
+</script>
 
 {% endblock %}

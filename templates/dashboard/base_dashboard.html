@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mon Compte{% endblock %} — MAT-STORE</title>
+
+    <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/themify-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/linearicons.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/ionicons.min.css' %}">
+
+    <style>
+        :root {
+            --sidebar-w : 250px;
+            --topbar-h  : 60px;
+            --dark      : #1a1a2e;
+            --accent    : #ff5722;
+            --text      : #1a1a2e;
+            --muted     : #8a94a6;
+            --border    : #eaecf0;
+            --bg        : #f4f5f7;
+            --card      : #ffffff;
+            --radius    : 10px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ─── SIDEBAR ─── */
+        .ds-sidebar {
+            width: var(--sidebar-w);
+            min-height: 100vh;
+            background: var(--dark);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 1000;
+            transition: transform .28s ease;
+        }
+
+        .ds-sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 20px 22px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            text-decoration: none;
+        }
+        .ds-logo-icon {
+            width: 34px; height: 34px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 16px; flex-shrink: 0;
+        }
+        .ds-logo-text { font-size: 16px; font-weight: 800; color: #fff; }
+
+        .ds-user-card {
+            padding: 18px 22px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex; align-items: center; gap: 11px;
+        }
+        .ds-user-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 700; text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .ds-user-name  { color: #fff; font-size: 13.5px; font-weight: 600; }
+        .ds-user-role  { color: rgba(255,255,255,0.38); font-size: 11px; margin-top: 1px; }
+
+        .ds-nav { flex: 1; padding: 10px 0; overflow-y: auto; }
+
+        .ds-nav-section {
+            padding: 14px 22px 4px;
+            font-size: 9.5px; font-weight: 700;
+            letter-spacing: 1.6px; text-transform: uppercase;
+            color: rgba(255,255,255,0.22);
+        }
+
+        .ds-nav-link {
+            display: flex; align-items: center; gap: 11px;
+            padding: 10px 22px;
+            color: rgba(255,255,255,0.58);
+            text-decoration: none;
+            font-size: 13.5px; font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: color .16s, background .16s, border-color .16s;
+        }
+        .ds-nav-link i { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+        .ds-nav-link:hover { color: rgba(255,255,255,0.88); background: rgba(255,255,255,0.05); }
+        .ds-nav-link.active { color: #fff; background: rgba(255,255,255,0.07); border-left-color: var(--accent); }
+        .ds-nav-link.active i { color: var(--accent); }
+
+        .ds-nav-badge {
+            margin-left: auto;
+            background: var(--accent);
+            color: #fff; font-size: 10px; font-weight: 700;
+            padding: 1px 7px; border-radius: 20px;
+        }
+
+        .ds-sidebar-footer {
+            padding: 14px 22px 20px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .ds-logout-btn {
+            display: flex; align-items: center; gap: 9px;
+            padding: 9px 14px;
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.55);
+            border-radius: 8px; text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            transition: background .18s, color .18s;
+        }
+        .ds-logout-btn:hover { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.85); }
+        .ds-logout-btn i { font-size: 14px; }
+
+        /* ─── MAIN ─── */
+        .ds-main {
+            margin-left: var(--sidebar-w);
+            flex: 1; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        .ds-topbar {
+            height: var(--topbar-h);
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center;
+            justify-content: space-between;
+            padding: 0 26px;
+            position: sticky; top: 0; z-index: 500;
+        }
+        .ds-topbar-title { font-size: 16px; font-weight: 700; color: var(--dark); }
+        .ds-topbar-breadcrumb {
+            font-size: 12px; color: var(--muted);
+            display: flex; align-items: center; gap: 5px; margin-top: 2px;
+        }
+        .ds-topbar-breadcrumb a { color: var(--muted); text-decoration: none; }
+        .ds-topbar-breadcrumb a:hover { color: var(--accent); }
+
+        .ds-topbar-shop-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px;
+            border: 1.5px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            border-radius: 8px; font-size: 13px; font-weight: 600;
+            text-decoration: none; transition: border-color .18s, color .18s;
+        }
+        .ds-topbar-shop-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .ds-content { flex: 1; padding: 26px; }
+
+        /* ─── CARD ─── */
+        .ds-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 22px 24px;
+        }
+        .ds-card-title {
+            font-size: 14px; font-weight: 700; color: var(--dark);
+            margin-bottom: 18px;
+            display: flex; align-items: center; gap: 8px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        .ds-card-title i { color: var(--muted); font-size: 15px; }
+
+        /* ─── STAT CARDS ─── */
+        .ds-stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            display: flex; align-items: center; gap: 14px;
+            text-decoration: none;
+            transition: border-color .18s, box-shadow .18s;
+        }
+        .ds-stat-card:hover { border-color: #d0d5dd; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+        .ds-stat-icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: var(--muted);
+            flex-shrink: 0;
+        }
+        .ds-stat-card.ds-stat-orange .ds-stat-icon { background: #fff4f0; color: #ff5722; border-color: #ffd5c8; }
+        .ds-stat-card.ds-stat-orange:hover { border-color: #ffb49a; }
+        .ds-stat-card.ds-stat-blue   .ds-stat-icon { background: #eff6ff; color: #3b82f6; border-color: #bfdbfe; }
+        .ds-stat-card.ds-stat-blue:hover   { border-color: #93c5fd; }
+        .ds-stat-card.ds-stat-green  .ds-stat-icon { background: #f0fdf4; color: #22c55e; border-color: #bbf7d0; }
+        .ds-stat-card.ds-stat-green:hover  { border-color: #86efac; }
+        /* accent = orange pour les valeurs importantes */
+        .ds-stat-card.ds-stat-orange .ds-stat-value { color: #ff5722; }
+
+        .ds-stat-value { font-size: 24px; font-weight: 800; color: var(--dark); line-height: 1; }
+        .ds-stat-label { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+        /* ─── PROFILE ROWS ─── */
+        .ds-profile-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 0; border-bottom: 1px solid var(--border);
+        }
+        .ds-profile-row:last-child { border-bottom: none; }
+        .ds-profile-icon {
+            width: 32px; height: 32px;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--muted); font-size: 13px; flex-shrink: 0;
+        }
+        .ds-profile-label { font-size: 11px; color: var(--muted); line-height: 1; }
+        .ds-profile-value { font-size: 13.5px; font-weight: 600; color: var(--dark); margin-top: 2px; }
+
+        /* ─── WISHLIST MINI CARDS ─── */
+        .ds-wl-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; overflow: hidden;
+            text-decoration: none; display: block;
+            transition: border-color .18s, box-shadow .18s;
+        }
+        .ds-wl-card:hover { border-color: #d0d5dd; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+        .ds-wl-img { width: 100%; aspect-ratio: 1; background: var(--bg); overflow: hidden; }
+        .ds-wl-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+        .ds-wl-card:hover .ds-wl-img img { transform: scale(1.04); }
+        .ds-wl-img-placeholder {
+            width: 100%; aspect-ratio: 1; background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            color: #d0d5dd; font-size: 32px;
+        }
+        .ds-wl-info { padding: 11px 13px; }
+        .ds-wl-name { font-size: 13px; font-weight: 600; color: var(--dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ds-wl-price { font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 3px; }
+
+        /* ─── EMPTY STATE ─── */
+        .ds-empty { text-align: center; padding: 36px 20px; color: var(--muted); }
+        .ds-empty i { font-size: 38px; color: #d0d5dd; display: block; margin-bottom: 12px; }
+        .ds-empty p { font-size: 13px; margin-bottom: 16px; }
+        .ds-empty-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 20px; background: var(--accent);
+            color: #fff; border-radius: 8px;
+            text-decoration: none; font-size: 13px; font-weight: 600;
+        }
+        .ds-empty-btn:hover { color: #fff; opacity: .9; }
+
+        /* ─── QUICK LINKS ─── */
+        .ds-quick-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 14px;
+            border: 1px solid var(--border); border-radius: 8px;
+            text-decoration: none; color: var(--text);
+            font-size: 13px; font-weight: 500;
+            transition: border-color .18s, color .18s;
+        }
+        .ds-quick-link i { font-size: 15px; color: var(--muted); transition: color .18s; }
+        .ds-quick-link:hover { border-color: var(--accent); color: var(--accent); }
+        .ds-quick-link:hover i { color: var(--accent); }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 991px) {
+            .ds-sidebar { transform: translateX(-100%); }
+            .ds-sidebar.open { transform: translateX(0); }
+            .ds-main { margin-left: 0; }
+            .ds-content { padding: 16px; }
+            .ds-topbar { padding: 0 16px; }
+            .ds-burger { display: flex !important; }
+        }
+    </style>
+    {% block extra_styles %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="ds-sidebar" id="dsSidebar">
+
+    <a href="{% url 'home' %}" class="ds-sidebar-logo">
+        <div class="ds-logo-icon"><i class="linearicons-cart"></i></div>
+        <span class="ds-logo-text">MAT-STORE</span>
+    </a>
+
+    <div class="ds-user-card">
+        <div class="ds-user-avatar">{{ request.user.username|slice:":1" }}</div>
+        <div>
+            <div class="ds-user-name">{{ request.user.username }}</div>
+            <div class="ds-user-role">Compte client</div>
+        </div>
+    </div>
+
+    <nav class="ds-nav">
+        <div class="ds-nav-section">Principal</div>
+        <a href="{% url 'dashboard:overview' %}" class="ds-nav-link {% block nav_overview %}{% endblock %}">
+            <i class="ti-dashboard"></i> Tableau de bord
+        </a>
+
+        <div class="ds-nav-section">Mon compte</div>
+        <a href="{% url 'dashboard:account' %}" class="ds-nav-link {% block nav_profile %}{% endblock %}">
+            <i class="ti-user"></i> Mon profil
+        </a>
+        <a href="#" class="ds-nav-link {% block nav_orders %}{% endblock %}">
+            <i class="ti-package"></i> Mes commandes
+        </a>
+        <a href="{% url 'dashboard:addresses' %}" class="ds-nav-link {% block nav_addresses %}{% endblock %}">
+            <i class="ti-location-pin"></i> Mes adresses
+        </a>
+
+        <div class="ds-nav-section">Boutique</div>
+        <a href="{% url 'home' %}" class="ds-nav-link">
+            <i class="ti-home"></i> Accueil
+        </a>
+        <a href="{% url 'wishlist' %}" class="ds-nav-link {% block nav_wishlist %}{% endblock %}">
+            <i class="ti-heart"></i> Favoris
+            {% if wishlist_count %}<span class="ds-nav-badge">{{ wishlist_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'cart' %}" class="ds-nav-link">
+            <i class="linearicons-cart"></i> Panier
+            {% if cart_count %}<span class="ds-nav-badge">{{ cart_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'shop_list' %}" class="ds-nav-link">
+            <i class="ti-layout-grid2"></i> Boutique
+        </a>
+    </nav>
+
+    <div class="ds-sidebar-footer">
+        <a href="{% url 'accounts:logout' %}" class="ds-logout-btn"
+           onclick="return confirm('Se déconnecter ?');">
+            <i class="ti-power-off"></i> Déconnexion
+        </a>
+    </div>
+
+</aside>
+
+<!-- ── Main ── -->
+<div class="ds-main">
+
+    <header class="ds-topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button onclick="document.getElementById('dsSidebar').classList.toggle('open')"
+                    class="ds-burger"
+                    style="display:none;background:none;border:none;font-size:20px;color:var(--dark);cursor:pointer;align-items:center;">
+                <i class="ion-navicon"></i>
+            </button>
+            <div>
+                <div class="ds-topbar-title">{% block page_title %}Tableau de bord{% endblock %}</div>
+                <div class="ds-topbar-breadcrumb">
+                    <a href="{% url 'home' %}">Accueil</a>
+                    <i class="ti-angle-right" style="font-size:9px;"></i>
+                    <a href="{% url 'dashboard:overview' %}">Mon compte</a>
+                    {% block breadcrumb_extra %}{% endblock %}
+                </div>
+            </div>
+        </div>
+        <a href="{% url 'shop_list' %}" class="ds-topbar-shop-btn">
+            <i class="linearicons-cart"></i> Boutique
+        </a>
+    </header>
+
+    <main class="ds-content">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'assets/bootstrap/js/bootstrap.min.js' %}"></script>
+<script>
+    document.addEventListener('click', function(e) {
+        const sidebar = document.getElementById('dsSidebar');
+        const burger  = document.querySelector('.ds-burger');
+        if (sidebar && sidebar.classList.contains('open')) {
+            if (!sidebar.contains(e.target) && (!burger || !burger.contains(e.target))) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+</script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

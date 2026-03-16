@@ -1,0 +1,332 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Mon profil{% endblock %}
+{% block page_title %}Mon profil{% endblock %}
+{% block nav_profile %}active{% endblock %}
+
+{% block breadcrumb_extra %}
+<i class="ti-angle-right" style="font-size:9px;"></i>
+<span>Mon profil</span>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .pf-wrap { max-width: 760px; }
+
+    /* ── Tabs ── */
+    .pf-tabs {
+        display: flex; gap: 4px;
+        margin-bottom: 22px;
+        border-bottom: 2px solid var(--border);
+    }
+    .pf-tab {
+        padding: 10px 20px;
+        font-size: 13.5px; font-weight: 600;
+        color: var(--muted);
+        border: none; background: none;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: color .16s, border-color .16s;
+        display: flex; align-items: center; gap: 7px;
+    }
+    .pf-tab i { font-size: 14px; }
+    .pf-tab:hover { color: var(--text); }
+    .pf-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── Grid ── */
+    .pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .pf-grid .pf-full { grid-column: 1 / -1; }
+    @media (max-width: 600px) { .pf-grid { grid-template-columns: 1fr; } }
+
+    /* ── Fields ── */
+    .pf-field { display: flex; flex-direction: column; gap: 5px; }
+    .pf-label { font-size: 12.5px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 5px; }
+    .pf-label .req { color: var(--accent); }
+    .pf-field-error { font-size: 12px; color: #dc2626; margin-top: 2px; }
+
+    .pf-input {
+        width: 100%; padding: 10px 13px;
+        border: 1.5px solid var(--border); border-radius: 8px;
+        font-size: 13.5px; color: var(--text); background: #fff;
+        outline: none; transition: border-color .18s, box-shadow .18s;
+        font-family: inherit;
+    }
+    .pf-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,87,34,.10); }
+
+    /* ── Password wrap + eye toggle ── */
+    .pw-wrap { position: relative; }
+    .pw-wrap .pf-input { padding-right: 42px; }
+    .pw-eye {
+        position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer;
+        color: var(--muted); font-size: 17px; line-height: 1;
+        padding: 2px; transition: color .16s;
+    }
+    .pw-eye:hover { color: var(--text); }
+    .pw-eye.visible { color: var(--accent); }
+
+    /* ── Password requirements ── */
+    .pw-reqs {
+        margin-top: 8px;
+        display: flex; flex-direction: column; gap: 4px;
+    }
+    .pw-req {
+        display: flex; align-items: center; gap: 7px;
+        font-size: 12px; color: var(--muted);
+        transition: color .2s;
+    }
+    .pw-req i { font-size: 12px; transition: color .2s; }
+    .pw-req.ok { color: #15803d; }
+    .pw-req.ok i { color: #22c55e; }
+    .pw-req.fail { color: #dc2626; }
+    .pw-req.fail i { color: #ef4444; }
+
+    /* ── Avatar ── */
+    .pf-avatar-block {
+        display: flex; align-items: center; gap: 16px;
+        padding: 18px 0; border-bottom: 1px solid var(--border); margin-bottom: 20px;
+    }
+    .pf-avatar-big {
+        width: 64px; height: 64px; border-radius: 50%;
+        background: var(--dark); color: #fff; font-size: 26px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+        text-transform: uppercase; flex-shrink: 0;
+    }
+    .pf-avatar-name { font-size: 17px; font-weight: 800; color: var(--dark); }
+    .pf-avatar-email { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+    .pf-avatar-since { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+
+    /* ── Actions ── */
+    .pf-actions {
+        display: flex; align-items: center; gap: 10px;
+        padding-top: 20px; border-top: 1px solid var(--border); margin-top: 4px;
+    }
+    .pf-btn-primary {
+        padding: 10px 24px; background: var(--accent); color: #fff;
+        border: none; border-radius: 8px; font-size: 13.5px; font-weight: 700;
+        cursor: pointer; transition: opacity .18s; display: flex; align-items: center; gap: 6px;
+    }
+    .pf-btn-primary:hover { opacity: .88; }
+
+    /* ── Tab panels ── */
+    .pf-panel { display: none; }
+    .pf-panel.active { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<div style="margin-bottom:16px;">
+    {% for message in messages %}
+    <div style="padding:11px 16px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:6px;
+                {% if message.tags == 'success' %}background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;
+                {% elif message.tags == 'error' %}background:#fef2f2; color:#dc2626; border:1px solid #fecaca;
+                {% else %}background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;{% endif %}">
+        <i class="{% if message.tags == 'success' %}ti-check{% elif message.tags == 'error' %}ti-close{% else %}ti-info-alt{% endif %}"
+           style="margin-right:6px;"></i>{{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="pf-wrap">
+<div class="ds-card">
+
+    <!-- Avatar / résumé -->
+    <div class="pf-avatar-block">
+        <div class="pf-avatar-big">{{ request.user.username|slice:":1" }}</div>
+        <div>
+            <div class="pf-avatar-name">
+                {% if request.user.first_name %}{{ request.user.first_name }} {{ request.user.last_name }}
+                {% else %}{{ request.user.username }}{% endif %}
+            </div>
+            <div class="pf-avatar-email">{{ request.user.email|default:"Aucun email renseigné" }}</div>
+            <div class="pf-avatar-since">
+                <i class="ti-calendar" style="margin-right:4px;"></i>
+                Membre depuis {{ request.user.date_joined|date:"d F Y" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="pf-tabs">
+        <button class="pf-tab {% if not open_password_tab %}active{% endif %}" data-tab="tab-info">
+            <i class="ti-user"></i> Informations
+        </button>
+        <button class="pf-tab {% if open_password_tab %}active{% endif %}" data-tab="tab-password">
+            <i class="ti-lock"></i> Mot de passe
+        </button>
+    </div>
+
+    <!-- ── Panel : informations ── -->
+    <div class="pf-panel {% if not open_password_tab %}active{% endif %}" id="tab-info">
+        <form method="post" action="{% url 'dashboard:account_save' %}" novalidate>
+            {% csrf_token %}
+            <div class="pf-grid">
+
+                <div class="pf-field">
+                    <label class="pf-label" for="{{ account_form.username.id_for_label }}">
+                        Nom d'utilisateur <span class="req">*</span>
+                    </label>
+                    {{ account_form.username }}
+                    {% for e in account_form.username.errors %}<div class="pf-field-error">{{ e }}</div>{% endfor %}
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="{{ account_form.email.id_for_label }}">
+                        Adresse e-mail <span class="req">*</span>
+                    </label>
+                    {{ account_form.email }}
+                    {% for e in account_form.email.errors %}<div class="pf-field-error">{{ e }}</div>{% endfor %}
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="{{ account_form.first_name.id_for_label }}">Prénom</label>
+                    {{ account_form.first_name }}
+                    {% for e in account_form.first_name.errors %}<div class="pf-field-error">{{ e }}</div>{% endfor %}
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label" for="{{ account_form.last_name.id_for_label }}">Nom de famille</label>
+                    {{ account_form.last_name }}
+                    {% for e in account_form.last_name.errors %}<div class="pf-field-error">{{ e }}</div>{% endfor %}
+                </div>
+
+            </div>
+            <div class="pf-actions">
+                <button type="submit" class="pf-btn-primary"><i class="ti-check"></i> Enregistrer</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Panel : mot de passe ── -->
+    <div class="pf-panel {% if open_password_tab %}active{% endif %}" id="tab-password">
+        <form method="post" action="{% url 'dashboard:account_password' %}" novalidate>
+            {% csrf_token %}
+            <div class="pf-grid">
+
+                <!-- Mot de passe actuel -->
+                <div class="pf-field pf-full">
+                    <label class="pf-label" for="{{ reset_password_form.old_password.id_for_label }}">
+                        Mot de passe actuel <span class="req">*</span>
+                    </label>
+                    <div class="pw-wrap">
+                        {{ reset_password_form.old_password }}
+                        <button type="button" class="pw-eye" data-target="{{ reset_password_form.old_password.id_for_label }}" tabindex="-1">
+                            <i class="ion-eye"></i>
+                        </button>
+                    </div>
+                    {% for e in reset_password_form.old_password.errors %}<div class="pf-field-error">{{ e }}</div>{% endfor %}
+                </div>
+
+                <!-- Nouveau mot de passe -->
+                <div class="pf-field">
+                    <label class="pf-label" for="{{ reset_password_form.new_password1.id_for_label }}">
+                        Nouveau mot de passe <span class="req">*</span>
+                    </label>
+                    <div class="pw-wrap">
+                        {{ reset_password_form.new_password1 }}
+                        <button type="button" class="pw-eye" data-target="{{ reset_password_form.new_password1.id_for_label }}" tabindex="-1">
+                            <i class="ion-eye"></i>
+                        </button>
+                    </div>
+                    <!-- Exigences -->
+                    <div class="pw-reqs" id="pwReqs">
+                        <div class="pw-req" data-rule="len"><i class="ti-close"></i> Au moins 8 caractères</div>
+                        <div class="pw-req" data-rule="upper"><i class="ti-close"></i> Une lettre majuscule (A–Z)</div>
+                        <div class="pw-req" data-rule="digit"><i class="ti-close"></i> Un chiffre (0–9)</div>
+                        <div class="pw-req" data-rule="special"><i class="ti-close"></i> Un caractère spécial (!@#$…)</div>
+                    </div>
+                    {% for e in reset_password_form.new_password1.errors %}<div class="pf-field-error">{{ e }}</div>{% endfor %}
+                </div>
+
+                <!-- Confirmation -->
+                <div class="pf-field">
+                    <label class="pf-label" for="{{ reset_password_form.new_password2.id_for_label }}">
+                        Confirmer le mot de passe <span class="req">*</span>
+                    </label>
+                    <div class="pw-wrap">
+                        {{ reset_password_form.new_password2 }}
+                        <button type="button" class="pw-eye" data-target="{{ reset_password_form.new_password2.id_for_label }}" tabindex="-1">
+                            <i class="ion-eye"></i>
+                        </button>
+                    </div>
+                    {% for e in reset_password_form.new_password2.errors %}<div class="pf-field-error">{{ e }}</div>{% endfor %}
+                </div>
+
+                {% if reset_password_form.non_field_errors %}
+                <div class="pf-full">
+                    {% for e in reset_password_form.non_field_errors %}<div class="pf-field-error">{{ e }}</div>{% endfor %}
+                </div>
+                {% endif %}
+
+            </div>
+            <div class="pf-actions">
+                <button type="submit" class="pf-btn-primary"><i class="ti-lock"></i> Changer le mot de passe</button>
+            </div>
+        </form>
+    </div>
+
+</div><!-- /ds-card -->
+</div><!-- /pf-wrap -->
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+
+    // ── Apply pf-input class to all form inputs ──
+    document.querySelectorAll('.pf-panel input').forEach(function (el) {
+        el.classList.add('pf-input');
+    });
+
+    // ── Tab switching ──
+    document.querySelectorAll('.pf-tab').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.pf-tab').forEach(function (t) { t.classList.remove('active'); });
+            document.querySelectorAll('.pf-panel').forEach(function (p) { p.classList.remove('active'); });
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // ── Eye toggle ──
+    document.querySelectorAll('.pw-eye').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = document.getElementById(btn.dataset.target);
+            if (!input) return;
+            var isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.querySelector('i').className = isHidden ? 'ion-eye-disabled' : 'ion-eye';
+            btn.classList.toggle('visible', isHidden);
+        });
+    });
+
+    // ── Password requirements ──
+    var newPwdId = '{{ reset_password_form.new_password1.id_for_label }}';
+    var newPwd   = document.getElementById(newPwdId);
+    var rules = {
+        len:     function (v) { return v.length >= 8; },
+        upper:   function (v) { return /[A-Z]/.test(v); },
+        digit:   function (v) { return /[0-9]/.test(v); },
+        special: function (v) { return /[^A-Za-z0-9]/.test(v); }
+    };
+
+    if (newPwd) {
+        newPwd.addEventListener('input', function () {
+            var val = newPwd.value;
+            document.querySelectorAll('#pwReqs .pw-req').forEach(function (row) {
+                var ok = rules[row.dataset.rule](val);
+                row.classList.toggle('ok',   ok);
+                row.classList.toggle('fail', val.length > 0 && !ok);
+                row.querySelector('i').className = ok ? 'ti-check' : 'ti-close';
+            });
+        });
+    }
+
+})();
+</script>
+{% endblock %}

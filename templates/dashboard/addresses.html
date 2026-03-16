@@ -1,0 +1,216 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{% block title %}Mes adresses{% endblock %}
+{% block page_title %}Mes adresses{% endblock %}
+{% block nav_addresses %}active{% endblock %}
+
+{% block breadcrumb_extra %}
+<i class="ti-angle-right" style="font-size:9px;"></i>
+<span>Adresses</span>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .addr-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+    .addr-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        transition: border-color .18s, box-shadow .18s;
+        position: relative;
+    }
+    .addr-card:hover { border-color: #d0d5dd; box-shadow: 0 3px 14px rgba(0,0,0,0.07); }
+
+    .addr-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .5px;
+        margin-bottom: 14px; width: fit-content;
+    }
+    .addr-badge-shipping { background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
+    .addr-badge-billing  { background: #fff4f0; color: #ff5722;  border: 1px solid #ffd5c8; }
+
+    .addr-name  { font-size: 15px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .addr-full  { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+    .addr-line  { font-size: 13px; color: var(--muted); display: flex; align-items: flex-start; gap: 7px; margin-bottom: 4px; }
+    .addr-line i { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+
+    .addr-divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+    .addr-actions { display: flex; gap: 8px; }
+    .addr-btn {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 7px 14px;
+        border-radius: 7px;
+        font-size: 12.5px; font-weight: 600;
+        text-decoration: none; cursor: pointer;
+        border: 1.5px solid var(--border);
+        background: transparent; color: var(--text);
+        transition: all .18s;
+    }
+    .addr-btn:hover { border-color: var(--accent); color: var(--accent); background: #fff4f0; }
+    .addr-btn-delete { color: #dc2626; border-color: #fecaca; }
+    .addr-btn-delete:hover { background: #fff5f5; border-color: #dc2626; color: #dc2626; }
+    .addr-btn i { font-size: 13px; }
+
+    /* Carte "ajouter" */
+    .addr-card-add {
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 20px 22px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 10px; text-decoration: none;
+        color: var(--muted);
+        min-height: 180px;
+        transition: border-color .18s, color .18s;
+        text-align: center;
+    }
+    .addr-card-add:hover { border-color: var(--accent); color: var(--accent); }
+    .addr-card-add i { font-size: 28px; }
+    .addr-card-add span { font-size: 13.5px; font-weight: 600; }
+
+    /* Modal suppression */
+    .ds-modal-backdrop {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.35); z-index: 2000;
+        align-items: center; justify-content: center;
+    }
+    .ds-modal-backdrop.open { display: flex; }
+    .ds-modal {
+        background: #fff; border-radius: 14px;
+        padding: 28px 30px; max-width: 380px; width: 90%;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    }
+    .ds-modal h3 { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+    .ds-modal p  { font-size: 13.5px; color: var(--muted); margin-bottom: 22px; }
+    .ds-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- En-tête -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+    <div>
+        <h1 style="font-size:20px;font-weight:800;color:var(--dark);margin:0 0 3px;">Mes adresses</h1>
+        <p style="font-size:13px;color:var(--muted);margin:0;">
+            {{ addresses|length }} adresse{{ addresses|length|pluralize }} enregistrée{{ addresses|length|pluralize }}
+        </p>
+    </div>
+    <a href="{% url 'dashboard:address_create' %}"
+       style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;
+              background:var(--accent);color:#fff;border-radius:8px;
+              font-size:13px;font-weight:700;text-decoration:none;transition:opacity .18s;">
+        <i class="ti-plus"></i> Nouvelle adresse
+    </a>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div style="padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13.5px;font-weight:500;
+    {% if message.tags == 'success' %}background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;
+    {% else %}background:#fff4f0;color:#ff5722;border:1px solid #ffd5c8;{% endif %}">
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="addr-grid">
+
+    {% for addr in addresses %}
+    <div class="addr-card">
+
+        <!-- Badge type -->
+        <span class="addr-badge {% if addr.adress_type == 'shipping' %}addr-badge-shipping{% else %}addr-badge-billing{% endif %}">
+            <i class="{% if addr.adress_type == 'shipping' %}ti-truck{% else %}ti-credit-card{% endif %}"></i>
+            {% if addr.adress_type == 'shipping' %}Livraison{% else %}Facturation{% endif %}
+        </span>
+
+        <div class="addr-name">{{ addr.name }}</div>
+        <div class="addr-full">{{ addr.full_name }}</div>
+
+        <div class="addr-line"><i class="ti-location-pin"></i> {{ addr.street }}</div>
+        <div class="addr-line">
+            <i class="ti-map"></i>
+            {{ addr.code_postal }} {{ addr.city }}{% if addr.country %}, {{ addr.country }}{% endif %}
+        </div>
+        {% if addr.more_details %}
+        <div class="addr-line"><i class="ti-comment-alt"></i> {{ addr.more_details }}</div>
+        {% endif %}
+
+        <div class="addr-divider"></div>
+
+        <div class="addr-actions">
+            <a href="{% url 'dashboard:address_edit' addr.pk %}" class="addr-btn">
+                <i class="ti-pencil"></i> Modifier
+            </a>
+            <button class="addr-btn addr-btn-delete"
+                    onclick="openDeleteModal({{ addr.pk }}, '{{ addr.name|escapejs }}')">
+                <i class="ti-trash"></i> Supprimer
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Carte ajouter -->
+    <a href="{% url 'dashboard:address_create' %}" class="addr-card-add">
+        <i class="ti-plus"></i>
+        <span>Ajouter une adresse</span>
+    </a>
+
+</div>
+
+<!-- Modal confirmation suppression -->
+<div class="ds-modal-backdrop" id="deleteModal">
+    <div class="ds-modal">
+        <h3>Supprimer l'adresse</h3>
+        <p id="deleteModalText">Voulez-vous vraiment supprimer cette adresse ?</p>
+        <div class="ds-modal-actions">
+            <button onclick="closeDeleteModal()"
+                    style="padding:8px 16px;border:1.5px solid var(--border);border-radius:7px;
+                           background:transparent;font-size:13px;font-weight:600;cursor:pointer;">
+                Annuler
+            </button>
+            <form id="deleteForm" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit"
+                        style="padding:8px 18px;background:#dc2626;color:#fff;border:none;
+                               border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">
+                    Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openDeleteModal(pk, name) {
+        document.getElementById('deleteModalText').textContent =
+            'Voulez-vous vraiment supprimer l\'adresse "' + name + '" ?';
+        document.getElementById('deleteForm').action =
+            '/dashboard/addresses/' + pk + '/delete/';
+        document.getElementById('deleteModal').classList.add('open');
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('open');
+    }
+    // Fermer sur clic backdrop
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+    });
+</script>
+{% endblock %}

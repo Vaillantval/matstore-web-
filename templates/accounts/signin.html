@@ -2,6 +2,19 @@
 
 {% block content %}
 
+<style>
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 42px !important; }
+    .pw-eye {
+        position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer;
+        color: #8a94a6; font-size: 17px; line-height: 1; padding: 2px;
+        transition: color .16s;
+    }
+    .pw-eye:hover { color: #1a1a2e; }
+    .pw-eye.visible { color: #ff5722; }
+</style>
+
 <div style="background:#f8f9fa; padding:18px 0; border-bottom:1px solid #e9ecef;">
     <div class="container">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -20,54 +33,71 @@
     <div class="login_register_wrap section">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-xl-6 col-md-10">
+                <div class="col-xl-5 col-md-8">
                     <div class="login_wrap">
                         <div class="padding_eight_all bg-white">
-                            <div class="heading_s1">
-                                <h3>Login</h3>
+
+                            <div class="heading_s1 text-center mb-3">
+                                <h3>Connexion</h3>
+                                <p style="font-size:13.5px;color:#718096;">Accédez à votre espace personnel</p>
                             </div>
+
                             {% if messages %}
                             {% for message in messages %}
-                            <div class="alert alert-danger">
+                            <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
                                 {{ message }}
                             </div>
                             {% endfor %}
                             {% endif %}
-                            <form method="post">
+
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <form method="post" novalidate>
                                 {% csrf_token %}
+
                                 <div class="form-group mb-3">
+                                    <label style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:5px;display:block;">
+                                        Nom d'utilisateur
+                                    </label>
                                     {{ form.username }}
-
-                                    {% if form.username.errors %}
                                     {% for error in form.username.errors %}
-                                    <div class="text-danger">
-                                        {{error}}
-                                    </div>
+                                    <div class="text-danger" style="font-size:12px;margin-top:4px;">{{ error }}</div>
                                     {% endfor %}
-                                    {% endif %}
-
                                 </div>
+
                                 <div class="form-group mb-3">
-                                    {{ form.password }}
-
-                                    {% if form.password.errors %}
-                                    {% for error in form.password.errors %}
-                                    <div class="text-danger">
-                                        {{error}}
+                                    <label style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:5px;display:block;">
+                                        Mot de passe
+                                    </label>
+                                    <div class="pw-wrap">
+                                        {{ form.password }}
+                                        <button type="button" class="pw-eye" data-target="{{ form.password.id_for_label }}" tabindex="-1">
+                                            <i class="ion-eye"></i>
+                                        </button>
                                     </div>
+                                    {% for error in form.password.errors %}
+                                    <div class="text-danger" style="font-size:12px;margin-top:4px;">{{ error }}</div>
                                     {% endfor %}
-                                    {% endif %}
                                 </div>
 
-
-                                <div class="form-group mb-3"><button type="submit" name="login"
-                                        class="btn btn-fill-out btn-block">Log in</button></div>
+                                <div class="form-group mb-3">
+                                    <button type="submit" class="btn btn-fill-out btn-block">
+                                        Se connecter
+                                    </button>
+                                </div>
                             </form>
 
-                            <div class="form-note text-center">Don't Have an Account?
-                                <a href="{% url 'accounts:signup' %}">Sign up
-                                    now</a>
+                            <div class="form-note text-center" style="font-size:13.5px;">
+                                Pas encore de compte ?
+                                <a href="{% url 'accounts:signup' %}" style="color:#ff5722;font-weight:600;">
+                                    Créer un compte
+                                </a>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -75,5 +105,20 @@
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    document.querySelectorAll('.pw-eye').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = document.getElementById(btn.dataset.target);
+            if (!input) return;
+            var isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.querySelector('i').className = isHidden ? 'ion-eye-disabled' : 'ion-eye';
+            btn.classList.toggle('visible', isHidden);
+        });
+    });
+})();
+</script>
 
 {% endblock %}

@@ -1,0 +1,235 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Tableau de bord{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+{% block nav_overview %}active{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .ds-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+    .ds-main-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+    .ds-wl-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+    @media (max-width: 1100px) { .ds-main-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 800px)  { .ds-wl-grid  { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 480px)  { .ds-wl-grid  { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- En-tête page -->
+<div style="margin-bottom:22px;">
+    <h1 style="font-size:20px;font-weight:800;color:var(--dark);margin:0 0 4px;">
+        Bonjour, {{ request.user.username }}
+    </h1>
+    <p style="font-size:13px;color:var(--muted);margin:0;">
+        Membre depuis le {{ request.user.date_joined|date:"d F Y" }}
+    </p>
+</div>
+
+<!-- ── Stats ── -->
+<div class="ds-stats-grid">
+
+    <a href="{% url 'cart' %}" class="ds-stat-card ds-stat-orange">
+        <div class="ds-stat-icon"><i class="linearicons-cart"></i></div>
+        <div>
+            <div class="ds-stat-value">{{ cart_count }}</div>
+            <div class="ds-stat-label">Panier</div>
+        </div>
+    </a>
+
+    <a href="{% url 'wishlist' %}" class="ds-stat-card ds-stat-orange">
+        <div class="ds-stat-icon"><i class="ti-heart"></i></div>
+        <div>
+            <div class="ds-stat-value">{{ wishlist_count }}</div>
+            <div class="ds-stat-label">Favoris</div>
+        </div>
+    </a>
+
+    <a href="{% url 'compare' %}" class="ds-stat-card ds-stat-blue">
+        <div class="ds-stat-icon"><i class="ti-control-shuffle"></i></div>
+        <div>
+            <div class="ds-stat-value">{{ compare_count }}</div>
+            <div class="ds-stat-label">Comparaison</div>
+        </div>
+    </a>
+
+    <div class="ds-stat-card ds-stat-green" style="cursor:default;">
+        <div class="ds-stat-icon"><i class="ti-package"></i></div>
+        <div>
+            <div class="ds-stat-value">0</div>
+            <div class="ds-stat-label">Commandes</div>
+        </div>
+    </div>
+
+    <a href="{% url 'dashboard:addresses' %}" class="ds-stat-card ds-stat-blue">
+        <div class="ds-stat-icon"><i class="ti-location-pin"></i></div>
+        <div>
+            <div class="ds-stat-value">{{ address_count }}</div>
+            <div class="ds-stat-label">Adresses</div>
+        </div>
+    </a>
+
+</div>
+
+<!-- ── Grille profil + accès rapides ── -->
+<div class="ds-main-grid">
+
+    <!-- Profil -->
+    <div class="ds-card">
+        <div class="ds-card-title"><i class="ti-user"></i> Mon profil</div>
+
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+            <div style="width:52px;height:52px;border-radius:50%;background:var(--dark);
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:20px;font-weight:800;color:#fff;text-transform:uppercase;flex-shrink:0;">
+                {{ request.user.username|slice:":1" }}
+            </div>
+            <div>
+                <div style="font-size:15px;font-weight:700;color:var(--dark);">{{ request.user.username }}</div>
+                {% if request.user.email %}
+                <div style="font-size:12.5px;color:var(--muted);">{{ request.user.email }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="ds-profile-row">
+            <div class="ds-profile-icon"><i class="ti-calendar"></i></div>
+            <div>
+                <div class="ds-profile-label">Membre depuis</div>
+                <div class="ds-profile-value">{{ request.user.date_joined|date:"d F Y" }}</div>
+            </div>
+        </div>
+
+        {% if request.user.first_name or request.user.last_name %}
+        <div class="ds-profile-row">
+            <div class="ds-profile-icon"><i class="ti-id-badge"></i></div>
+            <div>
+                <div class="ds-profile-label">Nom complet</div>
+                <div class="ds-profile-value">{{ request.user.first_name }} {{ request.user.last_name }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="ds-profile-row">
+            <div class="ds-profile-icon"><i class="ti-check-box"></i></div>
+            <div>
+                <div class="ds-profile-label">CGU acceptées</div>
+                <div class="ds-profile-value">
+                    {% if request.user.agree_terms %}Oui{% else %}Non{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:16px;">
+            <a href="#" style="font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;">
+                Modifier le profil →
+            </a>
+        </div>
+    </div>
+
+    <!-- Accès rapides + catalogue -->
+    <div style="display:flex;flex-direction:column;gap:18px;">
+
+        <div class="ds-card">
+            <div class="ds-card-title"><i class="ti-rocket"></i> Accès rapides</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <a href="{% url 'shop_list' %}" class="ds-quick-link">
+                    <i class="ti-layout-grid2"></i> Boutique
+                </a>
+                <a href="{% url 'cart' %}" class="ds-quick-link">
+                    <i class="linearicons-cart"></i> Mon panier
+                </a>
+                <a href="{% url 'wishlist' %}" class="ds-quick-link">
+                    <i class="ti-heart"></i> Favoris
+                </a>
+                <a href="{% url 'compare' %}" class="ds-quick-link">
+                    <i class="ti-control-shuffle"></i> Comparer
+                </a>
+            </div>
+        </div>
+
+        <div class="ds-card">
+            <div class="ds-card-title"><i class="ti-bar-chart"></i> Catalogue</div>
+            <div style="display:flex;gap:12px;">
+                <div style="flex:1;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;text-align:center;">
+                    <div style="font-size:26px;font-weight:800;color:var(--dark);">{{ product_count }}</div>
+                    <div style="font-size:12px;color:var(--muted);margin-top:3px;">Produits</div>
+                </div>
+                <div style="flex:1;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;text-align:center;">
+                    <div style="font-size:26px;font-weight:800;color:var(--dark);">{{ category_count }}</div>
+                    <div style="font-size:12px;color:var(--muted);margin-top:3px;">Catégories</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Favoris récents ── -->
+<div class="ds-card" style="margin-bottom:18px;">
+    <div class="ds-card-title" style="margin-bottom:16px;">
+        <i class="ti-heart"></i> Favoris récents
+        {% if wishlist_count %}
+        <a href="{% url 'wishlist' %}" style="margin-left:auto;font-size:12.5px;font-weight:600;color:var(--accent);text-decoration:none;">
+            Voir tout →
+        </a>
+        {% endif %}
+    </div>
+
+    {% if wishlist_products %}
+    <div class="ds-wl-grid">
+        {% for product in wishlist_products %}
+        <a href="{% url 'product_detail' product.slug %}" class="ds-wl-card">
+            {% with img=product.images.first %}
+            {% if img %}
+            <div class="ds-wl-img"><img src="{{ img.image.url }}" alt="{{ product.name }}"></div>
+            {% else %}
+            <div class="ds-wl-img-placeholder"><i class="ti-image"></i></div>
+            {% endif %}
+            {% endwith %}
+            <div class="ds-wl-info">
+                <div class="ds-wl-name">{{ product.name }}</div>
+                <div class="ds-wl-price">
+                    {% if product.solde_price < product.regular_price %}{{ product.solde_price }}
+                    {% else %}{{ product.regular_price }}{% endif %} HTG
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="ds-empty">
+        <i class="ti-heart"></i>
+        <p>Aucun produit dans vos favoris.</p>
+        <a href="{% url 'shop_list' %}" class="ds-empty-btn">Explorer la boutique</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ── Commandes ── -->
+<div class="ds-card">
+    <div class="ds-card-title"><i class="ti-package"></i> Commandes récentes</div>
+    <div class="ds-empty">
+        <i class="ti-package"></i>
+        <p>Aucune commande pour le moment.</p>
+        <a href="{% url 'shop_list' %}" class="ds-empty-btn">Commencer mes achats</a>
+    </div>
+</div>
+
+{% endblock %}

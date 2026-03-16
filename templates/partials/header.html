@@ -1,404 +1,847 @@
 {% load static %}
 <style>
+/* ════════════════════════════════════════════════════════
+   HEADER — Premium redesign
+   ════════════════════════════════════════════════════════ */
 
-    /* ════════════════════════════════════════
-       Aperçu panier (hover)
-       ════════════════════════════════════════ */
+/* ── Reset header containers ── */
+.header_wrap,
+.bottom_header,
+.bottom_header .navbar,
+.bottom_header .navbar > .container { overflow: visible !important; }
 
-    .hd-cart-wrap {
-        position: relative;
-        list-style: none;
-    }
+/* ══════════════════════════
+   TOP BAR
+   ══════════════════════════ */
+.hd-topbar {
+    background: #1a1a2e;
+    color: rgba(255,255,255,0.80);
+    font-size: 13px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.hd-topbar a { color: rgba(255,255,255,0.75); text-decoration: none; transition: color .2s; }
+.hd-topbar a:hover { color: #ff5722; }
 
-    /* Icône panier */
-    .hd-cart-trigger {
-        position: relative;
-        display: inline-flex !important;
-        align-items: center;
-        padding: 6px 10px !important;
-        cursor: pointer;
-        color: inherit;
-        text-decoration: none;
-    }
-    .hd-cart-trigger:hover { color: #ff5722; }
+.hd-topbar-left { display: flex; align-items: center; gap: 18px; }
+.hd-topbar-right { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
 
-    /* Boîte aperçu */
-    .hd-cart-preview {
-        position: absolute;
-        top: 100%;          /* colle directement au bas du li — pas de gap */
-        right: 0;
-        width: 340px;
-        padding-top: 12px;  /* espace visuel géré en padding, hover continu */
-        background: transparent;
-        z-index: 9999;
-        /* Animation */
-        visibility: hidden;
-        opacity: 0;
-        transform: translateY(6px);
-        transition: opacity .22s ease, transform .22s ease, visibility 0s .22s;
-        pointer-events: none;
-    }
-    /* Contenu de la boîte */
-    .hd-cart-preview-inner {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 12px 48px rgba(0,0,0,0.14);
-        border: 1px solid #f0f0f0;
-        overflow: hidden;
-        position: relative;
-    }
-    /* Petite flèche */
-    .hd-cart-preview-inner::before {
-        content: '';
-        position: absolute;
-        top: -7px;
-        right: 18px;
-        width: 13px; height: 13px;
-        background: #fff;
-        border-left: 1px solid #f0f0f0;
-        border-top: 1px solid #f0f0f0;
-        transform: rotate(45deg);
-        border-radius: 2px 0 0 0;
-    }
-    .hd-cart-wrap:hover .hd-cart-preview {
-        visibility: visible;
-        opacity: 1;
-        transform: translateY(0);
-        transition: opacity .22s ease, transform .22s ease, visibility 0s 0s;
-        pointer-events: auto;
-    }
+/* Pills */
+.hd-tb-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 13px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background .2s, color .2s;
+    position: relative;
+    white-space: nowrap;
+}
+.hd-tb-pill i { font-size: 15px; }
+.hd-tb-pill:hover { background: rgba(255,255,255,0.09); color: #ff5722 !important; }
+.hd-tb-pill.active-pill { background: rgba(255,87,34,.15); color: #ff7043 !important; }
 
-    /* En-tête */
-    .hd-cp-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 20px 14px;
-        border-bottom: 1px solid #f5f5f5;
-    }
-    .hd-cp-title {
-        font-weight: 700;
-        font-size: 15px;
-        color: #1a1a2e;
-    }
-    .hd-cp-badge {
-        background: rgba(255,87,34,.10);
-        color: #ff5722;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 3px 10px;
-        border-radius: 50px;
-        border: 1px solid rgba(255,87,34,.18);
-    }
+/* Badge flottant (compare / wishlist) */
+.hd-tb-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    width: 16px; height: 16px;
+    background: #ff5722;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #1a1a2e;
+    line-height: 1;
+}
 
-    /* Liste articles */
-    .hd-cp-list {
-        list-style: none;
-        margin: 0;
-        padding: 8px 0;
-        max-height: 260px;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: #e9ecef transparent;
-    }
-    .hd-cp-list::-webkit-scrollbar { width: 4px; }
-    .hd-cp-list::-webkit-scrollbar-track { background: transparent; }
-    .hd-cp-list::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
+/* Séparateur vertical */
+.hd-tb-sep {
+    width: 1px; height: 14px;
+    background: rgba(255,255,255,0.15);
+    margin: 0 2px;
+    flex-shrink: 0;
+}
 
-    .hd-cp-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 20px;
-        transition: background .15s;
-    }
-    .hd-cp-item:hover { background: #fafafa; }
+/* ══════════════════════════
+   NAVBAR PRINCIPALE
+   ══════════════════════════ */
+.hd-navbar-wrap {
+    background: #fff;
+    box-shadow: 0 3px 24px rgba(0,0,0,0.10);
+    position: relative;
+}
 
-    /* Image miniature */
-    .hd-cp-img-wrap {
-        flex-shrink: 0;
-        width: 52px; height: 52px;
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid #f0f0f0;
-        background: #f8f9fa;
-        display: flex; align-items: center; justify-content: center;
-        text-decoration: none;
-    }
-    .hd-cp-img-wrap img {
-        width: 100%; height: 100%;
-        object-fit: cover;
-        transition: transform .3s;
-    }
-    .hd-cp-item:hover .hd-cp-img-wrap img { transform: scale(1.06); }
-    .hd-cp-img-placeholder { color: #adb5bd; font-size: 20px; }
+/* Logo flottant */
+.hd-navbar-wrap .navbar {
+    position: relative !important;
+    padding-left: 220px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: 72px;
+}
 
-    /* Infos produit */
-    .hd-cp-info {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-    }
-    .hd-cp-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: #1a1a2e;
-        text-decoration: none;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        transition: color .2s;
-    }
-    .hd-cp-name:hover { color: #ff5722; }
-    .hd-cp-qty {
-        font-size: 12px;
-        color: #6c757d;
-    }
-    .hd-cp-qty strong { color: #ff5722; }
+.navbar-brand {
+    position: absolute !important;
+    top: 0; left: 0;
+    z-index: 300;
+    background: #fff;
+    border-radius: 0 0 18px 18px;
+    padding: 0 20px 16px !important;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.13);
+    transition: box-shadow .25s;
+}
+.navbar-brand:hover { box-shadow: 0 16px 44px rgba(0,0,0,0.20); }
+.navbar-brand img { max-height: 140px !important; width: auto; display: block; }
+.navbar-brand .brand-text {
+    font-size: 26px;
+    font-weight: 900;
+    color: #1a1a2e;
+    letter-spacing: -0.5px;
+    padding: 14px 0 4px;
+}
+.navbar-brand .brand-text span { color: #ff5722; }
 
-    /* Bouton supprimer */
-    .hd-cp-remove {
-        flex-shrink: 0;
-        width: 26px; height: 26px;
-        background: none;
-        border: 1.5px solid #e9ecef;
-        border-radius: 6px;
-        color: #adb5bd;
-        font-size: 14px;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        transition: all .2s;
-        padding: 0;
-    }
-    .hd-cp-remove:hover { border-color: #dc3545; color: #dc3545; background: #fff5f5; }
+/* Nav links — plus grands, mieux espacés */
+.hd-navbar-wrap .navbar-nav > li > a.nav-link {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #1a1a2e !important;
+    padding: 24px 18px !important;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    position: relative;
+    transition: color .2s;
+    white-space: nowrap;
+}
+.hd-navbar-wrap .navbar-nav > li > a.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 15px; left: 50%; right: 50%;
+    height: 2.5px;
+    background: #ff5722;
+    border-radius: 2px;
+    transition: left .25s, right .25s;
+}
+.hd-navbar-wrap .navbar-nav > li > a.nav-link:hover { color: #ff5722 !important; }
+.hd-navbar-wrap .navbar-nav > li > a.nav-link:hover::after { left: 18px; right: 18px; }
 
-    /* Pied de page */
-    .hd-cp-foot {
-        padding: 14px 20px 18px;
-        border-top: 1px solid #f5f5f5;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .hd-cp-subtotal {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 14px;
-        color: #6c757d;
-        padding-bottom: 8px;
-        border-bottom: 1px dashed #f0f0f0;
-    }
-    .hd-cp-subtotal strong { color: #1a1a2e; font-size: 16px; font-weight: 800; }
+/* Dropdown menus standards */
+.hd-navbar-wrap .dropdown-menu {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.14);
+    padding: 10px 0;
+    margin-top: 0;
+}
+.hd-navbar-wrap .dropdown-item {
+    font-size: 14px;
+    color: #333;
+    padding: 9px 22px;
+    border-radius: 0;
+    transition: background .15s, color .15s;
+}
+.hd-navbar-wrap .dropdown-item:hover { background: #fff6f3; color: #ff5722; }
 
-    .hd-cp-btn-cart {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 10px 16px;
-        border-radius: 9px;
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none !important;
-        transition: all .2s;
-        background: #f8f9fa;
-        color: #1a1a2e !important;
-        border: 1.5px solid #e9ecef;
-    }
-    .hd-cp-btn-cart:hover {
-        background: #1a1a2e;
-        color: #fff !important;
-        border-color: #1a1a2e;
-    }
-    .hd-cp-btn-checkout {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 11px 16px;
-        border-radius: 9px;
-        font-size: 13px;
-        font-weight: 700;
-        text-decoration: none !important;
-        background: linear-gradient(135deg, #ff5722, #ff8a65);
-        color: #fff !important;
-        border: none;
-        transition: all .2s;
-        cursor: pointer;
-    }
-    .hd-cp-btn-checkout:hover {
-        box-shadow: 0 6px 18px rgba(255,87,34,.40);
-        transform: translateY(-1px);
-    }
+/* ══════════════════════════
+   MEGA MENU PRODUITS
+   ══════════════════════════ */
 
-    /* État vide */
-    .hd-cp-empty {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 32px 20px;
-        text-align: center;
-    }
-    .hd-cp-empty-icon {
-        font-size: 44px;
-        color: #dee2e6;
-        display: block;
-        margin-bottom: 12px;
-    }
-    .hd-cp-empty p {
-        color: #6c757d;
-        font-size: 14px;
-        margin-bottom: 16px;
-    }
+/* Conteneur principal du mega menu */
+.dropdown-mega-menu > .dropdown-menu {
+    padding: 0 !important;
+    border-radius: 20px !important;
+    overflow: hidden;
+    min-width: 760px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 24px 72px rgba(0,0,0,0.16) !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+}
+/* Quand Bootstrap ouvre le mega menu, on remplace display:block par flex */
+.dropdown-mega-menu > .dropdown-menu.show {
+    display: block !important;
+}
 
-    /* ── Header compact ── */
-    .top-header                { padding: 4px 0 !important; font-size: 11px !important; }
-    .top-header .contact_detail,
-    .top-header .header_list   { font-size: 11px !important; }
-    .bottom_header             { padding: 0 !important; }
-    .bottom_header .navbar     { padding-top: 4px !important; padding-bottom: 4px !important; min-height: unset !important; }
+/* Bannière latérale gauche */
+.mega-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: linear-gradient(160deg, #1a1a2e 0%, #2d2d4e 60%, #1a1a2e 100%);
+    padding: 28px 0 20px;
+    display: flex;
+    flex-direction: column;
+}
+.mega-sidebar-title {
+    color: rgba(255,255,255,0.45);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0 22px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 8px;
+}
+.mega-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 22px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.80) !important;
+    text-decoration: none;
+    transition: background .18s, color .18s;
+    border-left: 3px solid transparent;
+}
+.mega-sidebar-link i {
+    font-size: 15px;
+    width: 18px;
+    text-align: center;
+    color: #ff7043;
+    flex-shrink: 0;
+}
+.mega-sidebar-link:hover,
+.mega-sidebar-link.active {
+    background: rgba(255,87,34,0.12);
+    color: #fff !important;
+    border-left-color: #ff5722;
+}
+.mega-sidebar-link:hover i { color: #ff5722; }
+.mega-sidebar-bottom {
+    margin-top: auto;
+    padding: 16px 22px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+.mega-sidebar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #ff5722, #ff8a65);
+    color: #fff !important;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    transition: box-shadow .2s, transform .2s;
+}
+.mega-sidebar-btn:hover { box-shadow: 0 6px 20px rgba(255,87,34,.45); transform: translateY(-1px); }
 
-    /* ── Logo flottant (hors flux) ── */
-    .header_wrap,
-    .bottom_header,
-    .bottom_header .navbar,
-    .bottom_header .navbar > .container { overflow: visible !important; }
+/* Zone centrale : catégories */
+.mega-body {
+    flex: 1;
+    padding: 24px 28px 20px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+.mega-body-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.mega-body-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #adb5bd;
+}
+.mega-body-viewall {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ff5722 !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: gap .2s;
+}
+.mega-body-viewall:hover { gap: 8px; }
 
-    /* Le navbar laisse de la place à gauche pour le logo absolu */
-    .bottom_header .navbar         { position: relative !important; padding-left: 210px !important; }
+/* Grille catégories */
+.mega-cats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px 8px;
+    flex: 1;
+}
+.mega-cat-group { }
+.mega-cat-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px 6px;
+    margin-bottom: 2px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    text-decoration: none !important;
+    transition: background .18s;
+}
+.mega-cat-header:hover { background: #fff6f3; }
+.mega-cat-header-name {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #1a1a2e;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    transition: color .18s;
+}
+.mega-cat-header:hover .mega-cat-header-name { color: #ff5722; }
+.mega-cat-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ff5722;
+    flex-shrink: 0;
+}
 
+.mega-cat-items { list-style: none; margin: 0; padding: 0 0 0 10px; }
+.mega-cat-items li a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: #555;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background .15s, color .15s, padding-left .15s;
+}
+.mega-cat-items li a::before {
+    content: '›';
+    color: #dee2e6;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    transition: color .15s, transform .15s;
+    flex-shrink: 0;
+}
+.mega-cat-items li a:hover { background: #fff6f3; color: #ff5722; padding-left: 14px; }
+.mega-cat-items li a:hover::before { color: #ff5722; }
+
+/* Pied du mega menu — bannières collections (compact) */
+.mega-footer {
+    padding: 10px 20px 12px;
+    border-top: 1px solid #f0f0f0;
+    background: #f8f9fa;
+}
+.mega-footer-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #bbb;
+    margin-bottom: 8px;
+}
+.mega-footer-banners { display: flex; gap: 8px; }
+.mega-footer-banner {
+    flex: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    height: 58px;
+    cursor: pointer;
+}
+.mega-footer-banner img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s; }
+.mega-footer-banner:hover img { transform: scale(1.08); }
+.mega-footer-banner-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.10) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 6px 10px;
+}
+.mega-footer-banner-overlay h6 { color: rgba(255,255,255,0.70); font-size: 9px; margin: 0; line-height: 1.2; }
+.mega-footer-banner-overlay h4 { color: #fff; font-size: 11px; font-weight: 700; margin: 0; line-height: 1.3; }
+
+/* Fallback si pas de catégories mega */
+.mega-fallback-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    padding: 20px;
+}
+.mega-fallback-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    text-decoration: none;
+    color: #333;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: background .18s, color .18s, transform .18s;
+    border: 1.5px solid transparent;
+}
+.mega-fallback-item i { font-size: 18px; color: #ff5722; flex-shrink: 0; }
+.mega-fallback-item:hover {
+    background: #fff6f3;
+    color: #ff5722;
+    border-color: rgba(255,87,34,.2);
+    transform: translateY(-2px);
+}
+
+/* ══════════════════════════
+   ATTR-NAV (icons droite)
+   ══════════════════════════ */
+.attr-nav > li > a {
+    display: inline-flex !important;
+    align-items: center;
+    padding: 24px 14px !important;
+    color: #1a1a2e !important;
+    font-size: 22px;
+    transition: color .2s;
+    position: relative;
+}
+.attr-nav > li > a:hover { color: #ff5722 !important; }
+
+.cart_count {
+    position: absolute;
+    top: 10px; right: 4px;
+    min-width: 18px; height: 18px;
+    background: #ff5722;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #fff;
+    padding: 0 3px;
+}
+
+/* ══════════════════════════
+   COMPTE — DROPDOWN
+   ══════════════════════════ */
+.hd-account-wrap {
+    position: relative;
+    list-style: none;
+}
+.hd-account-trigger {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 7px;
+    padding: 24px 10px !important;
+    color: #1a1a2e !important;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color .2s;
+    white-space: nowrap;
+    border: none;
+    background: none;
+}
+.hd-account-trigger:hover { color: #ff5722 !important; }
+.hd-account-trigger i { font-size: 20px; }
+
+/* Avatar initiale */
+.hd-account-avatar {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg,#ff5722,#ff8a65);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+/* Dropdown compte */
+.hd-account-dropdown {
+    position: absolute;
+    top: 100%; right: 0;
+    width: 220px;
+    padding-top: 10px;
+    background: transparent;
+    z-index: 9999;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .22s ease, transform .22s ease, visibility 0s .22s;
+    pointer-events: none;
+}
+.hd-account-wrap:hover .hd-account-dropdown {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity .22s ease, transform .22s ease, visibility 0s 0s;
+    pointer-events: auto;
+}
+.hd-account-dropdown-inner {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 14px 50px rgba(0,0,0,0.14);
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+    position: relative;
+}
+.hd-account-dropdown-inner::before {
+    content: '';
+    position: absolute;
+    top: -7px; right: 22px;
+    width: 13px; height: 13px;
+    background: #fff;
+    border-left: 1px solid #f0f0f0;
+    border-top: 1px solid #f0f0f0;
+    transform: rotate(45deg);
+    border-radius: 2px 0 0 0;
+}
+
+/* Header du dropdown */
+.hd-account-head {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4e 100%);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.hd-account-head-avatar {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg,#ff5722,#ff8a65);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+.hd-account-head-info { flex: 1; min-width: 0; }
+.hd-account-head-name {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.hd-account-head-label {
+    color: rgba(255,255,255,0.55);
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+/* Items du dropdown */
+.hd-account-menu {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+}
+.hd-account-menu li a,
+.hd-account-menu li button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 18px;
+    font-size: 13px;
+    color: #333;
+    text-decoration: none;
+    background: none;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.hd-account-menu li a:hover,
+.hd-account-menu li button:hover { background: #fff6f3; color: #ff5722; }
+.hd-account-menu li a i,
+.hd-account-menu li button i { font-size: 15px; width: 18px; text-align: center; color: #adb5bd; transition: color .15s; }
+.hd-account-menu li a:hover i,
+.hd-account-menu li button:hover i { color: #ff5722; }
+.hd-account-menu .hd-menu-divider { height: 1px; background: #f5f5f5; margin: 6px 0; }
+.hd-account-menu .hd-menu-logout a,
+.hd-account-menu .hd-menu-logout button { color: #dc3545; }
+.hd-account-menu .hd-menu-logout a i,
+.hd-account-menu .hd-menu-logout button i { color: #dc3545; }
+.hd-account-menu .hd-menu-logout a:hover,
+.hd-account-menu .hd-menu-logout button:hover { background: #fff5f5; color: #dc3545; }
+
+/* ══════════════════════════
+   CART PREVIEW (hover)
+   ══════════════════════════ */
+.hd-cart-wrap { position: relative; list-style: none; }
+.hd-cart-trigger {
+    position: relative;
+    display: inline-flex !important;
+    align-items: center;
+    padding: 24px 14px !important;
+    cursor: pointer;
+    color: #1a1a2e !important;
+    text-decoration: none;
+    font-size: 22px;
+    transition: color .2s;
+}
+.hd-cart-trigger:hover { color: #ff5722 !important; }
+
+.hd-cart-preview {
+    position: absolute;
+    top: 100%; right: 0;
+    width: 340px;
+    padding-top: 12px;
+    background: transparent;
+    z-index: 9999;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .22s ease, transform .22s ease, visibility 0s .22s;
+    pointer-events: none;
+}
+.hd-cart-wrap:hover .hd-cart-preview {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity .22s ease, transform .22s ease, visibility 0s 0s;
+    pointer-events: auto;
+}
+.hd-cart-preview-inner {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.14);
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+    position: relative;
+}
+.hd-cart-preview-inner::before {
+    content: '';
+    position: absolute;
+    top: -7px; right: 18px;
+    width: 13px; height: 13px;
+    background: #fff;
+    border-left: 1px solid #f0f0f0;
+    border-top: 1px solid #f0f0f0;
+    transform: rotate(45deg);
+    border-radius: 2px 0 0 0;
+}
+.hd-cp-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid #f5f5f5;
+}
+.hd-cp-title { font-weight: 700; font-size: 15px; color: #1a1a2e; }
+.hd-cp-badge {
+    background: rgba(255,87,34,.10);
+    color: #ff5722;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 50px;
+    border: 1px solid rgba(255,87,34,.18);
+}
+.hd-cp-list {
+    list-style: none; margin: 0; padding: 8px 0;
+    max-height: 260px; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: #e9ecef transparent;
+}
+.hd-cp-list::-webkit-scrollbar { width: 4px; }
+.hd-cp-list::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
+.hd-cp-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; transition: background .15s; }
+.hd-cp-item:hover { background: #fafafa; }
+.hd-cp-img-wrap {
+    flex-shrink: 0; width: 52px; height: 52px;
+    border-radius: 8px; overflow: hidden;
+    border: 1px solid #f0f0f0; background: #f8f9fa;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+}
+.hd-cp-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.hd-cp-item:hover .hd-cp-img-wrap img { transform: scale(1.06); }
+.hd-cp-img-placeholder { color: #adb5bd; font-size: 20px; }
+.hd-cp-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.hd-cp-name {
+    font-size: 13px; font-weight: 600; color: #1a1a2e;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: color .2s;
+}
+.hd-cp-name:hover { color: #ff5722; }
+.hd-cp-qty { font-size: 12px; color: #6c757d; }
+.hd-cp-qty strong { color: #ff5722; }
+.hd-cp-remove {
+    flex-shrink: 0; width: 26px; height: 26px;
+    background: none; border: 1.5px solid #e9ecef;
+    border-radius: 6px; color: #adb5bd; font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .2s; padding: 0;
+}
+.hd-cp-remove:hover { border-color: #dc3545; color: #dc3545; background: #fff5f5; }
+.hd-cp-foot {
+    padding: 14px 20px 18px; border-top: 1px solid #f5f5f5;
+    display: flex; flex-direction: column; gap: 8px;
+}
+.hd-cp-subtotal {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 14px; color: #6c757d;
+    padding-bottom: 8px; border-bottom: 1px dashed #f0f0f0;
+}
+.hd-cp-subtotal strong { color: #1a1a2e; font-size: 16px; font-weight: 800; }
+.hd-cp-btn-cart {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 16px; border-radius: 9px;
+    font-size: 13px; font-weight: 600; text-decoration: none !important;
+    transition: all .2s;
+    background: #f8f9fa; color: #1a1a2e !important;
+    border: 1.5px solid #e9ecef;
+}
+.hd-cp-btn-cart:hover { background: #1a1a2e; color: #fff !important; border-color: #1a1a2e; }
+.hd-cp-btn-checkout {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 11px 16px; border-radius: 9px;
+    font-size: 13px; font-weight: 700; text-decoration: none !important;
+    background: linear-gradient(135deg,#ff5722,#ff8a65);
+    color: #fff !important; border: none; transition: all .2s; cursor: pointer;
+}
+.hd-cp-btn-checkout:hover { box-shadow: 0 6px 18px rgba(255,87,34,.40); transform: translateY(-1px); }
+.hd-cp-empty {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 32px 20px; text-align: center;
+}
+.hd-cp-empty-icon { font-size: 44px; color: #dee2e6; display: block; margin-bottom: 12px; }
+.hd-cp-empty p { color: #6c757d; font-size: 14px; margin-bottom: 16px; }
+
+/* ══════════════════════════
+   SEARCH BAR
+   ══════════════════════════ */
+.search_wrap {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+/* ══════════════════════════
+   RESPONSIVE
+   ══════════════════════════ */
+@media (max-width: 991px) {
+    .hd-topbar .hd-topbar-left { display: none; }
+    .hd-topbar .hd-topbar-right { justify-content: center; }
+    .hd-navbar-wrap .navbar { padding-left: 0 !important; }
     .navbar-brand {
-        position: absolute !important;
-        top: 0;
-        left: 0;
-        z-index: 300;
-        background: #fff;
-        border-radius: 0 0 14px 14px;
-        padding: 0 18px 16px !important;
-        box-shadow: 0 8px 28px rgba(0,0,0,0.13);
-        transition: box-shadow 0.25s ease;
-        /* Hors du flux : n'influe pas sur la hauteur du header */
+        position: static !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 8px 0 !important;
     }
-    .navbar-brand:hover { box-shadow: 0 12px 36px rgba(0,0,0,0.20); }
-    .navbar-brand img   { max-height: 148px !important; width: auto; display: block; }
+    .navbar-brand img { max-height: 48px !important; }
+    .hd-account-dropdown { right: auto; left: 0; }
+}
 </style>
+
 <header class="header_wrap fixed-top header_with_topbar active">
 
-    <!-- Top bar -->
-    <div class="top-header">
+    <!-- ── Top bar ── -->
+    <div class="hd-topbar">
         <div class="container">
             <div class="row align-items-center">
 
-                <!-- Left: currency + phone -->
+                <!-- Left: devise + téléphone -->
                 <div class="col-md-6">
-                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+                    <div class="hd-topbar-left">
                         {% if site_currency %}
-                        <span class="currency_label"
-                              style="font-size:12px; font-weight:600; color:inherit; border:1px solid rgba(255,255,255,0.3); border-radius:4px; padding:2px 8px;">
+                        <span style="display:inline-flex;align-items:center;gap:4px;font-weight:700;color:#ff7043;font-size:12px;">
+                            <i class="ti-money" style="font-size:13px;"></i>
                             {{ site_currency }}
                         </span>
                         {% endif %}
-                        <ul class="contact_detail">
-                            <li>
-                                <i class="ti-mobile"></i>
-                                <span>{% if site_phone %}{{ site_phone }}{% else %}(+509) 31-59-4115{% endif %}</span>
-                            </li>
-                        </ul>
+                        <span style="display:inline-flex;align-items:center;gap:6px;">
+                            <i class="ti-mobile" style="font-size:13px;color:#ff7043;"></i>
+                            {% if site_phone %}{{ site_phone }}{% else %}(+509) 31-59-4115{% endif %}
+                        </span>
+                        <span style="display:inline-flex;align-items:center;gap:6px;">
+                            <i class="ti-truck" style="font-size:13px;color:#ff7043;"></i>
+                            Livraison rapide
+                        </span>
                     </div>
                 </div>
 
-                <!-- Right: links -->
+                <!-- Right: compare / wishlist / auth -->
                 <div class="col-md-6">
-                    <div class="text-center text-md-end">
-                        <ul class="header_list">
-                            <li>
-                                <a href="{% url 'compare' %}" style="position:relative;">
-                                    <i class="ti-control-shuffle"></i>
-                                    <span>Comparer</span>
-                                    {% if compare_count %}
-                                    <span id="compare-count-badge"
-                                          style="display:inline-flex;align-items:center;justify-content:center;
-                                                 width:17px;height:17px;background:#ff5722;color:#fff;
-                                                 border-radius:50%;font-size:10px;font-weight:700;
-                                                 margin-left:4px;vertical-align:middle;">
-                                        {{ compare_count }}
-                                    </span>
-                                    {% else %}
-                                    <span id="compare-count-badge"
-                                          style="display:none;align-items:center;justify-content:center;
-                                                 width:17px;height:17px;background:#ff5722;color:#fff;
-                                                 border-radius:50%;font-size:10px;font-weight:700;
-                                                 margin-left:4px;vertical-align:middle;">0</span>
-                                    {% endif %}
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'wishlist' %}" style="position:relative;">
-                                    <i class="ti-heart"></i>
-                                    <span>Liste de souhaits</span>
-                                    {% if wishlist_count %}
-                                    <span id="wishlist-count-badge"
-                                          style="display:inline-flex;align-items:center;justify-content:center;
-                                                 width:17px;height:17px;background:#ff5722;color:#fff;
-                                                 border-radius:50%;font-size:10px;font-weight:700;
-                                                 margin-left:4px;vertical-align:middle;">
-                                        {{ wishlist_count }}
-                                    </span>
-                                    {% else %}
-                                    <span id="wishlist-count-badge"
-                                          style="display:none;align-items:center;justify-content:center;
-                                                 width:17px;height:17px;background:#ff5722;color:#fff;
-                                                 border-radius:50%;font-size:10px;font-weight:700;
-                                                 margin-left:4px;vertical-align:middle;">0</span>
-                                    {% endif %}
-                                </a>
-                            </li>
-                            {% if user.is_authenticated %}
-                            <li>
-                                <a href="#">
-                                    <i class="ti-user"></i><span>{{ user.username }}</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'accounts:logout' %}">
-                                    <i class="ti-power-off"></i><span>Déconnexion</span>
-                                </a>
-                            </li>
+                    <div class="hd-topbar-right">
+
+                        <!-- Comparer -->
+                        <a href="{% url 'compare' %}" class="hd-tb-pill" style="position:relative;">
+                            <i class="ti-control-shuffle"></i>
+                            <span>Comparer</span>
+                            {% if compare_count %}
+                            <span id="compare-count-badge" class="hd-tb-badge">{{ compare_count }}</span>
                             {% else %}
-                            <li>
-                                <a href="{% url 'accounts:signin' %}">
-                                    <i class="ti-user"></i><span>Connexion</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'accounts:signup' %}">
-                                    <i class="ti-pencil-alt"></i><span>Inscription</span>
-                                </a>
-                            </li>
+                            <span id="compare-count-badge" class="hd-tb-badge" style="display:none;">0</span>
                             {% endif %}
-                        </ul>
+                        </a>
+
+                        <div class="hd-tb-sep"></div>
+
+                        <!-- Wishlist -->
+                        <a href="{% url 'wishlist' %}" class="hd-tb-pill" style="position:relative;">
+                            <i class="ti-heart"></i>
+                            <span>Favoris</span>
+                            {% if wishlist_count %}
+                            <span id="wishlist-count-badge" class="hd-tb-badge">{{ wishlist_count }}</span>
+                            {% else %}
+                            <span id="wishlist-count-badge" class="hd-tb-badge" style="display:none;">0</span>
+                            {% endif %}
+                        </a>
+
+                        <div class="hd-tb-sep"></div>
+
+                        {% if user.is_authenticated %}
+                        <!-- Utilisateur connecté : nom seulement (dropdown dans navbar) -->
+                        <span class="hd-tb-pill active-pill" style="cursor:default;">
+                            <i class="ti-user"></i>
+                            <span>{{ user.username }}</span>
+                        </span>
+                        <div class="hd-tb-sep"></div>
+                        <a href="{% url 'accounts:logout' %}" class="hd-tb-pill"
+                           onclick="return confirm('Se déconnecter ?');"
+                           style="color:rgba(255,120,100,0.9)!important;">
+                            <i class="ti-power-off"></i>
+                            <span>Déconnexion</span>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'accounts:signin' %}" class="hd-tb-pill">
+                            <i class="ti-user"></i>
+                            <span>Connexion</span>
+                        </a>
+                        <div class="hd-tb-sep"></div>
+                        <a href="{% url 'accounts:signup' %}" class="hd-tb-pill active-pill">
+                            <i class="ti-pencil-alt"></i>
+                            <span>Inscription</span>
+                        </a>
+                        {% endif %}
+
                     </div>
                 </div>
 
             </div>
         </div>
     </div>
+    <!-- /.hd-topbar -->
 
-    <!-- Main navbar -->
-    <div class="bottom_header dark_skin main_menu_uppercase">
+    <!-- ── Navbar principale ── -->
+    <div class="bottom_header dark_skin main_menu_uppercase hd-navbar-wrap">
         <div class="container">
             <nav class="navbar navbar-expand-lg">
 
                 <!-- Logo -->
                 <a href="{% url 'home' %}" class="navbar-brand">
                     {% if site_logo %}
-                    <img src="{{ site_logo.url }}" alt="{% if site_name %}{{ site_name }}{% else %}MAT-STORE{% endif %}"
-                         style="max-height:62px; width:auto;">
+                    <img src="{{ site_logo.url }}"
+                         alt="{% if site_name %}{{ site_name }}{% else %}MAT-STORE{% endif %}"
+                         style="max-height:110px; width:auto;">
                     {% else %}
-                    <h2 class="mb-0">{% if site_name %}{{ site_name }}{% else %}MAT-STORE{% endif %}</h2>
+                    <div class="brand-text">
+                        MAT<span>-</span>STORE
+                    </div>
                     {% endif %}
                 </a>
 
@@ -408,134 +851,165 @@
                     <span class="ion-android-menu"></span>
                 </button>
 
-                <!-- Nav links -->
-                <div id="navbarMain" class="navbar-collapse justify-content-end collapse">
+                <!-- Liens nav -->
+                <div id="navbarMain" class="navbar-collapse justify-content-between collapse">
                     <ul class="navbar-nav">
 
-                        <!-- Home -->
+                        <!-- Accueil -->
                         <li class="dropdown">
                             <a href="{% url 'home' %}" class="nav-link">Accueil</a>
                         </li>
 
                         <!-- Pages -->
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown"
-                               aria-expanded="false">
+                            <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">
                                 Pages
                             </a>
                             <div class="dropdown-menu">
-                                <ul>
-                                    <li><a class="dropdown-item nav-link nav_item" href="{% url 'about' %}">À propos de
-                                        nous</a></li>
-                                    <li><a class="dropdown-item nav-link nav_item"
-                                           href="{% url 'contact' %}">Contact</a></li>
-                                    <li><a class="dropdown-item nav-link nav_item" href="{% url 'faq' %}">FAQ</a></li>
-                                    <li><a class="dropdown-item nav-link nav_item" href="{% url 'terms' %}">Conditions
-                                        générales</a></li>
+                                <ul style="list-style:none;margin:0;padding:0;">
+                                    <li><a class="dropdown-item nav-link nav_item" href="{% url 'about' %}">
+                                        <i class="ti-info-alt" style="margin-right:8px;color:#ff5722;font-size:13px;"></i>À propos
+                                    </a></li>
+                                    <li><a class="dropdown-item nav-link nav_item" href="{% url 'contact' %}">
+                                        <i class="ti-email" style="margin-right:8px;color:#ff5722;font-size:13px;"></i>Contact
+                                    </a></li>
+                                    <li><a class="dropdown-item nav-link nav_item" href="{% url 'faq' %}">
+                                        <i class="ti-help-alt" style="margin-right:8px;color:#ff5722;font-size:13px;"></i>FAQ
+                                    </a></li>
+                                    <li><a class="dropdown-item nav-link nav_item" href="{% url 'terms' %}">
+                                        <i class="ti-bookmark-alt" style="margin-right:8px;color:#ff5722;font-size:13px;"></i>Conditions générales
+                                    </a></li>
                                     {% for p in head_pages %}
-                                    <li><a class="dropdown-item nav-link nav_item"
-                                           href="{% url 'page_detail' p.slug %}">{{ p.name }}</a></li>
+                                    <li><a class="dropdown-item nav-link nav_item" href="{% url 'page_detail' p.slug %}">{{ p.name }}</a></li>
                                     {% endfor %}
                                 </ul>
                             </div>
                         </li>
 
-                        <!-- Mega Menu Produits -->
+                        <!-- Produits (Mega menu) -->
                         <li class="dropdown dropdown-mega-menu">
-                            <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown"
-                               aria-expanded="false">
+                            <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown" aria-expanded="false">
                                 Produits
                             </a>
                             <div class="dropdown-menu">
-                                {% if my_mega_categories %}
-                                <ul class="mega-menu d-lg-flex">
-                                    {% for cat in my_mega_categories %}
-                                    <li class="mega-menu-col col-lg-3">
-                                        <ul>
-                                            <li class="dropdown-header">
-                                                <a href="{% url 'shop_list' %}?category={{ cat.slug }}"
-                                                   style="color:inherit; text-decoration:none;">
-                                                    {{ cat.name }}
-                                                </a>
-                                            </li>
-                                            {% for prod in cat.product %}
-                                            <li>
-                                                <a class="dropdown-item nav-link nav_item"
-                                                   href="{% url 'product_detail' prod.slug %}">
-                                                    {{ prod.name }}
-                                                </a>
-                                            </li>
-                                            {% empty %}
-                                            <li>
-                                                <a class="dropdown-item nav-link nav_item"
-                                                   href="{% url 'shop_list' %}?category={{ cat.slug }}">
-                                                    Voir les produits →
-                                                </a>
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <!-- Fallback si aucune catégorie marquée is_mega -->
-                                <ul>
-                                    <li>
-                                        <a class="dropdown-item nav-link nav_item" href="{% url 'shop_list' %}">
-                                            Voir tous les produits
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item nav-link nav_item"
-                                           href="{% url 'shop_list' %}?filter=new_arrival">
-                                            Nouveautés
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item nav-link nav_item"
-                                           href="{% url 'shop_list' %}?filter=best_seller">
-                                            Meilleures ventes
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item nav-link nav_item"
-                                           href="{% url 'shop_list' %}?filter=special_offer">
-                                            Offres spéciales
-                                        </a>
-                                    </li>
-                                </ul>
-                                {% endif %}
+                                <div style="display:flex; flex-direction:column;">
 
-                                <!-- Bannières collections -->
-                                {% if mega_collections %}
-                                <div class="d-lg-flex menu_banners row g-3 px-3 pt-2">
-                                    {% for col in mega_collections %}
-                                    <div class="col-sm-4">
-                                        <div class="header-banner">
-                                            <img src="{{ col.image.url }}" alt="{{ col.title }}">
-                                            <div class="banne_info">
-                                                <h6>{{ col.description }}</h6>
-                                                <h4>{{ col.title }}</h4>
-                                                <a href="{{ col.button_link }}">{{ col.button_text }}</a>
+                                    <!-- Ligne principale : sidebar + corps -->
+                                    <div style="display:flex; min-height:320px;">
+
+                                        <!-- Sidebar gauche sombre -->
+                                        <div class="mega-sidebar">
+                                            <div class="mega-sidebar-title">Navigation</div>
+                                            <a href="{% url 'shop_list' %}" class="mega-sidebar-link">
+                                                <i class="ti-layout-grid2"></i> Tous les produits
+                                            </a>
+                                            <a href="{% url 'shop_list' %}?filter=new_arrival" class="mega-sidebar-link">
+                                                <i class="ti-star"></i> Nouveautés
+                                            </a>
+                                            <a href="{% url 'shop_list' %}?filter=best_seller" class="mega-sidebar-link">
+                                                <i class="ti-crown"></i> Meilleures ventes
+                                            </a>
+                                            <a href="{% url 'shop_list' %}?filter=special_offer" class="mega-sidebar-link">
+                                                <i class="ti-tag"></i> Offres spéciales
+                                            </a>
+                                            <a href="{% url 'compare' %}" class="mega-sidebar-link">
+                                                <i class="ti-control-shuffle"></i> Comparer
+                                            </a>
+                                            <a href="{% url 'wishlist' %}" class="mega-sidebar-link">
+                                                <i class="ti-heart"></i> Ma liste de souhaits
+                                            </a>
+                                            <div class="mega-sidebar-bottom">
+                                                <a href="{% url 'shop_list' %}" class="mega-sidebar-btn">
+                                                    <i class="ti-shopping-cart"></i> Boutique complète
+                                                </a>
                                             </div>
                                         </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
 
-                                <!-- Lien global vers la boutique -->
-                                <div class="px-3 py-2" style="border-top:1px solid #f0f0f0;">
-                                    <a href="{% url 'shop_list' %}"
-                                       class="btn btn-sm btn-fill-out btn-radius w-100 text-center"
-                                       style="font-size:13px;">
-                                        Voir toute la boutique →
-                                    </a>
+                                        <!-- Corps : grille de catégories -->
+                                        <div class="mega-body">
+                                            <div class="mega-body-header">
+                                                <span class="mega-body-title">Nos catégories</span>
+                                                <a href="{% url 'shop_list' %}" class="mega-body-viewall">
+                                                    Voir tout <i class="ti-arrow-right" style="font-size:11px;"></i>
+                                                </a>
+                                            </div>
+
+                                            {% if my_mega_categories %}
+                                            <div class="mega-cats-grid">
+                                                {% for cat in my_mega_categories %}
+                                                <div class="mega-cat-group">
+                                                    <a href="{% url 'shop_list' %}?category={{ cat.slug }}" class="mega-cat-header">
+                                                        <span class="mega-cat-dot"></span>
+                                                        <span class="mega-cat-header-name">{{ cat.name }}</span>
+                                                    </a>
+                                                    {% if cat.product %}
+                                                    <ul class="mega-cat-items">
+                                                        {% for prod in cat.product %}
+                                                        <li>
+                                                            <a href="{% url 'product_detail' prod.slug %}">
+                                                                {{ prod.name }}
+                                                            </a>
+                                                        </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                    {% else %}
+                                                    <ul class="mega-cat-items">
+                                                        <li>
+                                                            <a href="{% url 'shop_list' %}?category={{ cat.slug }}">
+                                                                Voir les produits
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                    {% endif %}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            {% else %}
+                                            <!-- Fallback sans catégories mega -->
+                                            <div class="mega-fallback-grid">
+                                                <a href="{% url 'shop_list' %}" class="mega-fallback-item">
+                                                    <i class="ti-layout-grid2"></i> Tous les produits
+                                                </a>
+                                                <a href="{% url 'shop_list' %}?filter=new_arrival" class="mega-fallback-item">
+                                                    <i class="ti-star"></i> Nouveautés
+                                                </a>
+                                                <a href="{% url 'shop_list' %}?filter=best_seller" class="mega-fallback-item">
+                                                    <i class="ti-crown"></i> Meilleures ventes
+                                                </a>
+                                                <a href="{% url 'shop_list' %}?filter=special_offer" class="mega-fallback-item">
+                                                    <i class="ti-tag"></i> Offres spéciales
+                                                </a>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <!-- /.mega-body -->
+
+                                    </div>
+                                    <!-- /.flex row -->
+
+                                    <!-- Pied : bannières collections -->
+                                    {% if mega_collections %}
+                                    <div class="mega-footer">
+                                        <div class="mega-footer-title">Collections</div>
+                                        <div class="mega-footer-banners">
+                                            {% for col in mega_collections %}
+                                            <a href="{{ col.button_link }}" class="mega-footer-banner" style="text-decoration:none;">
+                                                <img src="{{ col.image.url }}" alt="{{ col.title }}">
+                                                <div class="mega-footer-banner-overlay">
+                                                    <h6>{{ col.description }}</h6>
+                                                    <h4>{{ col.title }}</h4>
+                                                </div>
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
                                 </div>
                             </div>
                         </li>
 
-                        <!-- Shop -->
+                        <!-- Boutique -->
                         <li class="dropdown">
                             <a href="{% url 'shop_list' %}" class="nav-link">Boutique</a>
                         </li>
@@ -546,117 +1020,161 @@
                         </li>
 
                     </ul>
-                </div>
 
-                <!-- Icons (search + cart) -->
-                <ul class="navbar-nav attr-nav align-items-center">
+                    <!-- ── Right icons ── -->
+                    <ul class="navbar-nav attr-nav align-items-center" style="flex-direction:row;">
 
-                    <!-- Search -->
-                    <li>
-                        <a href="javascript:void(0);" class="nav-link search_trigger">
-                            <i class="linearicons-magnifier"></i>
-                        </a>
-                        <div class="search_wrap">
-                            <span class="close-search"><i class="ion-ios-close-empty"></i></span>
-                            <form method="GET" action="{% url 'shop_list' %}">
-                                <input type="text" name="q" placeholder="Rechercher un produit..." id="search_input"
-                                       class="form-control">
-                                <button type="submit" class="search_icon">
-                                    <i class="ion-ios-search-strong"></i>
-                                </button>
-                            </form>
-                        </div>
-                        <div class="search_overlay"></div>
-                    </li>
+                        <!-- Recherche -->
+                        <li>
+                            <a href="javascript:void(0);" class="nav-link search_trigger" style="font-size:19px;">
+                                <i class="linearicons-magnifier"></i>
+                            </a>
+                            <div class="search_wrap">
+                                <span class="close-search"><i class="ion-ios-close-empty"></i></span>
+                                <form method="GET" action="{% url 'shop_list' %}">
+                                    <input type="text" name="q" placeholder="Rechercher un produit…" id="search_input"
+                                           class="form-control">
+                                    <button type="submit" class="search_icon">
+                                        <i class="ion-ios-search-strong"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="search_overlay"></div>
+                        </li>
 
-                    <!-- Cart -->
-                    <li class="hd-cart-wrap">
-                        <a href="{% url 'cart' %}" class="nav-link hd-cart-trigger">
-                            <i class="linearicons-cart"></i>
-                            <span class="cart_count" id="cart-count-badge">{{ cart_count|default:0 }}</span>
-                        </a>
-
-                        <!-- Aperçu panier (survol) -->
-                        <div class="hd-cart-preview">
-                            <div class="hd-cart-preview-inner">
-
-                                <!-- En-tête -->
-                                <div class="hd-cp-head">
-                                <span class="hd-cp-title">
-                                    <i class="linearicons-cart" style="margin-right:6px;"></i>
-                                    Mon panier
+                        {% if user.is_authenticated %}
+                        <!-- Compte (dropdown) -->
+                        <li class="hd-account-wrap">
+                            <a href="#" class="hd-account-trigger" aria-haspopup="true">
+                                <div class="hd-account-avatar">{{ user.username|slice:":1" }}</div>
+                                <span class="d-none d-xl-inline" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;">
+                                    {{ user.username }}
                                 </span>
-                                    <span class="hd-cp-badge">{{ cart_count|default:0 }} article{{ cart_count|default:0|pluralize }}</span>
-                                </div>
-
-                                {% if cart_header_items %}
-
-                                <!-- Liste articles -->
-                                <ul class="hd-cp-list">
-                                    {% for item in cart_header_items %}
-                                    <li class="hd-cp-item">
-                                        <!-- Image -->
-                                        <a href="{% url 'product_detail' item.slug %}" class="hd-cp-img-wrap">
-                                            {% if item.image %}
-                                            <img src="{{ item.image }}" alt="{{ item.name }}">
-                                            {% else %}
-                                            <div class="hd-cp-img-placeholder"><i class="ti-image"></i></div>
-                                            {% endif %}
-                                        </a>
-                                        <!-- Infos -->
-                                        <div class="hd-cp-info">
-                                            <a href="{% url 'product_detail' item.slug %}" class="hd-cp-name">
-                                                {{ item.name }}
-                                            </a>
-                                            <span class="hd-cp-qty">
-                                            {{ item.qty }} × <strong>{{ item.display_price }}</strong>
-                                        </span>
+                                <i class="ti-angle-down" style="font-size:10px;opacity:0.6;margin-left:2px;"></i>
+                            </a>
+                            <div class="hd-account-dropdown">
+                                <div class="hd-account-dropdown-inner">
+                                    <!-- Header -->
+                                    <div class="hd-account-head">
+                                        <div class="hd-account-head-avatar">{{ user.username|slice:":1" }}</div>
+                                        <div class="hd-account-head-info">
+                                            <div class="hd-account-head-name">{{ user.username }}</div>
+                                            <div class="hd-account-head-label">Compte client</div>
                                         </div>
-                                        <!-- Supprimer -->
-                                        <button class="hd-cp-remove btn-remove-cart-header"
-                                                data-url="{% url 'remove_from_cart' item.product_id %}"
-                                                title="Retirer">
-                                            <i class="ion-close"></i>
-                                        </button>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-
-                                <!-- Pied -->
-                                <div class="hd-cp-foot">
-                                    <div class="hd-cp-subtotal">
-                                        <span>Sous-total</span>
-                                        <strong>{{ cart_header_subtotal }}</strong>
                                     </div>
-                                    <a href="{% url 'cart' %}" class="hd-cp-btn-cart">
-                                        <i class="linearicons-cart"></i> Voir le panier
-                                    </a>
-                                    <a href="#" class="hd-cp-btn-checkout"
-                                       onclick="showToast('Le paiement sera bientôt disponible.', 'info'); return false;">
-                                        <i class="ti-lock"></i> Commander
-                                    </a>
+                                    <!-- Menu items -->
+                                    <ul class="hd-account-menu">
+                                        <li>
+                                            <a href="{% url 'dashboard:overview' %}">
+                                                <i class="ti-dashboard"></i> Tableau de bord
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'dashboard:overview' %}">
+                                                <i class="ti-user"></i> Mon profil
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'dashboard:addresses' %}">
+                                                <i class="ti-location-pin"></i> Mes adresses
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#">
+                                                <i class="ti-package"></i> Mes commandes
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'wishlist' %}">
+                                                <i class="ti-heart"></i> Mes favoris
+                                            </a>
+                                        </li>
+                                        <li class="hd-menu-divider"></li>
+                                        <li class="hd-menu-logout">
+                                            <a href="{% url 'accounts:logout' %}"
+                                               onclick="return confirm('Se déconnecter ?');">
+                                                <i class="ti-power-off"></i> Déconnexion
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </div>
+                            </div>
+                        </li>
+                        {% endif %}
 
-                                {% else %}
+                        <!-- Panier -->
+                        <li class="hd-cart-wrap">
+                            <a href="{% url 'cart' %}" class="nav-link hd-cart-trigger">
+                                <i class="linearicons-cart"></i>
+                                <span class="cart_count" id="cart-count-badge">{{ cart_count|default:0 }}</span>
+                            </a>
 
-                                <!-- Panier vide -->
-                                <div class="hd-cp-empty">
-                                    <i class="linearicons-cart hd-cp-empty-icon"></i>
-                                    <p>Votre panier est vide</p>
-                                    <a href="{% url 'shop_list' %}" class="hd-cp-btn-cart">
-                                        Découvrir la boutique
-                                    </a>
+                            <!-- Aperçu panier -->
+                            <div class="hd-cart-preview">
+                                <div class="hd-cart-preview-inner">
+                                    <div class="hd-cp-head">
+                                        <span class="hd-cp-title">
+                                            <i class="linearicons-cart" style="margin-right:6px;"></i>Mon panier
+                                        </span>
+                                        <span class="hd-cp-badge">{{ cart_count|default:0 }} article{{ cart_count|default:0|pluralize }}</span>
+                                    </div>
+
+                                    {% if cart_header_items %}
+                                    <ul class="hd-cp-list">
+                                        {% for item in cart_header_items %}
+                                        <li class="hd-cp-item">
+                                            <a href="{% url 'product_detail' item.slug %}" class="hd-cp-img-wrap">
+                                                {% if item.image %}
+                                                <img src="{{ item.image }}" alt="{{ item.name }}">
+                                                {% else %}
+                                                <div class="hd-cp-img-placeholder"><i class="ti-image"></i></div>
+                                                {% endif %}
+                                            </a>
+                                            <div class="hd-cp-info">
+                                                <a href="{% url 'product_detail' item.slug %}" class="hd-cp-name">{{ item.name }}</a>
+                                                <span class="hd-cp-qty">{{ item.qty }} × <strong>{{ item.display_price }}</strong></span>
+                                            </div>
+                                            <button class="hd-cp-remove btn-remove-cart-header"
+                                                    data-url="{% url 'remove_from_cart' item.product_id %}"
+                                                    title="Retirer">
+                                                <i class="ion-close"></i>
+                                            </button>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <div class="hd-cp-foot">
+                                        <div class="hd-cp-subtotal">
+                                            <span>Sous-total</span>
+                                            <strong>{{ cart_header_subtotal }}</strong>
+                                        </div>
+                                        <a href="{% url 'cart' %}" class="hd-cp-btn-cart">
+                                            <i class="linearicons-cart"></i> Voir le panier
+                                        </a>
+                                        <a href="#" class="hd-cp-btn-checkout"
+                                           onclick="showToast('Le paiement sera bientôt disponible.','info'); return false;">
+                                            <i class="ti-lock"></i> Commander
+                                        </a>
+                                    </div>
+                                    {% else %}
+                                    <div class="hd-cp-empty">
+                                        <i class="linearicons-cart hd-cp-empty-icon"></i>
+                                        <p>Votre panier est vide</p>
+                                        <a href="{% url 'shop_list' %}" class="hd-cp-btn-cart">
+                                            Découvrir la boutique
+                                        </a>
+                                    </div>
+                                    {% endif %}
                                 </div>
+                            </div>
+                        </li>
+                        <!-- /.hd-cart-wrap -->
 
-                                {% endif %}
-                            </div><!-- /.hd-cart-preview-inner -->
-                        </div><!-- /.hd-cart-preview -->
-                    </li>
-
-                </ul>
+                    </ul>
+                </div><!-- /.navbar-collapse -->
 
             </nav>
         </div>
     </div>
+    <!-- /.hd-navbar-wrap -->
 
 </header>
