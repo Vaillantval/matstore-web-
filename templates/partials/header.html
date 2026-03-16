@@ -314,7 +314,27 @@
                 <div class="col-md-6">
                     <div class="text-center text-md-end">
                         <ul class="header_list">
-                            <li><a href="#"><i class="ti-control-shuffle"></i><span>Comparer</span></a></li>
+                            <li>
+                                <a href="{% url 'compare' %}" style="position:relative;">
+                                    <i class="ti-control-shuffle"></i>
+                                    <span>Comparer</span>
+                                    {% if compare_count %}
+                                    <span id="compare-count-badge"
+                                          style="display:inline-flex;align-items:center;justify-content:center;
+                                                 width:17px;height:17px;background:#ff5722;color:#fff;
+                                                 border-radius:50%;font-size:10px;font-weight:700;
+                                                 margin-left:4px;vertical-align:middle;">
+                                        {{ compare_count }}
+                                    </span>
+                                    {% else %}
+                                    <span id="compare-count-badge"
+                                          style="display:none;align-items:center;justify-content:center;
+                                                 width:17px;height:17px;background:#ff5722;color:#fff;
+                                                 border-radius:50%;font-size:10px;font-weight:700;
+                                                 margin-left:4px;vertical-align:middle;">0</span>
+                                    {% endif %}
+                                </a>
+                            </li>
                             <li>
                                 <a href="{% url 'wishlist' %}" style="position:relative;">
                                     <i class="ti-heart"></i>

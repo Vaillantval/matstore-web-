@@ -46,6 +46,13 @@
                style="{% if product.pk in wishlist_ids %}color:#ff5722;{% endif %}">
                 <i class="icon-heart"></i>
             </a>
+            <a href="#" class="pc-ov-btn btn-add-compare"
+               data-product-id="{{ product.pk }}"
+               data-url="{% url 'add_to_compare' product.pk %}"
+               title="Comparer"
+               style="{% if product.pk in compare_ids %}color:#ff5722;{% endif %}">
+                <i class="icon-shuffle"></i>
+            </a>
         </div>
     </div>
 

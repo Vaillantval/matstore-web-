@@ -22,6 +22,7 @@ def cart_context(request):
 
     cart = _migrate_cart_session(request)
     wishlist = request.session.get('wishlist', [])
+    compare = request.session.get('compare', [])
     cart_count = sum(cart.values()) if cart else 0
 
     if not cart:
@@ -31,6 +32,8 @@ def cart_context(request):
             'cart_header_subtotal': None,
             'wishlist_ids': wishlist,
             'wishlist_count': len(wishlist),
+            'compare_ids': compare,
+            'compare_count': len(compare),
         }
 
     setting = _get_setting()
@@ -86,6 +89,8 @@ def cart_context(request):
         'cart_header_subtotal': cart_header_subtotal,
         'wishlist_ids': wishlist,
         'wishlist_count': len(wishlist),
+        'compare_ids': compare,
+        'compare_count': len(compare),
     }
 
 

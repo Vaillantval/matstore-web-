@@ -22,7 +22,9 @@
       "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\" && ./myenv/Scripts/pip install django-ckeditor-5 2>&1 | tail -5)",
       "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && ../myenv/Scripts/python.exe -c \"\nimport os, sys; sys.path.insert\\(0,'.'\\); os.environ['DJANGO_SETTINGS_MODULE']='config.settings'\nimport django; django.setup\\(\\)\nfrom django.test import RequestFactory\nfrom django.contrib.admin.sites import AdminSite\nfrom shop.admin import CarrierAdmin\nfrom shop.models.Carrier import Carrier\nsite = AdminSite\\(\\)\nma = CarrierAdmin\\(Carrier, site\\)\nfrom django.contrib.auth.models import User\nrf = RequestFactory\\(\\)\nreq = rf.get\\('/admin/shop/carrier/'\\)\nreq.user = User\\(is_staff=True, is_superuser=True\\)\ntry:\n    resp = ma.changeform_view\\(req\\)\n    print\\('OK'\\)\nexcept Exception as e:\n    import traceback; traceback.print_exc\\(\\)\n\" 2>&1)",
       "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && ../myenv/Scripts/python.exe manage.py makemigrations 2>&1 && ../myenv/Scripts/python.exe manage.py migrate 2>&1)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(python:*)",
+      "Bash(find:*)"
     ]
   }
 }

@@ -24,10 +24,18 @@
         background: #f8f9fa;
         overflow: hidden;
     }
-    .shop_container .product_img > a,
+    .shop_container .product_img > a {
+        position: absolute;
+        inset: 0;
+    }
     .shop_container .product_img > .product_action_box {
         position: absolute;
         inset: 0;
+        top: 0;
+        transform: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .shop_container .product_img img {
         position: absolute;

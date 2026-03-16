@@ -464,8 +464,11 @@
                                 {% if in_wishlist %}style="border-color:#ff5722; color:#ff5722;"{% endif %}>
                             <i class="icon-heart"></i>
                         </button>
-                        <button type="button" class="btn_compare" title="Comparer"
-                                onclick="showToast('Fonctionnalité de comparaison bientôt disponible.', 'info')">
+                        <button type="button" class="btn_compare btn-add-compare"
+                                data-product-id="{{ product.pk }}"
+                                data-url="{% url 'add_to_compare' product.pk %}"
+                                title="Comparer"
+                                {% if product.pk in compare_ids %}style="border-color:#ff5722; color:#ff5722;"{% endif %}>
                             <i class="icon-shuffle"></i>
                         </button>
                         <span style="display:flex; align-items:center; gap:6px; margin-left:8px; font-size:12px; color:#6c757d;">

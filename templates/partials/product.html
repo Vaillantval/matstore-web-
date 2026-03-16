@@ -1,7 +1,7 @@
 {% load static price_filters %}
 {% with first_img=product.images.first %}
 <div class="product"
-     onclick="if(!event.target.closest('.product_action_box')) window.location.href='{% url 'product_detail' product.slug %}'"
+     onclick="if(!event.target.closest('.product_action_box, a, button')) window.location.href='{% url 'product_detail' product.slug %}'"
      style="cursor:pointer;">
     <div class="product_img">
         <a href="{% url 'product_detail' product.slug %}" onclick="event.stopPropagation()">
@@ -24,8 +24,11 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" title="Comparer"
-                       onclick="event.stopPropagation(); showToast('Comparaison bientôt disponible.', 'info'); return false;">
+                    <a href="#" class="btn-add-compare"
+                       data-product-id="{{ product.pk }}"
+                       data-url="{% url 'add_to_compare' product.pk %}"
+                       title="Comparer"
+                       style="{% if product.pk in compare_ids %}color:#ff5722;{% endif %}">
                         <i class="icon-shuffle"></i>
                     </a>
                 </li>
@@ -49,7 +52,7 @@
         {% if product.is_new_arrival %}<span class="pr_flash bg-success">Nouveau</span>{% endif %}
         {% if product.is_special_offer %}<span class="pr_flash">Promo</span>{% endif %}
     </div>
-    <div class="product_info" onclick="event.stopPropagation(); window.location.href='{% url 'product_detail' product.slug %}'">
+    <div class="product_info" onclick="if(!event.target.closest('a, button')) window.location.href='{% url 'product_detail' product.slug %}'">
         <h6 class="product_title">
             <a href="{% url 'product_detail' product.slug %}" onclick="event.stopPropagation()">{{ product.name }}</a>
         </h6>
@@ -77,6 +80,24 @@
             <span class="badge bg-secondary" style="font-size:11px;">Rupture de stock</span>
         </div>
         {% endif %}
+
+        <!-- Boutons permanents -->
+        <div style="display:flex; gap:6px; margin-top:10px;">
+            <a href="#" class="btn btn-fill-out btn-sm flex-grow-1 btn-add-cart"
+               data-product-id="{{ product.pk }}"
+               data-url="{% url 'add_to_cart' product.pk %}"
+               style="font-size:12px; padding:6px 10px;
+                      {% if not product.is_available or product.stock == 0 %}opacity:.5;pointer-events:none;{% endif %}">
+                <i class="icon-basket-loaded"></i> Ajouter
+            </a>
+            <a href="#" class="btn btn-outline-secondary btn-sm btn-add-compare"
+               data-product-id="{{ product.pk }}"
+               data-url="{% url 'add_to_compare' product.pk %}"
+               title="Comparer"
+               style="font-size:14px; padding:6px 10px; {% if product.pk in compare_ids %}color:#ff5722; border-color:#ff5722;{% endif %}">
+                <i class="icon-shuffle"></i>
+            </a>
+        </div>
     </div>
 </div>
 {% endwith %}
