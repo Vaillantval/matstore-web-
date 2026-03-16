@@ -1,113 +1,300 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 <style>
-    .pw-wrap { position: relative; }
-    .pw-wrap input { padding-right: 42px !important; }
-    .pw-eye {
-        position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-        background: none; border: none; cursor: pointer;
-        color: #8a94a6; font-size: 17px; line-height: 1; padding: 2px;
-        transition: color .16s;
-    }
-    .pw-eye:hover { color: #1a1a2e; }
-    .pw-eye.visible { color: #ff5722; }
+/* ── Layout ── */
+.auth-page {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: stretch;
+}
+
+/* ── Left brand panel ── */
+.auth-brand {
+    width: 42%;
+    background: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 52px;
+    position: relative;
+    overflow: hidden;
+}
+.auth-brand::before {
+    content: '';
+    position: absolute;
+    width: 340px; height: 340px;
+    border-radius: 50%;
+    background: rgba(255,87,34,.12);
+    top: -80px; right: -80px;
+}
+.auth-brand::after {
+    content: '';
+    position: absolute;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,87,34,.07);
+    bottom: -40px; left: -60px;
+}
+.auth-brand-logo {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 52px; position: relative; z-index: 1;
+}
+.auth-brand-icon {
+    width: 42px; height: 42px;
+    background: #ff5722; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #fff;
+}
+.auth-brand-name { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: .3px; }
+
+.auth-brand-title {
+    font-size: 30px; font-weight: 800; color: #fff;
+    line-height: 1.25; margin-bottom: 14px; position: relative; z-index: 1;
+}
+.auth-brand-title span { color: #ff5722; }
+.auth-brand-sub {
+    font-size: 14px; color: rgba(255,255,255,.5);
+    line-height: 1.65; margin-bottom: 44px; position: relative; z-index: 1;
+}
+
+.auth-perks { list-style: none; padding: 0; margin: 0; position: relative; z-index: 1; }
+.auth-perk {
+    display: flex; align-items: flex-start; gap: 13px;
+    margin-bottom: 20px;
+}
+.auth-perk-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: rgba(255,87,34,.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; color: #ff5722; flex-shrink: 0; margin-top: 1px;
+}
+.auth-perk-title { font-size: 13.5px; font-weight: 700; color: #fff; }
+.auth-perk-desc  { font-size: 12px; color: rgba(255,255,255,.42); margin-top: 1px; }
+
+/* ── Right form panel ── */
+.auth-form-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f4f5f7;
+    padding: 48px 24px;
+}
+.auth-form-box {
+    width: 100%; max-width: 420px;
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #eaecf0;
+    box-shadow: 0 4px 32px rgba(0,0,0,.07);
+    padding: 40px 36px;
+}
+
+.auth-form-header { margin-bottom: 28px; }
+.auth-form-header h2 {
+    font-size: 23px; font-weight: 800; color: #1a1a2e; margin: 0 0 5px;
+}
+.auth-form-header p { font-size: 13.5px; color: #8a94a6; margin: 0; }
+
+/* ── Alert ── */
+.auth-alert {
+    padding: 11px 14px; border-radius: 9px; font-size: 13px; font-weight: 500;
+    margin-bottom: 18px; display: flex; align-items: flex-start; gap: 9px;
+}
+.auth-alert.danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.auth-alert.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.auth-alert i { font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+
+/* ── Field ── */
+.auth-field { margin-bottom: 18px; }
+.auth-label {
+    display: block; font-size: 12.5px; font-weight: 700;
+    color: #1a1a2e; margin-bottom: 7px; letter-spacing: .1px;
+}
+.auth-input {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e2e5ea; border-radius: 9px;
+    font-size: 14px; color: #1a1a2e; background: #fff;
+    outline: none; transition: border-color .18s, box-shadow .18s;
+    font-family: inherit;
+}
+.auth-input:focus {
+    border-color: #ff5722;
+    box-shadow: 0 0 0 3px rgba(255,87,34,.10);
+}
+.auth-input::placeholder { color: #b0b8c4; }
+.auth-field-error { font-size: 12px; color: #dc2626; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+
+/* ── Password wrap ── */
+.pw-wrap { position: relative; }
+.pw-wrap .auth-input { padding-right: 44px; }
+.pw-eye {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: #b0b8c4; font-size: 17px; line-height: 1; padding: 2px;
+    transition: color .16s;
+}
+.pw-eye:hover  { color: #1a1a2e; }
+.pw-eye.visible { color: #ff5722; }
+
+/* ── Submit btn ── */
+.auth-submit {
+    width: 100%; padding: 13px;
+    background: #ff5722; color: #fff;
+    border: none; border-radius: 9px;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: opacity .18s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 6px;
+}
+.auth-submit:hover  { opacity: .91; }
+.auth-submit:active { transform: scale(.99); }
+
+/* ── Footer note ── */
+.auth-note {
+    text-align: center; font-size: 13.5px; color: #8a94a6;
+    margin-top: 22px; padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+}
+.auth-note a { color: #ff5722; font-weight: 700; text-decoration: none; }
+.auth-note a:hover { text-decoration: underline; }
+
+/* ── Divider ── */
+.auth-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 22px 0; color: #b0b8c4; font-size: 12px;
+}
+.auth-divider::before,
+.auth-divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: #eaecf0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .auth-brand { display: none; }
+}
 </style>
 
-<div style="background:#f8f9fa; padding:18px 0; border-bottom:1px solid #e9ecef;">
-    <div class="container">
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <h4 class="mb-0" style="font-weight:700; color:#1a1a2e;">Connexion</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}" style="color:#ff5722;">Accueil</a></li>
-                    <li class="breadcrumb-item active">Connexion</li>
-                </ol>
-            </nav>
+<div class="auth-page">
+
+    <!-- ── Left brand ── -->
+    <div class="auth-brand">
+        <div class="auth-brand-logo">
+            <div class="auth-brand-icon"><i class="linearicons-cart"></i></div>
+            <span class="auth-brand-name">MAT-STORE</span>
         </div>
-    </div>
-</div>
 
-<div class="main_content">
-    <div class="login_register_wrap section">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-xl-5 col-md-8">
-                    <div class="login_wrap">
-                        <div class="padding_eight_all bg-white">
+        <h1 class="auth-brand-title">
+            Bon retour<br>parmi nous <span>!</span>
+        </h1>
+        <p class="auth-brand-sub">
+            Connectez-vous pour accéder à votre espace<br>
+            personnel et profiter de tous nos services.
+        </p>
 
-                            <div class="heading_s1 text-center mb-3">
-                                <h3>Connexion</h3>
-                                <p style="font-size:13.5px;color:#718096;">Accédez à votre espace personnel</p>
-                            </div>
-
-                            {% if messages %}
-                            {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
-                                {{ message }}
-                            </div>
-                            {% endfor %}
-                            {% endif %}
-
-                            {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-                            </div>
-                            {% endif %}
-
-                            <form method="post" novalidate>
-                                {% csrf_token %}
-
-                                <div class="form-group mb-3">
-                                    <label style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:5px;display:block;">
-                                        Nom d'utilisateur
-                                    </label>
-                                    {{ form.username }}
-                                    {% for error in form.username.errors %}
-                                    <div class="text-danger" style="font-size:12px;margin-top:4px;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-
-                                <div class="form-group mb-3">
-                                    <label style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:5px;display:block;">
-                                        Mot de passe
-                                    </label>
-                                    <div class="pw-wrap">
-                                        {{ form.password }}
-                                        <button type="button" class="pw-eye" data-target="{{ form.password.id_for_label }}" tabindex="-1">
-                                            <i class="ion-eye"></i>
-                                        </button>
-                                    </div>
-                                    {% for error in form.password.errors %}
-                                    <div class="text-danger" style="font-size:12px;margin-top:4px;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-
-                                <div class="form-group mb-3">
-                                    <button type="submit" class="btn btn-fill-out btn-block">
-                                        Se connecter
-                                    </button>
-                                </div>
-                            </form>
-
-                            <div class="form-note text-center" style="font-size:13.5px;">
-                                Pas encore de compte ?
-                                <a href="{% url 'accounts:signup' %}" style="color:#ff5722;font-weight:600;">
-                                    Créer un compte
-                                </a>
-                            </div>
-
-                        </div>
-                    </div>
+        <ul class="auth-perks">
+            <li class="auth-perk">
+                <div class="auth-perk-icon"><i class="ti-package"></i></div>
+                <div>
+                    <div class="auth-perk-title">Suivi de commandes</div>
+                    <div class="auth-perk-desc">Suivez l'état de vos livraisons en temps réel</div>
                 </div>
+            </li>
+            <li class="auth-perk">
+                <div class="auth-perk-icon"><i class="ti-heart"></i></div>
+                <div>
+                    <div class="auth-perk-title">Liste de souhaits</div>
+                    <div class="auth-perk-desc">Sauvegardez vos articles favoris</div>
+                </div>
+            </li>
+            <li class="auth-perk">
+                <div class="auth-perk-icon"><i class="ti-location-pin"></i></div>
+                <div>
+                    <div class="auth-perk-title">Adresses sauvegardées</div>
+                    <div class="auth-perk-desc">Checkout rapide avec vos adresses enregistrées</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ── Right form ── -->
+    <div class="auth-form-side">
+        <div class="auth-form-box">
+
+            <div class="auth-form-header">
+                <h2>Connexion</h2>
+                <p>Entrez vos identifiants pour continuer</p>
             </div>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="auth-alert {% if message.tags == 'error' %}danger{% else %}success{% endif %}">
+                <i class="{% if message.tags == 'error' %}ti-close{% else %}ti-check{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% if form.non_field_errors %}
+            <div class="auth-alert danger">
+                <i class="ti-close"></i>
+                <span>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</span>
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="auth-field">
+                    <label class="auth-label" for="{{ form.username.id_for_label }}">
+                        Nom d'utilisateur
+                    </label>
+                    {{ form.username }}
+                    {% for error in form.username.errors %}
+                    <div class="auth-field-error"><i class="ti-close" style="font-size:10px;"></i>{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="auth-field">
+                    <label class="auth-label" for="{{ form.password.id_for_label }}">
+                        Mot de passe
+                    </label>
+                    <div class="pw-wrap">
+                        {{ form.password }}
+                        <button type="button" class="pw-eye" data-target="{{ form.password.id_for_label }}" tabindex="-1">
+                            <i class="ion-eye"></i>
+                        </button>
+                    </div>
+                    {% for error in form.password.errors %}
+                    <div class="auth-field-error"><i class="ti-close" style="font-size:10px;"></i>{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="auth-submit">
+                    <i class="ti-unlock"></i> Se connecter
+                </button>
+            </form>
+
+            <div class="auth-note">
+                Pas encore de compte ?
+                <a href="{% url 'accounts:signup' %}">Créer un compte</a>
+            </div>
+
         </div>
     </div>
+
 </div>
 
 <script>
 (function () {
+    /* ── Style injected inputs ── */
+    document.querySelectorAll('.auth-field input').forEach(function (el) {
+        el.classList.add('auth-input');
+        el.classList.remove('form-control');
+    });
+
+    /* ── Eye toggle ── */
     document.querySelectorAll('.pw-eye').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var input = document.getElementById(btn.dataset.target);

@@ -1,124 +1,330 @@
 {% load static %}
-<footer class="footer_dark">
-    <div class="footer_top">
+
+<footer class="site-footer">
+
+    <!-- ── Newsletter (top border strip) ── -->
+    <div class="ft-nl-bar">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-6 col-sm-12">
-                    <div class="widget">
-                        <div class="footer_logo"><a href="#">
-                            <h2>{% if site_name %}{{ site_name }}{% else %}Jstore{% endif %}</h2>
-                        </a></div>
-                        <p>{% if site_description %}{{ site_description }}{% else %}Retrouvez tous les accessoires et
-                            habits pour
-                            femmes, jeunes filles etc...{% endif %}</p>
-                    </div>
-                    <div class="widget">
-                        <ul class="social_icons social_white">
-                            <li><a target="_blank"
-                                   href="https://facebook.com"><i
-                                    class="ion-social-facebook"></i></a>
-                            </li>
-                            <li></li>
-                            <li></li>
-                            <li><a target="_blank"
-                                   href="https://www.youtube.com/channel/UCkqALrIVPEyGnnbmiFl3lQA/?sub_confirmation=1"><i
-                                    class="ion-social-youtube-outline"></i></a>
-                            </li>
-                            <li><a target="_blank"
-                                   href="https://www.instagram.com/mudey_formation/"><i
-                                    class="ion-social-instagram-outline"></i></a>
-                            </li>
-                        </ul>
-                    </div>
+            <div class="ft-nl-bar-inner">
+                <div class="ft-nl-bar-text">
+                    <i class="ti-bell ft-nl-bar-ico"></i>
+                    <span>Abonnez-vous à notre newsletter</span>
+                    <span class="ft-nl-bar-muted">— offres exclusives, nouveautés, promotions.</span>
                 </div>
-                <div class="col-lg-2 col-md-3 col-sm-6">
-                    <div class="widget">
-                        <h6 class="widget_title">Useful Links</h6>
-                        <ul class="widget_links">
-                            <li><a href="{% url 'about' %}">À propos de nous</a></li>
-                            <li><a href="{% url 'contact' %}">Contactez-nous</a></li>
-                            <li><a href="{% url 'faq' %}">FAQ</a></li>
-                            <li><a href="{% url 'terms' %}">Conditions générales</a></li>
-                            {% for p in foot_pages %}
-                            <li><a href="{% url 'page_detail' p.slug %}">{{ p.name }}</a></li>
-                            {% endfor %}
-                        </ul>
+                <form class="ft-nl-bar-form" onsubmit="return false;">
+                    <div class="ft-nl-bar-field">
+                        <i class="ti-email ft-nl-bar-field-ico"></i>
+                        <input type="email" class="ft-nl-bar-input" placeholder="votre@email.com">
                     </div>
-                </div>
-                <div class="col-lg-2 col-md-3 col-sm-6">
-                    <div class="widget">
-                        <h6 class="widget_title">Category</h6>
-                        <ul class="widget_links">
-                            <li><a href="#">Men</a></li>
-                            <li><a href="#">Woman</a></li>
-                            <li><a href="#">Kids</a></li>
-                            <li><a href="#">Best Saller</a>
-                            </li>
-                            <li><a href="#">New Arrivals</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-6 col-sm-6">
-                    <div class="widget">
-                        <h6 class="widget_title">My Account</h6>
-                        <ul class="widget_links">
-                            <li><a href="#">Mon compte</a></li>
-                            <li><a href="{% url 'terms' %}">Conditions générales</a></li>
-                            <li><a href="#">Connexion</a></li>
-                            <li><a href="#">Inscription</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6">
-                    <div class="widget">
-                        <h6 class="widget_title">Contact Info</h6>
-                        <ul class="contact_info contact_info_light">
-                            <li><i
-                                    class="ti-location-pin"></i>
-                                <p>{% if site_street %}{{ site_street }}, {{ site_city }}, {{ site_state }}
-                                    {{ site_code_postal }}{% else %}21 Rue Rubens 59800 Lille{% endif %}</p>
-                            </li>
-                            <li><i class="ti-email"></i><a
-                                    href="mailto:{% if site_email %}{{ site_email }}{% else %}contact@jstore.fr{% endif %}">
-                                {% if site_email %}{{ site_email }}{% else %}mastore@gmail.com{% endif %}</a>
-                            </li>
-                            <li><i class="ti-mobile"></i>
-                                <p>{% if site_phone %}{{ site_phone }}{% else %}+509 31 51 4115{% endif %}</p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+                    <button type="submit" class="ft-nl-bar-btn">S'abonner</button>
+                </form>
             </div>
         </div>
     </div>
-    <div class="bottom_footer border-top-tran">
+
+    <!-- ── Main footer ── -->
+    <div class="ft-main">
         <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="mb-md-0 text-center text-md-start"> {% if site_copyright %}{{ site_copyright }}{% else
-                        %}©2026
-                        MATSTORE tout droit reservé {% endif %} </p>
-                </div>
-                <div class="col-md-6">
-                    <ul
-                            class="footer_payment text-center text-lg-end d-flex gap-2 justify-content-end">
-                        <li><a href="#"><img
-                                src="{% static 'assets/images/visa.png' %}" alt="visa"></a></li>
-                        <li><a href="#"><img
-                                src="{% static 'assets/images/discover.png' %}" alt="discover"></a>
+            <div class="row g-5">
+
+                <!-- Col 1 : Brand + contact -->
+                <div class="col-lg-4 col-md-12">
+                    <a href="{% url 'home' %}" class="ft-brand-link">
+                        <div class="ft-brand-logo">
+                            <div class="ft-brand-icon"><i class="linearicons-cart"></i></div>
+                            <span class="ft-brand-name">{% if site_name %}{{ site_name }}{% else %}MAT-STORE{% endif %}</span>
+                        </div>
+                    </a>
+                    <p class="ft-brand-desc">
+                        {% if site_description %}{{ site_description }}{% else %}Votre boutique en ligne de confiance pour tous vos accessoires et vêtements.{% endif %}
+                    </p>
+
+                    <ul class="ft-contact-list">
+                        {% if site_street %}
+                        <li>
+                            <div class="ft-contact-icon"><i class="ti-location-pin"></i></div>
+                            <span>{{ site_street }}, {{ site_city }}{% if site_code_postal %} {{ site_code_postal }}{% endif %}{% if site_state %}, {{ site_state }}{% endif %}</span>
                         </li>
-                        <li><a href="#"><img
-                                src="{% static 'assets/images/master_card.png' %}"
-                                alt="master_card"></a></li>
-                        <li><a href="#"><img
-                                src="{% static 'assets/images/paypal.png' %}" alt="paypal"></a></li>
-                        <li><a href="#"><img
-                                src="{% static 'assets/images/amarican_express.png' %}"
-                                alt="amarican_express"></a></li>
+                        {% endif %}
+                        {% if site_email %}
+                        <li>
+                            <div class="ft-contact-icon"><i class="ti-email"></i></div>
+                            <a href="mailto:{{ site_email }}">{{ site_email }}</a>
+                        </li>
+                        {% endif %}
+                        {% if site_phone %}
+                        <li>
+                            <div class="ft-contact-icon"><i class="ti-mobile"></i></div>
+                            <span>{{ site_phone }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    <div class="ft-socials">
+                        <a href="https://facebook.com" target="_blank" class="ft-social" title="Facebook">
+                            <i class="ion-social-facebook"></i>
+                        </a>
+                        <a href="https://instagram.com" target="_blank" class="ft-social" title="Instagram">
+                            <i class="ion-social-instagram-outline"></i>
+                        </a>
+                        <a href="https://youtube.com" target="_blank" class="ft-social" title="YouTube">
+                            <i class="ion-social-youtube-outline"></i>
+                        </a>
+                        <a href="https://twitter.com" target="_blank" class="ft-social" title="Twitter / X">
+                            <i class="ion-social-twitter-outline"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Col 2 : Liens utiles -->
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <h6 class="ft-col-title">Liens utiles</h6>
+                    <ul class="ft-links">
+                        <li><a href="{% url 'home' %}"><i class="ti-angle-right"></i> Accueil</a></li>
+                        <li><a href="{% url 'shop_list' %}"><i class="ti-angle-right"></i> Boutique</a></li>
+                        <li><a href="{% url 'about' %}"><i class="ti-angle-right"></i> À propos</a></li>
+                        <li><a href="{% url 'contact' %}"><i class="ti-angle-right"></i> Contact</a></li>
+                        <li><a href="{% url 'faq' %}"><i class="ti-angle-right"></i> FAQ</a></li>
+                        <li><a href="{% url 'terms' %}"><i class="ti-angle-right"></i> CGU</a></li>
+                        {% for p in foot_pages %}
+                        <li><a href="{% url 'page_detail' p.slug %}"><i class="ti-angle-right"></i> {{ p.name }}</a></li>
+                        {% endfor %}
                     </ul>
                 </div>
+
+                <!-- Col 3 : Catégories -->
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <h6 class="ft-col-title">Catégories</h6>
+                    <ul class="ft-links">
+                        {% for cat in my_mega_categories %}
+                        <li>
+                            <a href="{% url 'category' cat.slug %}">
+                                <i class="ti-angle-right"></i> {{ cat.name }}
+                            </a>
+                        </li>
+                        {% empty %}
+                        <li><a href="{% url 'shop_list' %}"><i class="ti-angle-right"></i> Tous les produits</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Col 4 : Mon compte -->
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <h6 class="ft-col-title">Mon compte</h6>
+                    <ul class="ft-links">
+                        {% if request.user.is_authenticated %}
+                        <li><a href="{% url 'dashboard:overview' %}"><i class="ti-angle-right"></i> Tableau de bord</a></li>
+                        <li><a href="{% url 'dashboard:account' %}"><i class="ti-angle-right"></i> Mon profil</a></li>
+                        <li><a href="{% url 'dashboard:addresses' %}"><i class="ti-angle-right"></i> Mes adresses</a></li>
+                        <li><a href="{% url 'wishlist' %}"><i class="ti-angle-right"></i> Mes favoris</a></li>
+                        <li><a href="{% url 'cart' %}"><i class="ti-angle-right"></i> Mon panier</a></li>
+                        <li><a href="{% url 'accounts:logout' %}"><i class="ti-angle-right"></i> Déconnexion</a></li>
+                        {% else %}
+                        <li><a href="{% url 'accounts:signin' %}"><i class="ti-angle-right"></i> Connexion</a></li>
+                        <li><a href="{% url 'accounts:signup' %}"><i class="ti-angle-right"></i> Créer un compte</a></li>
+                        <li><a href="{% url 'wishlist' %}"><i class="ti-angle-right"></i> Liste de souhaits</a></li>
+                        <li><a href="{% url 'cart' %}"><i class="ti-angle-right"></i> Mon panier</a></li>
+                        {% endif %}
+                    </ul>
+
+                    <!-- Badges sécurité -->
+                    <div class="ft-trust">
+                        <div class="ft-trust-item">
+                            <i class="ti-shield"></i>
+                            <span>Paiement sécurisé</span>
+                        </div>
+                        <div class="ft-trust-item">
+                            <i class="ti-truck"></i>
+                            <span>Livraison rapide</span>
+                        </div>
+                        <div class="ft-trust-item">
+                            <i class="ti-reload"></i>
+                            <span>Retours faciles</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
+
+    <!-- ── Bottom bar ── -->
+    <div class="ft-bottom">
+        <div class="container">
+            <div class="ft-bottom-inner">
+                <p class="ft-copyright">
+                    {% if site_copyright %}{{ site_copyright }}{% else %}&copy; {% now "Y" %} MAT-STORE. Tous droits réservés.{% endif %}
+                </p>
+                <ul class="ft-payments">
+                    <li><img src="{% static 'assets/images/visa.png' %}" alt="Visa"></li>
+                    <li><img src="{% static 'assets/images/master_card.png' %}" alt="Mastercard"></li>
+                    <li><img src="{% static 'assets/images/paypal.png' %}" alt="PayPal"></li>
+                    <li><img src="{% static 'assets/images/discover.png' %}" alt="Discover"></li>
+                    <li><img src="{% static 'assets/images/amarican_express.png' %}" alt="Amex"></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
 </footer>
+
+<style>
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+.site-footer {
+    background: #0f0f1a;
+    color: rgba(255,255,255,.58);
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
+/* ── Newsletter bar ── */
+.ft-nl-bar {
+    background: rgba(255,255,255,.04);
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    padding: 18px 0;
+}
+.ft-nl-bar-inner {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.ft-nl-bar-text {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13.5px; color: rgba(255,255,255,.55);
+    flex-wrap: wrap;
+}
+.ft-nl-bar-ico { color: #ff5722; font-size: 15px; }
+.ft-nl-bar-text span:nth-child(2) { font-weight: 600; color: rgba(255,255,255,.8); }
+.ft-nl-bar-muted { color: rgba(255,255,255,.35); font-size: 13px; }
+
+.ft-nl-bar-form { display: flex; gap: 8px; flex-shrink: 0; }
+.ft-nl-bar-field {
+    position: relative; display: flex; align-items: center;
+}
+.ft-nl-bar-field-ico {
+    position: absolute; left: 12px;
+    color: rgba(255,255,255,.25); font-size: 13px; pointer-events: none;
+}
+.ft-nl-bar-input {
+    padding: 9px 14px 9px 34px;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px; color: rgba(255,255,255,.8);
+    font-size: 13px; outline: none; width: 220px;
+    font-family: inherit;
+    transition: border-color .18s, background .18s;
+}
+.ft-nl-bar-input::placeholder { color: rgba(255,255,255,.25); }
+.ft-nl-bar-input:focus {
+    border-color: rgba(255,87,34,.5);
+    background: rgba(255,255,255,.10);
+}
+.ft-nl-bar-btn {
+    padding: 9px 18px;
+    background: transparent;
+    border: 1px solid rgba(255,87,34,.55);
+    color: #ff5722; border-radius: 8px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: background .18s, color .18s, border-color .18s;
+    font-family: inherit; white-space: nowrap;
+}
+.ft-nl-bar-btn:hover {
+    background: #ff5722; color: #fff; border-color: #ff5722;
+}
+@media (max-width: 768px) {
+    .ft-nl-bar-form { width: 100%; }
+    .ft-nl-bar-input { flex: 1; width: auto; }
+}
+
+/* ── Main ── */
+.ft-main { padding: 64px 0 48px; }
+
+/* ── Brand ── */
+.ft-brand-link { text-decoration: none; display: inline-block; margin-bottom: 16px; }
+.ft-brand-logo {
+    display: flex; align-items: center; gap: 11px;
+}
+.ft-brand-icon {
+    width: 38px; height: 38px; border-radius: 9px;
+    background: #ff5722;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #fff; flex-shrink: 0;
+}
+.ft-brand-name { font-size: 18px; font-weight: 800; color: #fff; }
+.ft-brand-desc {
+    color: rgba(255,255,255,.45); font-size: 13px; line-height: 1.7;
+    margin-bottom: 22px; max-width: 320px;
+}
+
+/* ── Contact list ── */
+.ft-contact-list { list-style: none; padding: 0; margin: 0 0 22px; }
+.ft-contact-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 10px; color: rgba(255,255,255,.5); font-size: 13px;
+}
+.ft-contact-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: rgba(255,255,255,.07);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: #ff5722; flex-shrink: 0;
+}
+.ft-contact-list a { color: rgba(255,255,255,.5); text-decoration: none; transition: color .18s; }
+.ft-contact-list a:hover { color: #ff5722; }
+
+/* ── Socials ── */
+.ft-socials { display: flex; gap: 8px; }
+.ft-social {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: rgba(255,255,255,.07);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,.55); font-size: 16px; text-decoration: none;
+    transition: background .18s, color .18s;
+}
+.ft-social:hover { background: #ff5722; color: #fff; }
+
+/* ── Column title ── */
+.ft-col-title {
+    font-size: 13px; font-weight: 800; color: #fff;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    margin-bottom: 20px; padding-bottom: 10px;
+    border-bottom: 2px solid #ff5722;
+    display: inline-block;
+}
+
+/* ── Links ── */
+.ft-links { list-style: none; padding: 0; margin: 0; }
+.ft-links li { margin-bottom: 9px; }
+.ft-links a {
+    color: rgba(255,255,255,.48); text-decoration: none;
+    font-size: 13px; transition: color .18s, padding-left .18s;
+    display: flex; align-items: center; gap: 7px;
+}
+.ft-links a i { font-size: 9px; color: #ff5722; flex-shrink: 0; }
+.ft-links a:hover { color: #ff5722; padding-left: 4px; }
+
+/* ── Trust badges ── */
+.ft-trust { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+.ft-trust-item {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 12px; color: rgba(255,255,255,.38);
+}
+.ft-trust-item i { color: #ff5722; font-size: 13px; }
+
+/* ── Divider ── */
+.ft-divider { border: none; border-top: 1px solid rgba(255,255,255,.07); margin: 0; }
+
+/* ── Bottom bar ── */
+.ft-bottom {
+    border-top: 1px solid rgba(255,255,255,.07);
+    padding: 18px 0;
+}
+.ft-bottom-inner {
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.ft-copyright { margin: 0; font-size: 12.5px; color: rgba(255,255,255,.3); }
+.ft-payments  { list-style: none; padding: 0; margin: 0; display: flex; align-items: center; gap: 8px; }
+.ft-payments li img { height: 22px; opacity: .55; filter: grayscale(1) brightness(1.5); transition: opacity .18s, filter .18s; }
+.ft-payments li img:hover { opacity: 1; filter: none; }
+</style>

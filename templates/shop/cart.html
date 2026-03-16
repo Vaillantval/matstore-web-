@@ -5,6 +5,7 @@
 <style>
     .cart-section { padding: 50px 0; min-height: 60vh; }
 
+    /* ── Cards ── */
     .cart-card {
         background: #fff;
         border-radius: 14px;
@@ -13,125 +14,141 @@
         overflow: hidden;
     }
     .cart-card-header {
-        padding: 20px 28px;
+        padding: 18px 24px;
         border-bottom: 1px solid #f0f0f0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        display: flex; align-items: center; justify-content: space-between;
     }
-    .cart-card-header h5 {
-        margin: 0;
-        font-weight: 700;
-        color: #1a1a2e;
-        font-size: 17px;
-    }
+    .cart-card-header h5 { margin:0; font-weight:700; color:#1a1a2e; font-size:16px; }
 
-    /* Table */
-    .cart-table { width: 100%; border-collapse: collapse; }
+    /* ── Table ── */
+    .cart-table { width:100%; border-collapse:collapse; }
     .cart-table thead th {
-        background: #f8f9fa;
-        padding: 13px 20px;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: .6px;
-        color: #6c757d;
-        font-weight: 700;
-        border-bottom: 1px solid #f0f0f0;
+        background:#f8f9fa; padding:12px 20px;
+        font-size:11px; text-transform:uppercase; letter-spacing:.6px;
+        color:#6c757d; font-weight:700; border-bottom:1px solid #f0f0f0;
     }
-    .cart-table tbody tr { border-bottom: 1px solid #f8f9fa; transition: background .15s; }
-    .cart-table tbody tr:hover { background: #fafafa; }
-    .cart-table tbody td { padding: 18px 20px; vertical-align: middle; }
+    .cart-table tbody tr { border-bottom:1px solid #f8f9fa; transition:background .15s; }
+    .cart-table tbody tr:hover { background:#fafafa; }
+    .cart-table tbody td { padding:16px 20px; vertical-align:middle; }
 
     .cart-product-img {
-        width: 68px; height: 68px;
-        object-fit: cover;
-        border-radius: 10px;
-        border: 1px solid #f0f0f0;
-        flex-shrink: 0;
+        width:64px; height:64px; object-fit:cover;
+        border-radius:10px; border:1px solid #f0f0f0; flex-shrink:0;
     }
     .cart-product-name {
-        font-weight: 600;
-        color: #1a1a2e;
-        font-size: 15px;
-        text-decoration: none;
-        transition: color .2s;
+        font-weight:600; color:#1a1a2e; font-size:14px;
+        text-decoration:none; transition:color .2s;
     }
-    .cart-product-name:hover { color: #ff5722; }
+    .cart-product-name:hover { color:#ff5722; }
 
-    /* Qty controls */
+    /* ── Qty ── */
     .qty-group {
-        display: inline-flex;
-        align-items: center;
-        border: 1.5px solid #e9ecef;
-        border-radius: 8px;
-        overflow: hidden;
+        display:inline-flex; align-items:center;
+        border:1.5px solid #e9ecef; border-radius:8px; overflow:hidden;
     }
     .qty-btn {
-        width: 34px; height: 34px;
-        border: none; background: #f8f9fa;
-        cursor: pointer; font-size: 16px; color: #495057;
-        transition: background .15s;
+        width:32px; height:32px; border:none; background:#f8f9fa;
+        cursor:pointer; font-size:15px; color:#495057; transition:background .15s;
     }
-    .qty-btn:hover { background: #e9ecef; }
+    .qty-btn:hover { background:#e9ecef; }
     .qty-input {
-        width: 50px; text-align: center;
-        border: none;
-        border-left: 1.5px solid #e9ecef;
-        border-right: 1.5px solid #e9ecef;
-        height: 34px;
-        font-size: 14px; font-weight: 600;
-        outline: none; color: #1a1a2e;
+        width:44px; text-align:center; border:none;
+        border-left:1.5px solid #e9ecef; border-right:1.5px solid #e9ecef;
+        height:32px; font-size:14px; font-weight:600; outline:none; color:#1a1a2e;
     }
 
-    /* Remove btn */
+    /* ── Remove ── */
     .btn-remove {
-        background: none; border: none;
-        color: #ced4da; font-size: 20px;
-        cursor: pointer; padding: 4px;
-        transition: color .2s;
+        background:none; border:none; color:#ced4da;
+        font-size:19px; cursor:pointer; padding:4px; transition:color .2s;
     }
-    .btn-remove:hover { color: #dc3545; }
+    .btn-remove:hover { color:#dc3545; }
 
-    /* Summary */
-    .summary-card {
+    /* ── Carrier selector ── */
+    .carrier-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+    }
+    .carrier-option { position: relative; cursor: pointer; }
+    .carrier-option input[type="radio"] { position:absolute; opacity:0; width:0; height:0; }
+    .carrier-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
         background: #fff;
-        border-radius: 14px;
-        border: 1px solid #f0f0f0;
-        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-        position: sticky;
-        top: 90px;
+        cursor: pointer;
+        transition: border-color .2s, background .2s, box-shadow .2s;
+        position: relative;
+    }
+    .carrier-label:hover { border-color: #ffd5c8; background: #fffaf9; }
+    .carrier-option input:checked + .carrier-label {
+        border-color: #ff5722;
+        background: #fff8f6;
+        box-shadow: 0 0 0 3px rgba(255,87,34,.10);
+    }
+
+    .carrier-img-wrap {
+        width: 44px; height: 44px; border-radius: 8px;
+        background: #f8f9fa; border: 1px solid #f0f0f0;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden; flex-shrink: 0;
+    }
+    .carrier-img-wrap img { width:100%; height:100%; object-fit:contain; }
+    .carrier-img-placeholder { font-size:20px; color:#ced4da; }
+
+    .carrier-info { flex: 1; min-width: 0; }
+    .carrier-name { font-size:13.5px; font-weight:700; color:#1a1a2e; }
+    .carrier-desc { font-size:11.5px; color:#6c757d; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    .carrier-price {
+        font-size:14px; font-weight:800;
+        flex-shrink: 0;
+    }
+    .carrier-price.free { color:#22c55e; }
+    .carrier-price.paid { color:#1a1a2e; }
+
+    .carrier-check {
+        position: absolute; top: 8px; right: 8px;
+        width: 20px; height: 20px; border-radius: 50%;
+        background: #ff5722; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 10px; opacity: 0; transition: opacity .2s;
+    }
+    .carrier-option input:checked + .carrier-label .carrier-check { opacity: 1; }
+
+    /* Loading overlay on carrier change */
+    .carrier-loading {
+        pointer-events: none; opacity: .55;
+        transition: opacity .2s;
+    }
+
+    /* ── Summary ── */
+    .summary-card {
+        background:#fff; border-radius:14px;
+        border:1px solid #f0f0f0;
+        box-shadow:0 2px 16px rgba(0,0,0,0.06);
+        position:sticky; top:90px;
     }
     .summary-card-header {
-        padding: 20px 24px;
-        border-bottom: 1px solid #f0f0f0;
-        font-weight: 700;
-        font-size: 16px;
-        color: #1a1a2e;
+        padding:18px 24px; border-bottom:1px solid #f0f0f0;
+        font-weight:700; font-size:16px; color:#1a1a2e;
     }
     .summary-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        font-size: 14px;
-        color: #6c757d;
-        border-bottom: 1px dashed #f0f0f0;
+        display:flex; justify-content:space-between; align-items:center;
+        padding:11px 0; font-size:14px; color:#6c757d;
+        border-bottom:1px dashed #f0f0f0;
     }
-    .summary-row:last-of-type { border-bottom: none; }
-    .summary-row strong { color: #1a1a2e; font-size: 17px; }
-    .summary-row span { font-weight: 600; }
+    .summary-row:last-of-type { border-bottom:none; }
+    .summary-row strong { color:#1a1a2e; font-size:17px; }
+    .summary-row span { font-weight:600; }
 
-    /* Empty cart */
-    .empty-cart {
-        text-align: center;
-        padding: 100px 0;
-    }
-    .empty-cart-icon {
-        font-size: 90px;
-        color: #dee2e6;
-        display: block;
-        margin-bottom: 24px;
-    }
+    /* ── Empty ── */
+    .empty-cart { text-align:center; padding:100px 0; }
+    .empty-cart-icon { font-size:90px; color:#dee2e6; display:block; margin-bottom:24px; }
 </style>
 {% endblock %}
 
@@ -155,8 +172,10 @@
         {% if items %}
         <div class="row g-4">
 
-            <!-- ── Items ── -->
+            <!-- ── Left column : items + carrier ── -->
             <div class="col-lg-8">
+
+                <!-- Cart items -->
                 <div class="cart-card">
                     <div class="cart-card-header">
                         <h5>Mon panier</h5>
@@ -178,7 +197,6 @@
                         <tbody>
                         {% for item in items %}
                         <tr id="cart-row-{{ item.product_id }}">
-                            <!-- Product -->
                             <td>
                                 <div style="display:flex; align-items:center; gap:14px;">
                                     {% if item.image %}
@@ -191,31 +209,19 @@
                                     </a>
                                 </div>
                             </td>
-                            <!-- Unit price -->
-                            <td style="text-align:center; color:#ff5722; font-weight:600;">
-                                {{ item.display_price }}
-                            </td>
-                            <!-- Qty -->
+                            <td style="text-align:center; color:#ff5722; font-weight:600;">{{ item.display_price }}</td>
                             <td style="text-align:center;">
                                 <div class="qty-group">
-                                    <button type="button" class="qty-btn"
-                                            onclick="updateQty({{ item.product_id }}, -1)">−
-                                    </button>
+                                    <button type="button" class="qty-btn" onclick="updateQty({{ item.product_id }}, -1)">−</button>
                                     <input type="number" class="qty-input"
-                                           id="qty-{{ item.product_id }}"
-                                           value="{{ item.qty }}" min="1"
+                                           id="qty-{{ item.product_id }}" value="{{ item.qty }}" min="1"
                                            onchange="setQty({{ item.product_id }}, this.value)">
-                                    <button type="button" class="qty-btn"
-                                            onclick="updateQty({{ item.product_id }}, 1)">+
-                                    </button>
+                                    <button type="button" class="qty-btn" onclick="updateQty({{ item.product_id }}, 1)">+</button>
                                 </div>
                             </td>
-                            <!-- Line total -->
-                            <td style="text-align:center; font-weight:700; color:#1a1a2e;"
-                                id="line-total-{{ item.product_id }}">
+                            <td style="text-align:center; font-weight:700; color:#1a1a2e;" id="line-total-{{ item.product_id }}">
                                 {{ item.display_total }}
                             </td>
-                            <!-- Remove -->
                             <td style="text-align:center;">
                                 <button type="button" class="btn-remove btn-remove-cart"
                                         data-product-id="{{ item.product_id }}"
@@ -229,14 +235,52 @@
                         </tbody>
                     </table>
 
-                    <div style="padding:16px 24px; border-top:1px solid #f0f0f0;">
-                        <a href="{% url 'shop_list' %}"
-                           style="color:#ff5722; font-weight:600; text-decoration:none; font-size:14px;">
+                    <div style="padding:14px 24px; border-top:1px solid #f0f0f0;">
+                        <a href="{% url 'shop_list' %}" style="color:#ff5722; font-weight:600; text-decoration:none; font-size:13.5px;">
                             ← Continuer mes achats
                         </a>
                     </div>
                 </div>
-            </div>
+
+                <!-- ── Carrier selector ── -->
+                {% if carriers %}
+                <div class="cart-card" style="margin-top:16px;" id="carrierCard">
+                    <div class="cart-card-header">
+                        <h5><i class="ti-truck" style="margin-right:8px; color:#6c757d;"></i>Mode de livraison</h5>
+                        <span style="font-size:12px; color:#adb5bd;">Sélectionnez un transporteur</span>
+                    </div>
+                    <div style="padding:20px 24px;">
+                        <div class="carrier-grid">
+                            {% for carrier in carriers %}
+                            <label class="carrier-option">
+                                <input type="radio" name="carrier"
+                                       value="{{ carrier.id }}"
+                                       {% if carrier.id == selected_carrier_id %}checked{% endif %}>
+                                <div class="carrier-label">
+                                    <div class="carrier-img-wrap">
+                                        {% if carrier.image %}
+                                        <img src="{{ carrier.image.url }}" alt="{{ carrier.name }}">
+                                        {% else %}
+                                        <i class="ti-truck carrier-img-placeholder"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="carrier-info">
+                                        <div class="carrier-name">{{ carrier.name }}</div>
+                                        <div class="carrier-desc" title="{{ carrier.description }}">{{ carrier.description }}</div>
+                                    </div>
+                                    <div class="carrier-price {% if carrier.price == 0 %}free{% else %}paid{% endif %}">
+                                        {% if carrier.price == 0 %}Gratuit{% else %}{{ carrier.price|floatformat:2 }} €{% endif %}
+                                    </div>
+                                    <div class="carrier-check"><i class="ti-check"></i></div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div><!-- /col-lg-8 -->
 
             <!-- ── Summary ── -->
             <div class="col-lg-4">
@@ -244,37 +288,32 @@
                     <div class="summary-card-header">Résumé de la commande</div>
                     <div style="padding:20px 24px;">
 
-                        <!-- Sous-total HT -->
                         <div class="summary-row">
                             <span>Sous-total HT</span>
                             <span id="s-ht">{% if summary %}{{ summary.sub_total_ht }}{% endif %}</span>
                         </div>
 
-                        <!-- TCA -->
                         <div class="summary-row">
                             <span>TCA</span>
                             <span id="s-tva">{% if summary %}{{ summary.taxe_amount }}{% endif %}</span>
                         </div>
 
-                        <!-- Sous-total TTC -->
                         <div class="summary-row" style="font-weight:600; color:#1a1a2e;">
                             <span>Sous-total TTC</span>
                             <span id="s-ttc">{% if summary %}{{ summary.sub_total_ttc }}{% endif %}</span>
                         </div>
 
-                        <!-- Livraison -->
+                        <!-- Livraison row -->
                         <div class="summary-row">
                             <span>
                                 Livraison
-                                {% if summary and summary.carrier_name %}
-                                <small style="display:block; color:#adb5bd; font-size:11px; font-weight:400;">
-                                    {{ summary.carrier_name }}
+                                <small id="s-carrier-name" style="display:block; color:#adb5bd; font-size:11px; font-weight:400;">
+                                    {% if summary and summary.carrier_name %}{{ summary.carrier_name }}{% endif %}
                                 </small>
-                                {% endif %}
                             </span>
                             {% if summary and summary.has_carrier %}
                             {% if summary.shipping_is_free %}
-                            <span id="s-shipping" style="color:#28a745; font-weight:600;">Gratuit</span>
+                            <span id="s-shipping" style="color:#22c55e; font-weight:700;">Gratuit</span>
                             {% else %}
                             <span id="s-shipping">{{ summary.shipping_price }}</span>
                             {% endif %}
@@ -283,9 +322,7 @@
                             {% endif %}
                         </div>
 
-                        <!-- Séparateur + Total final -->
-                        <div class="summary-row"
-                             style="margin-top:10px; padding-top:14px; border-top:2px solid #f0f0f0;">
+                        <div class="summary-row" style="margin-top:10px; padding-top:14px; border-top:2px solid #f0f0f0;">
                             <strong style="font-size:15px;">Total TTC</strong>
                             <strong id="s-total" style="color:#ff5722; font-size:20px;">
                                 {% if summary %}{{ summary.sub_total_with_shipping }}{% endif %}
@@ -310,7 +347,6 @@
         </div><!-- /row -->
 
         {% else %}
-        <!-- Empty cart -->
         <div class="empty-cart">
             <i class="linearicons-cart empty-cart-icon"></i>
             <h3 style="font-weight:700; color:#1a1a2e; margin-bottom:12px;">Votre panier est vide</h3>
@@ -330,77 +366,94 @@
 
 {% block scripts %}
 <script>
-    function updateQty(productId, delta) {
-        var input = document.getElementById('qty-' + productId);
-        var qty = Math.max(1, parseInt(input.value) + delta);
-        input.value = qty;
-        setQty(productId, qty);
-    }
+var CARRIER_URL = '{% url "select_carrier" %}';
 
-    function setQty(productId, qty) {
-        qty = parseInt(qty);
-        if (isNaN(qty) || qty < 1) qty = 1;
+/* ── Qty controls ── */
+function updateQty(productId, delta) {
+    var input = document.getElementById('qty-' + productId);
+    var qty   = Math.max(1, parseInt(input.value) + delta);
+    input.value = qty;
+    setQty(productId, qty);
+}
 
-        $.ajax({
-            url: '/cart/update/' + productId + '/',
-            method: 'POST',
-            data: { qty: qty },
-            success: function (data) {
-                if (!data.success) return;
+function setQty(productId, qty) {
+    qty = parseInt(qty);
+    if (isNaN(qty) || qty < 1) qty = 1;
 
-                /* Correction de la valeur si stock dépassé */
-                if (data.actual_qty !== undefined) {
-                    $('#qty-' + productId).val(data.actual_qty);
-                }
-
-                /* Message stock insuffisant */
-                if (data.stock_warning) {
-                    showToast(data.stock_warning, 'warning');
-                }
-
-                /* Ligne produit */
-                if (data.line_total) {
-                    $('#line-total-' + productId).text(data.line_total);
-                }
-
-                /* Badge header */
-                $('#cart-count-badge').text(data.cart_count);
-
-                /* Résumé financier */
-                if (data.summary) {
-                    var s = data.summary;
-                    $('#s-ht').text(s.sub_total_ht);
-                    $('#s-tva').text(s.taxe_amount);
-                    $('#s-ttc').text(s.sub_total_ttc);
-                    if (s.has_carrier) {
-                        $('#s-shipping').text(s.shipping_is_free ? 'Gratuit' : s.shipping_price)
-                                        .css('color', s.shipping_is_free ? '#28a745' : '');
-                    }
-                    $('#s-total').text(s.sub_total_with_shipping);
-                }
-            }
-        });
-    }
-
-    /* Remove from cart (cart page — remove row) */
-    $(document).on('click', '.btn-remove-cart', function (e) {
-        e.stopImmediatePropagation();   /* prevent global handler */
-        var btn   = $(this);
-        var url   = btn.data('url');
-        var rowId = '#cart-row-' + btn.data('product-id');
-
-        $.ajax({
-            url: url, method: 'POST',
-            success: function (data) {
-                if (data.success) {
-                    $(rowId).fadeOut(300, function () {
-                        $(this).remove();
-                        $('#cart-count-badge').text(data.cart_count);
-                        if (data.cart_count === 0) { location.reload(); }
-                    });
-                }
-            }
-        });
+    $.ajax({
+        url: '/cart/update/' + productId + '/',
+        method: 'POST',
+        data: { qty: qty },
+        success: function (data) {
+            if (!data.success) return;
+            if (data.actual_qty !== undefined)  $('#qty-' + productId).val(data.actual_qty);
+            if (data.stock_warning)             showToast(data.stock_warning, 'warning');
+            if (data.line_total)                $('#line-total-' + productId).text(data.line_total);
+            $('#cart-count-badge').text(data.cart_count);
+            if (data.summary) updateSummaryUI(data.summary, null, null);
+        }
     });
+}
+
+/* ── Remove from cart ── */
+$(document).on('click', '.btn-remove-cart', function (e) {
+    e.stopImmediatePropagation();
+    var btn   = $(this);
+    var url   = btn.data('url');
+    var rowId = '#cart-row-' + btn.data('product-id');
+
+    $.ajax({
+        url: url, method: 'POST',
+        success: function (data) {
+            if (data.success) {
+                $(rowId).fadeOut(300, function () {
+                    $(this).remove();
+                    $('#cart-count-badge').text(data.cart_count);
+                    if (data.cart_count === 0) { location.reload(); }
+                });
+            }
+        }
+    });
+});
+
+/* ── Carrier selection ── */
+$('input[name="carrier"]').on('change', function () {
+    var carrierId = $(this).val();
+    var card      = $('#carrierCard');
+    card.addClass('carrier-loading');
+
+    $.ajax({
+        url: CARRIER_URL,
+        method: 'POST',
+        data: { carrier_id: carrierId },
+        success: function (data) {
+            if (!data.success) return;
+            updateSummaryUI(data.summary, data.carrier_name, data.carrier_id);
+        },
+        complete: function () {
+            card.removeClass('carrier-loading');
+        }
+    });
+});
+
+/* ── Update summary panel ── */
+function updateSummaryUI(s, carrierName, carrierId) {
+    if (s.sub_total_ht)            $('#s-ht').text(s.sub_total_ht);
+    if (s.taxe_amount)             $('#s-tva').text(s.taxe_amount);
+    if (s.sub_total_ttc)           $('#s-ttc').text(s.sub_total_ttc);
+    if (s.sub_total_with_shipping) $('#s-total').text(s.sub_total_with_shipping);
+
+    if (carrierName !== null && carrierName !== undefined) {
+        $('#s-carrier-name').text(carrierName);
+    }
+    if (s.has_carrier) {
+        var shippingEl = $('#s-shipping');
+        if (s.shipping_is_free) {
+            shippingEl.text('Gratuit').css('color', '#22c55e');
+        } else {
+            shippingEl.text(s.shipping_price).css('color', '');
+        }
+    }
+}
 </script>
 {% endblock %}

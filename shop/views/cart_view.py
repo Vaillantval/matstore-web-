@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 
-from shop.models import Product
+from shop.models import Product, Carrier
 from shop.services.cart_service import CartService
 from shop.templatetags.price_filters import _get_setting, _get_rate, _format
 
@@ -36,6 +36,7 @@ def _build_summary(cart_details, setting):
         'taxe_amount':             _display_price(cart_details['taxe_amount'], setting),
         'sub_total_ttc':           _display_price(cart_details['sub_total_ttc'], setting),
         'carrier_name':            cart_details['carrier_name'] if has_carrier else None,
+        'carrier_id':              cart_details.get('carrier_id'),
         'shipping_price':          _display_price(shipping_price, setting),
         'sub_total_with_shipping': _display_price(total_raw, setting),
         'has_carrier':             has_carrier,
@@ -193,6 +194,13 @@ def cart_detail(request):
     items = []
     summary = None
 
+    # Ensure a default carrier is set in session
+    if not request.session.get('carrier_id'):
+        default = Carrier.objects.first()
+        if default:
+            request.session['carrier_id'] = default.id
+            request.session.modified = True
+
     cart = _migrate_cart_session(request)
     if cart:
         cart_details = CartService.get_cart_details(request)
@@ -220,10 +228,37 @@ def cart_detail(request):
 
         summary = _build_summary(cart_details, setting)
 
+    carriers = list(Carrier.objects.all())
+    selected_carrier_id = request.session.get('carrier_id') or (carriers[0].id if carriers else None)
+
     return render(request, 'shop/cart.html', {
         'items': items,
         'summary': summary,
+        'carriers': carriers,
+        'selected_carrier_id': selected_carrier_id,
     })
+
+
+@require_POST
+def select_carrier(request):
+    carrier_id = request.POST.get('carrier_id')
+    carrier = get_object_or_404(Carrier, pk=carrier_id)
+
+    request.session['carrier_id'] = carrier.id
+    request.session.modified = True
+
+    setting = _get_setting()
+    cart_details = CartService.get_cart_details(request)
+    summary = _build_summary(cart_details, setting)
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'carrier_id': carrier.id,
+            'carrier_name': carrier.name,
+            'summary': summary,
+        })
+    return redirect('cart')
 
 
 def wishlist_detail(request):

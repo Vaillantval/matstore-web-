@@ -52,8 +52,10 @@ class CartService:
             "sub_total_with_shipping": 0,
             "cart_count": 0,
         }
-        carrier = request.session.get("carrier")
-        if not carrier:
+        carrier_id = request.session.get("carrier_id")
+        if carrier_id:
+            carrier = Carrier.objects.filter(id=carrier_id).first() or Carrier.objects.first()
+        else:
             carrier = Carrier.objects.first()
 
         for product_id, quantity in cart.items():
@@ -89,7 +91,8 @@ class CartService:
         result["sub_total"] = result["sub_total_ttc"]
 
         if carrier:
-            result["carrier_name"] = carrier.name
+            result["carrier_id"]    = carrier.id
+            result["carrier_name"]  = carrier.name
             result["shipping_price"] = round(carrier.price, 2)
             result["sub_total_with_shipping"] = round(
                 result["sub_total_ttc"] + carrier.price, 2

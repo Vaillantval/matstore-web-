@@ -6,6 +6,7 @@ from shop.views.shop_view import (
 )
 from shop.views.cart_view import (
     cart_detail, add_to_cart, remove_from_cart, update_cart,
+    select_carrier,
     wishlist_detail, clear_wishlist, toggle_wishlist,
 )
 from shop.views.compare_view import (
@@ -28,6 +29,7 @@ urlpatterns = [
     path('cart/add/<int:product_id>/', add_to_cart, name='add_to_cart'),
     path('cart/remove/<int:product_id>/', remove_from_cart, name='remove_from_cart'),
     path('cart/update/<int:product_id>/', update_cart, name='update_cart'),
+    path('cart/carrier/', select_carrier, name='select_carrier'),
     # Comparaison
     path('comparer/', compare_detail, name='compare'),
     path('comparer/ajouter/<int:product_id>/', add_to_compare, name='add_to_compare'),
