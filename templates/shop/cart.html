@@ -167,63 +167,65 @@
 
                     <table class="cart-table">
                         <thead>
-                            <tr>
-                                <th style="width:46%">Produit</th>
-                                <th style="text-align:center">Prix</th>
-                                <th style="text-align:center">Quantité</th>
-                                <th style="text-align:center">Total</th>
-                                <th></th>
-                            </tr>
+                        <tr>
+                            <th style="width:46%">Produit</th>
+                            <th style="text-align:center">Prix</th>
+                            <th style="text-align:center">Quantité</th>
+                            <th style="text-align:center">Total</th>
+                            <th></th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {% for item in items %}
-                            <tr id="cart-row-{{ item.product_id }}">
-                                <!-- Product -->
-                                <td>
-                                    <div style="display:flex; align-items:center; gap:14px;">
-                                        {% if item.image %}
-                                        <a href="{% url 'product_detail' item.slug %}">
-                                            <img src="{{ item.image }}" alt="{{ item.name }}" class="cart-product-img">
-                                        </a>
-                                        {% endif %}
-                                        <a href="{% url 'product_detail' item.slug %}" class="cart-product-name">
-                                            {{ item.name }}
-                                        </a>
-                                    </div>
-                                </td>
-                                <!-- Unit price -->
-                                <td style="text-align:center; color:#ff5722; font-weight:600;">
-                                    {{ item.display_price }}
-                                </td>
-                                <!-- Qty -->
-                                <td style="text-align:center;">
-                                    <div class="qty-group">
-                                        <button type="button" class="qty-btn"
-                                                onclick="updateQty({{ item.product_id }}, -1)">−</button>
-                                        <input type="number" class="qty-input"
-                                               id="qty-{{ item.product_id }}"
-                                               value="{{ item.qty }}" min="1"
-                                               onchange="setQty({{ item.product_id }}, this.value)">
-                                        <button type="button" class="qty-btn"
-                                                onclick="updateQty({{ item.product_id }}, 1)">+</button>
-                                    </div>
-                                </td>
-                                <!-- Line total -->
-                                <td style="text-align:center; font-weight:700; color:#1a1a2e;"
-                                    id="line-total-{{ item.product_id }}">
-                                    {{ item.display_total }}
-                                </td>
-                                <!-- Remove -->
-                                <td style="text-align:center;">
-                                    <button type="button" class="btn-remove btn-remove-cart"
-                                            data-product-id="{{ item.product_id }}"
-                                            data-url="{% url 'remove_from_cart' item.product_id %}"
-                                            title="Supprimer">
-                                        <i class="ti-trash"></i>
+                        {% for item in items %}
+                        <tr id="cart-row-{{ item.product_id }}">
+                            <!-- Product -->
+                            <td>
+                                <div style="display:flex; align-items:center; gap:14px;">
+                                    {% if item.image %}
+                                    <a href="{% url 'product_detail' item.slug %}">
+                                        <img src="{{ item.image }}" alt="{{ item.name }}" class="cart-product-img">
+                                    </a>
+                                    {% endif %}
+                                    <a href="{% url 'product_detail' item.slug %}" class="cart-product-name">
+                                        {{ item.name }}
+                                    </a>
+                                </div>
+                            </td>
+                            <!-- Unit price -->
+                            <td style="text-align:center; color:#ff5722; font-weight:600;">
+                                {{ item.display_price }}
+                            </td>
+                            <!-- Qty -->
+                            <td style="text-align:center;">
+                                <div class="qty-group">
+                                    <button type="button" class="qty-btn"
+                                            onclick="updateQty({{ item.product_id }}, -1)">−
                                     </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                                    <input type="number" class="qty-input"
+                                           id="qty-{{ item.product_id }}"
+                                           value="{{ item.qty }}" min="1"
+                                           onchange="setQty({{ item.product_id }}, this.value)">
+                                    <button type="button" class="qty-btn"
+                                            onclick="updateQty({{ item.product_id }}, 1)">+
+                                    </button>
+                                </div>
+                            </td>
+                            <!-- Line total -->
+                            <td style="text-align:center; font-weight:700; color:#1a1a2e;"
+                                id="line-total-{{ item.product_id }}">
+                                {{ item.display_total }}
+                            </td>
+                            <!-- Remove -->
+                            <td style="text-align:center;">
+                                <button type="button" class="btn-remove btn-remove-cart"
+                                        data-product-id="{{ item.product_id }}"
+                                        data-url="{% url 'remove_from_cart' item.product_id %}"
+                                        title="Supprimer">
+                                    <i class="ti-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
                         </tbody>
                     </table>
 
@@ -248,9 +250,9 @@
                             <span id="s-ht">{% if summary %}{{ summary.sub_total_ht }}{% endif %}</span>
                         </div>
 
-                        <!-- TVA -->
+                        <!-- TCA -->
                         <div class="summary-row">
-                            <span>TVA</span>
+                            <span>TCA</span>
                             <span id="s-tva">{% if summary %}{{ summary.taxe_amount }}{% endif %}</span>
                         </div>
 
@@ -271,13 +273,13 @@
                                 {% endif %}
                             </span>
                             {% if summary and summary.has_carrier %}
-                                {% if summary.shipping_is_free %}
-                                <span id="s-shipping" style="color:#28a745; font-weight:600;">Gratuit</span>
-                                {% else %}
-                                <span id="s-shipping">{{ summary.shipping_price }}</span>
-                                {% endif %}
+                            {% if summary.shipping_is_free %}
+                            <span id="s-shipping" style="color:#28a745; font-weight:600;">Gratuit</span>
                             {% else %}
-                                <span id="s-shipping" style="color:#6c757d; font-style:italic;">À calculer</span>
+                            <span id="s-shipping">{{ summary.shipping_price }}</span>
+                            {% endif %}
+                            {% else %}
+                            <span id="s-shipping" style="color:#6c757d; font-style:italic;">À calculer</span>
                             {% endif %}
                         </div>
 
@@ -328,67 +330,77 @@
 
 {% block scripts %}
 <script>
-function updateQty(productId, delta) {
-    var input = document.getElementById('qty-' + productId);
-    var qty = Math.max(1, parseInt(input.value) + delta);
-    input.value = qty;
-    setQty(productId, qty);
-}
+    function updateQty(productId, delta) {
+        var input = document.getElementById('qty-' + productId);
+        var qty = Math.max(1, parseInt(input.value) + delta);
+        input.value = qty;
+        setQty(productId, qty);
+    }
 
-function setQty(productId, qty) {
-    qty = parseInt(qty);
-    if (isNaN(qty) || qty < 1) qty = 1;
+    function setQty(productId, qty) {
+        qty = parseInt(qty);
+        if (isNaN(qty) || qty < 1) qty = 1;
 
-    $.ajax({
-        url: '/cart/update/' + productId + '/',
-        method: 'POST',
-        data: { qty: qty },
-        success: function (data) {
-            if (!data.success) return;
+        $.ajax({
+            url: '/cart/update/' + productId + '/',
+            method: 'POST',
+            data: { qty: qty },
+            success: function (data) {
+                if (!data.success) return;
 
-            /* Ligne produit */
-            if (data.line_total) {
-                $('#line-total-' + productId).text(data.line_total);
-            }
-
-            /* Badge header */
-            $('#cart-count-badge').text(data.cart_count);
-
-            /* Résumé financier */
-            if (data.summary) {
-                var s = data.summary;
-                $('#s-ht').text(s.sub_total_ht);
-                $('#s-tva').text(s.taxe_amount);
-                $('#s-ttc').text(s.sub_total_ttc);
-                if (s.has_carrier) {
-                    $('#s-shipping').text(s.shipping_is_free ? 'Gratuit' : s.shipping_price)
-                                    .css('color', s.shipping_is_free ? '#28a745' : '');
+                /* Correction de la valeur si stock dépassé */
+                if (data.actual_qty !== undefined) {
+                    $('#qty-' + productId).val(data.actual_qty);
                 }
-                $('#s-total').text(s.sub_total_with_shipping);
-            }
-        }
-    });
-}
 
-/* Remove from cart (cart page — remove row) */
-$(document).on('click', '.btn-remove-cart', function (e) {
-    e.stopImmediatePropagation();   /* prevent global handler */
-    var btn   = $(this);
-    var url   = btn.data('url');
-    var rowId = '#cart-row-' + btn.data('product-id');
+                /* Message stock insuffisant */
+                if (data.stock_warning) {
+                    showToast(data.stock_warning, 'warning');
+                }
 
-    $.ajax({
-        url: url, method: 'POST',
-        success: function (data) {
-            if (data.success) {
-                $(rowId).fadeOut(300, function () {
-                    $(this).remove();
-                    $('#cart-count-badge').text(data.cart_count);
-                    if (data.cart_count === 0) { location.reload(); }
-                });
+                /* Ligne produit */
+                if (data.line_total) {
+                    $('#line-total-' + productId).text(data.line_total);
+                }
+
+                /* Badge header */
+                $('#cart-count-badge').text(data.cart_count);
+
+                /* Résumé financier */
+                if (data.summary) {
+                    var s = data.summary;
+                    $('#s-ht').text(s.sub_total_ht);
+                    $('#s-tva').text(s.taxe_amount);
+                    $('#s-ttc').text(s.sub_total_ttc);
+                    if (s.has_carrier) {
+                        $('#s-shipping').text(s.shipping_is_free ? 'Gratuit' : s.shipping_price)
+                                        .css('color', s.shipping_is_free ? '#28a745' : '');
+                    }
+                    $('#s-total').text(s.sub_total_with_shipping);
+                }
             }
-        }
+        });
+    }
+
+    /* Remove from cart (cart page — remove row) */
+    $(document).on('click', '.btn-remove-cart', function (e) {
+        e.stopImmediatePropagation();   /* prevent global handler */
+        var btn   = $(this);
+        var url   = btn.data('url');
+        var rowId = '#cart-row-' + btn.data('product-id');
+
+        $.ajax({
+            url: url, method: 'POST',
+            success: function (data) {
+                if (data.success) {
+                    $(rowId).fadeOut(300, function () {
+                        $(this).remove();
+                        $('#cart-count-badge').text(data.cart_count);
+                        if (data.cart_count === 0) { location.reload(); }
+                    });
+                }
+            }
+        });
     });
-});
 </script>
 {% endblock %}

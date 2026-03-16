@@ -1,5 +1,56 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<style>
+    /* Cartes produit de hauteur égale */
+    .shop_container > [class*="col-"] {
+        display: flex;
+    }
+    .shop_container .product {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+    .shop_container .product_info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    /* Image à ratio fixe (comme wishlist) */
+    .shop_container .product_img {
+        position: relative;
+        width: 100%;
+        padding-top: 72%;
+        background: #f8f9fa;
+        overflow: hidden;
+    }
+    .shop_container .product_img > a,
+    .shop_container .product_img > .product_action_box {
+        position: absolute;
+        inset: 0;
+    }
+    .shop_container .product_img img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .45s;
+    }
+    .shop_container .product:hover .product_img img {
+        transform: scale(1.06);
+    }
+    /* Nom limité à 2 lignes */
+    .shop_container .product_title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 2.8em;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 {% include "partials/slider.html" with sliders=sliders %}

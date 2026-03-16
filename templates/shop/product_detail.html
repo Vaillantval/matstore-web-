@@ -511,7 +511,7 @@
                 <div class="tab-pane fade show active" id="tab_desc">
                     <div class="tab_content_body">
                         {% if product.more_description %}
-                        {{ product.more_description|linebreaks }}
+                        {{ product.more_description|safe }}
                         {% else %}
                         <p>{{ product.description }}</p>
                         {% endif %}

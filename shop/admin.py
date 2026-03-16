@@ -172,8 +172,23 @@ class ProductAdmin(admin.ModelAdmin):
 
 # Pour les infos du site
 class SettingAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "display_logo", "base_currency", "currency", "city")
-    list_display_links = ("id", "name")
+    list_display = (
+        "id",
+        "name",
+        "display_logo",
+        "base_currency",
+        "currency",
+        "city",
+    )
+    list_display_links = (
+        "id",
+        "name",
+    )
+    list_editable = (
+        "base_currency",
+        "currency",
+        "city",
+    )
     fieldsets = (
         ("Informations générales", {"fields": ("name", "description", "logo")}),
         (

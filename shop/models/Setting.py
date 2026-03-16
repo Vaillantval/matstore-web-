@@ -1,19 +1,19 @@
 from django.db import models
 
 CURRENCY_CHOICES = [
-    ('HTG', 'Gourde haïtienne (HTG)'),
-    ('USD', 'Dollar américain (USD)'),
-    ('EUR', 'Euro (EUR)'),
-    ('GBP', 'Livre sterling (GBP)'),
-    ('CAD', 'Dollar canadien (CAD)'),
-    ('CHF', 'Franc suisse (CHF)'),
-    ('JPY', 'Yen japonais (JPY)'),
-    ('MAD', 'Dirham marocain (MAD)'),
-    ('XOF', 'Franc CFA (XOF)'),
-    ('DZD', 'Dinar algérien (DZD)'),
-    ('TND', 'Dinar tunisien (TND)'),
-    ('BRL', 'Real brésilien (BRL)'),
-    ('MXN', 'Peso mexicain (MXN)'),
+    ("HTG", "Gourde haïtienne (HTG)"),
+    ("USD", "Dollar américain (USD)"),
+    ("EUR", "Euro (EUR)"),
+    ("GBP", "Livre sterling (GBP)"),
+    ("CAD", "Dollar canadien (CAD)"),
+    ("CHF", "Franc suisse (CHF)"),
+    ("JPY", "Yen japonais (JPY)"),
+    ("MAD", "Dirham marocain (MAD)"),
+    ("XOF", "Franc CFA (XOF)"),
+    ("DZD", "Dinar algérien (DZD)"),
+    ("TND", "Dinar tunisien (TND)"),
+    ("BRL", "Real brésilien (BRL)"),
+    ("MXN", "Peso mexicain (MXN)"),
 ]
 
 
@@ -21,12 +21,16 @@ class Setting(models.Model):
     name = models.CharField(max_length=60, blank=False, null=False)
     description = models.TextField(blank=False, null=False)
     base_currency = models.CharField(
-        max_length=4, choices=CURRENCY_CHOICES, default='HTG',
-        help_text="Devise dans laquelle les prix des produits sont saisis."
+        max_length=4,
+        choices=CURRENCY_CHOICES,
+        default="HTG",
+        help_text="Devise dans laquelle les prix des produits sont saisis.",
     )
     currency = models.CharField(
-        max_length=4, choices=CURRENCY_CHOICES, default='HTG',
-        help_text="Devise d'affichage sur le site (conversion automatique)."
+        max_length=4,
+        choices=CURRENCY_CHOICES,
+        default="HTG",
+        help_text="Devise d'affichage sur le site (conversion automatique).",
     )
     taxe_rate = models.FloatField(blank=False, null=False)
     logo = models.ImageField(upload_to="settings/images/", blank=False, null=False)

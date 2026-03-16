@@ -89,13 +89,17 @@ def add_to_cart(request, product_id):
             }, status=400)
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
+    qty_capped = qty > addable_qty
     qty = min(qty, addable_qty)
     CartService.add_to_cart(request, product_id, qty)
 
     cart = request.session.get('cart', {})
     cart_count = sum(cart.values())
 
-    if already_in_cart:
+    if qty_capped:
+        message = f'Seulement {product.stock} unité(s) disponible(s) pour « {product.name} ». Quantité ajustée.'
+        msg_type = 'warning'
+    elif already_in_cart:
         message = f'Quantité de "{product.name}" mise à jour dans votre panier.'
         msg_type = 'info'
     else:
@@ -138,12 +142,19 @@ def update_cart(request, product_id):
     except (ValueError, TypeError):
         qty = 1
 
+    stock_warning = None
+    actual_qty = qty
+
     if qty <= 0:
         current_qty = cart.get(key, 0)
         CartService.remove_from_cart(request, product_id, current_qty)
+        actual_qty = 0
     else:
         product = get_object_or_404(Product, pk=product_id)
-        qty = min(qty, product.stock)
+        if qty > product.stock:
+            stock_warning = f'Seulement {product.stock} unité(s) disponible(s) pour « {product.name} ».'
+            qty = product.stock
+        actual_qty = qty
         cart[key] = qty
         request.session['cart'] = cart
         request.session.modified = True
@@ -156,17 +167,14 @@ def update_cart(request, product_id):
     summary = None
 
     if cart:
-        try:
-            cart_details = CartService.get_cart_details(request)
-            item = next(
-                (i for i in cart_details['items'] if str(i['product']['id']) == key),
-                None,
-            )
-            if item:
-                line_total = _display_price(item['sub_total'], setting)
-            summary = _build_summary(cart_details, setting)
-        except Exception:
-            pass
+        cart_details = CartService.get_cart_details(request)
+        item = next(
+            (i for i in cart_details['items'] if str(i['product']['id']) == key),
+            None,
+        )
+        if item:
+            line_total = _display_price(item['sub_total_ht'], setting)
+        summary = _build_summary(cart_details, setting)
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
@@ -174,6 +182,8 @@ def update_cart(request, product_id):
             'cart_count': cart_count,
             'line_total': line_total,
             'summary': summary,
+            'actual_qty': actual_qty,
+            'stock_warning': stock_warning,
         })
     return redirect('cart')
 
@@ -185,33 +195,30 @@ def cart_detail(request):
 
     cart = _migrate_cart_session(request)
     if cart:
-        try:
-            cart_details = CartService.get_cart_details(request)
-            product_ids = [item['product']['id'] for item in cart_details['items']]
-            products_map = {
-                p.pk: p
-                for p in Product.objects.prefetch_related('images').filter(pk__in=product_ids)
-            }
+        cart_details = CartService.get_cart_details(request)
+        product_ids = [item['product']['id'] for item in cart_details['items']]
+        products_map = {
+            p.pk: p
+            for p in Product.objects.prefetch_related('images').filter(pk__in=product_ids)
+        }
 
-            for item in cart_details['items']:
-                prod_data = item['product']
-                prod_obj = products_map.get(prod_data['id'])
-                first_image = prod_obj.images.first() if prod_obj else None
-                image_url = first_image.image.url if first_image else None
+        for item in cart_details['items']:
+            prod_data = item['product']
+            prod_obj = products_map.get(prod_data['id'])
+            first_image = prod_obj.images.first() if prod_obj else None
+            image_url = first_image.image.url if first_image else None
 
-                items.append({
-                    'product_id': prod_data['id'],
-                    'name': prod_data['name'],
-                    'slug': prod_data['slug'],
-                    'qty': item['quantity'],
-                    'image': image_url,
-                    'display_price': _display_price(prod_data['solde_price'], setting),
-                    'display_total': _display_price(item['sub_total'], setting),
-                })
+            items.append({
+                'product_id': prod_data['id'],
+                'name': prod_data['name'],
+                'slug': prod_data['slug'],
+                'qty': item['quantity'],
+                'image': image_url,
+                'display_price': _display_price(prod_data['solde_price'], setting),
+                'display_total': _display_price(item['sub_total_ht'], setting),
+            })
 
-            summary = _build_summary(cart_details, setting)
-        except Exception:
-            pass
+        summary = _build_summary(cart_details, setting)
 
     return render(request, 'shop/cart.html', {
         'items': items,
