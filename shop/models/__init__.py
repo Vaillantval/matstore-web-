@@ -9,3 +9,6 @@ from .FAQ import FAQ
 from .ContactMessage import ContactMessage
 from .ExchangeRate import ExchangeRate
 from .Carrier import Carrier
+from .Method import Method
+from .Order import Order
+from .OrderDetail import OrderDetail

@@ -15,6 +15,9 @@ from shop.models import (
     FAQ,
     ContactMessage,
     ExchangeRate,
+    Order,
+    OrderDetail,
+    Method,
 )
 from shop.models.Carrier import Carrier
 from shop.models.Setting import Setting
@@ -170,6 +173,72 @@ class ProductAdmin(admin.ModelAdmin):
     exclude = ("slug",)
 
 
+# pour les commandes
+class OrderAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "client_name",
+        "billing_address",
+        "shipping_address",
+        "quantity",
+        "taxe",
+        "order_cost",
+        "order_cost_ttc",
+        "status",
+        "is_paid",
+        "carrier_name",
+        "carrier_price",
+    )
+    list_display_links = ("client_name",)
+    list_editable = ("status",)
+    list_filter = ("is_paid", "created_at", "updated_at")
+    search_fields = (
+        "client_name",
+        "billing_address",
+        "shipping_address",
+        "carrier_name",
+        "payment_method",
+    )
+
+
+class OrderDetailAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "product_name",
+        "quantity",
+        "solde_price",
+        "sub_total_ht",
+        "sub_total_ttc",
+    )
+    list_filter = ("created_at", "updated_at")
+    search_fields = (
+        "product_name",
+        "quantity",
+        "solde_price",
+        "sub_total_ht",
+        "sub_total_ttc",
+    )
+
+
+# pour les methodes de paiement
+class MethodAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "description", "display_image", "is_available")
+    list_display_links = ("name",)
+    list_filter = ("is_available", "created_at", "updated_at")
+    search_fields = (
+        "name",
+        "description",
+    )
+
+    def display_image(self, obj):
+        first_image = obj.logo
+        if not first_image:
+            return ""
+        return format_html(f'<img src="{ first_image.url }" height="40" width="100" />')
+
+    display_image.short_description = "image"
+
+
 # Pour les infos du site
 class SettingAdmin(admin.ModelAdmin):
     list_display = (
@@ -257,12 +326,16 @@ admin.site.register(Slider, SliderAdmin)
 admin.site.register(Collection, CollectionAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
+
+admin.site.register(Order, OrderAdmin)
 admin.site.register(Setting, SettingAdmin)
 admin.site.register(Page, PageAdmin)
 admin.site.register(FAQ, FAQAdmin)
 admin.site.register(ContactMessage, ContactMessageAdmin)
 admin.site.register(ExchangeRate, ExchangeRateAdmin)
 admin.site.register(Carrier, CarrierAdmin)
+admin.site.register(OrderDetail, OrderDetailAdmin)
+admin.site.register(Method, MethodAdmin)
 
 #  .venv\Scripts\activate
 # .\myenv\Scripts\activate

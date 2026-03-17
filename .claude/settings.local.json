@@ -24,7 +24,8 @@
       "Bash(cd \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" && ../myenv/Scripts/python.exe manage.py makemigrations 2>&1 && ../myenv/Scripts/python.exe manage.py migrate 2>&1)",
       "Bash(cd:*)",
       "Bash(python:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(grep:*)"
     ]
   }
 }

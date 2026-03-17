@@ -1,0 +1,943 @@
+{% extends "base_checkout.html" %}
+{% load price_filters %}
+
+{% block stripe %}
+<script src="https://js.stripe.com/v3/"></script>
+{% endblock %}
+
+{% block styles %}
+<style>
+/* ══════════════════════════════════════════
+   CHECKOUT — Premium layout
+   ══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+
+body { background: #f4f6f9; }
+
+.ck-page {
+    min-height: 100vh;
+    padding: 0 0 80px;
+}
+
+/* ── Top bar ── */
+.ck-topbar {
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 14px 0;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.ck-topbar-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 1140px; margin: 0 auto; padding: 0 20px;
+}
+.ck-back-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border: 1.5px solid #e9ecef;
+    border-radius: 10px;
+    color: #495057;
+    font-size: 13.5px; font-weight: 600;
+    text-decoration: none;
+    transition: all .2s;
+}
+.ck-back-btn:hover {
+    background: #1a1a2e; color: #fff;
+    border-color: #1a1a2e;
+    transform: translateX(-2px);
+}
+.ck-back-btn i { font-size: 11px; }
+
+.ck-brand {
+    font-size: 20px; font-weight: 800; color: #1a1a2e;
+    letter-spacing: -0.5px;
+}
+.ck-brand span { color: #ff5722; }
+
+.ck-secure {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12.5px; color: #6c757d; font-weight: 500;
+}
+.ck-secure i { color: #22c55e; font-size: 14px; }
+
+/* ── Steps ── */
+.ck-steps {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; padding: 28px 0 8px;
+}
+.ck-step {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 14px; font-weight: 600; color: #adb5bd;
+}
+.ck-step.active { color: #ff5722; }
+.ck-step.done { color: #22c55e; }
+.ck-step-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #e9ecef; color: #adb5bd;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; flex-shrink: 0;
+    transition: all .3s;
+}
+.ck-step.active .ck-step-num { background: #ff5722; color: #fff; box-shadow: 0 0 0 4px rgba(255,87,34,.15); }
+.ck-step.done .ck-step-num { background: #22c55e; color: #fff; }
+.ck-step-sep {
+    width: 56px; height: 2px; background: #e9ecef; margin: 0 8px;
+    flex-shrink: 0;
+}
+.ck-step.done ~ .ck-step-sep { background: #22c55e; }
+
+/* ── Layout ── */
+.ck-body {
+    max-width: 1140px; margin: 0 auto; padding: 24px 20px 0;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .ck-body { grid-template-columns: 1fr; }
+}
+
+/* ── Cards ── */
+.ck-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    margin-bottom: 18px;
+    transition: box-shadow .25s;
+}
+.ck-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.09); }
+.ck-card-head {
+    padding: 18px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; gap: 12px;
+}
+.ck-card-head-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: #fff8f6;
+    display: flex; align-items: center; justify-content: center;
+    color: #ff5722; font-size: 17px; flex-shrink: 0;
+}
+.ck-card-head h5 {
+    margin: 0; font-size: 16px; font-weight: 700; color: #1a1a2e;
+}
+.ck-card-head small {
+    font-size: 13px; color: #adb5bd; margin-left: auto; font-weight: 400;
+}
+.ck-card-body { padding: 22px 24px; }
+
+/* ── Login panel ── */
+.ck-login-toggle {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 24px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14.5px; color: #495057;
+}
+.ck-login-toggle a {
+    color: #ff5722; font-weight: 700; text-decoration: none; margin-left: 4px;
+}
+.ck-login-toggle a:hover { text-decoration: underline; }
+
+/* ── Address hint ── */
+.ck-addr-hint {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 16px; border-radius: 10px;
+    background: #f0f7ff; border: 1px solid #cce3ff;
+    margin-bottom: 18px; font-size: 13.5px; color: #1a6ab1;
+}
+.ck-addr-hint i { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+
+/* ── Form controls ── */
+.ck-label {
+    font-size: 12.5px; font-weight: 700; color: #6c757d;
+    text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 7px; display: block;
+}
+.ck-input {
+    width: 100%; padding: 12px 16px;
+    border: 1.5px solid #e9ecef; border-radius: 10px;
+    font-size: 15px; color: #1a1a2e;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none; background: #fff;
+}
+.ck-input:focus {
+    border-color: #ff5722;
+    box-shadow: 0 0 0 3px rgba(255,87,34,.10);
+}
+.ck-input.ck-select { appearance: none; cursor: pointer; }
+.ck-input.ck-textarea { resize: vertical; min-height: 80px; }
+.ck-form-group { margin-bottom: 16px; }
+.ck-form-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+@media (max-width: 540px) { .ck-form-row { grid-template-columns: 1fr; } }
+
+/* ── Address card (existing) ── */
+.ck-addr-card {
+    display: flex; gap: 14px; padding: 15px 18px;
+    border: 2px solid #e9ecef; border-radius: 14px;
+    cursor: pointer; transition: all .22s; margin-bottom: 12px;
+    position: relative;
+}
+.ck-addr-card:hover { border-color: #ffd5c8; background: #fffaf9; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,87,34,.08); }
+.ck-addr-card.selected {
+    border-color: #ff5722; background: #fff8f6;
+    box-shadow: 0 0 0 3px rgba(255,87,34,.12);
+}
+.ck-addr-selected-badge {
+    position: absolute; top: 10px; right: 12px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #ff5722; color: #fff;
+    display: none; align-items: center; justify-content: center;
+    font-size: 11px;
+}
+.ck-addr-card.selected .ck-addr-selected-badge { display: flex; }
+.ck-addr-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: #fff8f6; color: #ff5722;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+    transition: background .2s;
+}
+.ck-addr-card.selected .ck-addr-icon { background: #ff5722; color: #fff; }
+.ck-addr-info { flex: 1; min-width: 0; padding-right: 24px; }
+.ck-addr-name { font-size: 15px; font-weight: 700; color: #1a1a2e; }
+.ck-addr-line { font-size: 13.5px; color: #6c757d; margin-top: 3px; }
+
+/* ── Toggle switch ── */
+.ck-switch-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-top: 1px dashed #f0f0f0; margin-top: 6px;
+}
+.ck-switch-label { font-size: 14px; color: #495057; font-weight: 500; }
+.form-check-input { cursor: pointer; }
+
+/* ── Carrier cards ── */
+.ck-carrier-grid { display: flex; flex-direction: column; gap: 10px; }
+.ck-carrier {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border: 2px solid #e9ecef; border-radius: 12px;
+    cursor: pointer; transition: all .2s; position: relative;
+}
+.ck-carrier:hover { border-color: #ffd5c8; background: #fffaf9; }
+.ck-carrier input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.ck-carrier input:checked ~ .ck-carrier-content { pointer-events: none; }
+.ck-carrier.checked { border-color: #ff5722; background: #fff8f6; box-shadow: 0 0 0 3px rgba(255,87,34,.10); }
+.ck-carrier-img {
+    width: 42px; height: 42px; border-radius: 9px;
+    background: #f8f9fa; border: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+}
+.ck-carrier-img img { width: 100%; height: 100%; object-fit: contain; }
+.ck-carrier-info { flex: 1; }
+.ck-carrier-name { font-size: 13.5px; font-weight: 700; color: #1a1a2e; }
+.ck-carrier-desc { font-size: 12px; color: #6c757d; margin-top: 1px; }
+.ck-carrier-price { font-size: 14px; font-weight: 800; color: #1a1a2e; }
+.ck-carrier-price.free { color: #22c55e; }
+.ck-carrier-check {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #ff5722; color: #fff;
+    display: none; align-items: center; justify-content: center;
+    font-size: 10px; flex-shrink: 0;
+}
+.ck-carrier.checked .ck-carrier-check { display: flex; }
+
+/* ── Right column: summary ── */
+.ck-summary { position: sticky; top: 76px; }
+
+/* Summary card special styling */
+.ck-summary .ck-card {
+    border: none;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    animation: summaryEntrance .5s cubic-bezier(.22,.68,0,1.2) both;
+}
+@keyframes summaryEntrance {
+    from { opacity: 0; transform: translateY(24px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Summary header gradient */
+.ck-summary .ck-card-head {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4e 100%);
+    border-bottom: none; padding: 20px 24px;
+}
+.ck-summary .ck-card-head-icon {
+    background: rgba(255,87,34,.2); color: #ff8a65;
+}
+.ck-summary .ck-card-head h5 { color: #fff; font-size: 17px; }
+.ck-summary .ck-badge {
+    background: rgba(255,87,34,.25); color: #ff8a65;
+    border: 1px solid rgba(255,87,34,.3);
+}
+
+/* Items */
+.ck-items-list { padding: 4px 0; }
+.ck-item {
+    display: flex; align-items: center; gap: 13px;
+    padding: 11px 0; border-bottom: 1px dashed #f0f0f0;
+    opacity: 0;
+    animation: itemSlideIn .4s ease forwards;
+}
+.ck-item:last-child { border-bottom: none; }
+.ck-item:nth-child(1) { animation-delay: .08s; }
+.ck-item:nth-child(2) { animation-delay: .16s; }
+.ck-item:nth-child(3) { animation-delay: .24s; }
+.ck-item:nth-child(4) { animation-delay: .32s; }
+.ck-item:nth-child(n+5) { animation-delay: .40s; }
+@keyframes itemSlideIn {
+    from { opacity: 0; transform: translateX(12px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+.ck-item-img {
+    width: 54px; height: 54px; border-radius: 10px;
+    object-fit: cover; border: 1px solid #f0f0f0; flex-shrink: 0;
+    background: #f8f9fa;
+}
+.ck-item-info { flex: 1; min-width: 0; }
+.ck-item-name { font-size: 14px; font-weight: 600; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ck-item-unit { font-size: 12.5px; color: #adb5bd; margin-top: 2px; }
+.ck-item-qty {
+    font-size: 12px; font-weight: 700;
+    background: #f0f0f0; color: #495057;
+    border-radius: 20px; padding: 3px 10px; flex-shrink: 0;
+}
+.ck-item-total { font-size: 14.5px; font-weight: 700; color: #1a1a2e; flex-shrink: 0; }
+
+.ck-divider { border: none; border-top: 1px solid #f0f0f0; margin: 6px 0; }
+
+/* Price rows */
+.ck-price-block {
+    background: #f8f9fa; border-radius: 12px;
+    padding: 14px 16px; margin: 6px 0;
+    animation: fadeInUp .4s .35s ease both;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.ck-price-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; font-size: 14px; color: #6c757d;
+}
+.ck-price-row:not(:last-child) { border-bottom: 1px dashed #e9ecef; }
+
+/* Total row */
+.ck-total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 16px 6px;
+    animation: fadeInUp .4s .5s ease both;
+}
+.ck-total-label { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+.ck-total-amount {
+    font-size: 26px; font-weight: 800; color: #ff5722;
+    letter-spacing: -0.5px;
+    animation: popIn .5s .6s cubic-bezier(.22,.68,0,1.4) both;
+}
+@keyframes popIn {
+    from { opacity: 0; transform: scale(.7); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Pay button ── */
+.ck-pay-btn {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    width: 100%; padding: 17px;
+    background: linear-gradient(135deg, #ff5722, #ff8a65);
+    color: #fff; font-size: 16px; font-weight: 700;
+    border: none; border-radius: 14px; cursor: pointer;
+    text-decoration: none;
+    transition: all .25s; margin-top: 14px;
+    box-shadow: 0 6px 20px rgba(255,87,34,.4);
+    animation: fadeInUp .4s .65s ease both;
+    position: relative; overflow: hidden;
+}
+.ck-pay-btn::after {
+    content: '';
+    position: absolute; top: -50%; left: -60%;
+    width: 40%; height: 200%;
+    background: rgba(255,255,255,.15);
+    transform: skewX(-20deg);
+    animation: shimmer 2.5s 1.5s ease-in-out infinite;
+}
+@keyframes shimmer {
+    0%   { left: -60%; }
+    100% { left: 120%; }
+}
+.ck-pay-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(255,87,34,.5);
+    color: #fff;
+}
+
+.ck-not-ready {
+    width: 100%; padding: 16px;
+    background: #f0f0f0; color: #adb5bd;
+    font-size: 14.5px; font-weight: 600;
+    border: none; border-radius: 14px;
+    text-align: center; margin-top: 14px;
+    cursor: not-allowed;
+    animation: fadeInUp .4s .65s ease both;
+}
+
+.ck-back-cart {
+    display: block; text-align: center;
+    margin-top: 12px; font-size: 13.5px;
+    color: #6c757d; text-decoration: none;
+    font-weight: 500;
+    animation: fadeInUp .4s .75s ease both;
+}
+.ck-back-cart:hover { color: #ff5722; }
+
+.ck-secure-badge {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    margin-top: 16px; font-size: 12.5px; color: #adb5bd;
+    animation: fadeInUp .4s .8s ease both;
+}
+.ck-secure-badge i { color: #22c55e; animation: pulse-lock 2s 2s ease-in-out infinite; }
+@keyframes pulse-lock {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.2); }
+}
+
+/* ── Payment modal ── */
+.ck-modal .modal-content {
+    border-radius: 20px; border: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    overflow: hidden;
+}
+.ck-modal .modal-header {
+    background: linear-gradient(135deg, #1a1a2e, #2d2d4e);
+    border: none; padding: 20px 24px;
+}
+.ck-modal .modal-title { color: #fff; font-weight: 700; }
+.ck-modal .btn-close { filter: invert(1); opacity: .7; }
+.ck-modal .modal-body { padding: 24px; }
+
+#submit {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #ff5722, #ff8a65);
+    color: #fff; font-size: 14.5px; font-weight: 700;
+    border: none; border-radius: 10px; cursor: pointer;
+    margin-top: 20px;
+    transition: all .2s;
+    box-shadow: 0 4px 14px rgba(255,87,34,.35);
+}
+#submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,87,34,.45); }
+
+.spinner { display: none; width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+.spinner.visible { display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#payment-message {
+    background: #fff3cd; color: #856404;
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 13px; margin-top: 12px; display: none;
+}
+#payment-message.visible { display: block; }
+
+.hidden { display: none !important; }
+
+/* ── Badge ── */
+.ck-badge {
+    background: #fff3ee; color: #ff5722;
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+    margin-left: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ck-page">
+
+    <!-- ── Top bar ── -->
+    <div class="ck-topbar">
+        <div class="ck-topbar-inner">
+            <a href="{% url 'cart' %}" class="ck-back-btn">
+                <i class="ti-angle-left"></i> Retour
+            </a>
+            <div class="ck-brand">mat<span>store</span></div>
+            <div class="ck-secure">
+                <i class="ti-lock"></i> Paiement sécurisé
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Steps ── -->
+    <div class="ck-steps">
+        <div class="ck-step {% if not ready_to_pay %}active{% else %}done{% endif %}">
+            <div class="ck-step-num">{% if ready_to_pay %}<i class="ti-check"></i>{% else %}1{% endif %}</div>
+            <span>Adresse</span>
+        </div>
+        <div class="ck-step-sep"></div>
+        <div class="ck-step {% if ready_to_pay %}active{% endif %}">
+            <div class="ck-step-num">2</div>
+            <span>Paiement</span>
+        </div>
+        <div class="ck-step-sep"></div>
+        <div class="ck-step">
+            <div class="ck-step-num">3</div>
+            <span>Confirmation</span>
+        </div>
+    </div>
+
+    <!-- ── Body ── -->
+    <div class="ck-body">
+
+        <!-- ════════════════════ LEFT COLUMN ════════════════════ -->
+        <div class="ck-left">
+
+            <!-- Login (guest only) -->
+            {% if not user.is_authenticated %}
+            <div class="ck-card">
+                <div class="ck-login-toggle">
+                    <i class="ti-user" style="color:#ff5722;"></i>
+                    Déjà client ?
+                    <a href="#loginCollapse" data-bs-toggle="collapse" aria-expanded="false" class="collapsed">
+                        Se connecter
+                    </a>
+                </div>
+                <div id="loginCollapse" class="collapse">
+                    <div class="ck-card-body" style="padding-top:16px;">
+                        <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">
+                            Connectez-vous pour retrouver vos adresses enregistrées.
+                        </p>
+                        <form id="login_form" action="{% url 'login_form' %}" method="post">
+                            {% csrf_token %}
+                            <div class="form-error text-danger" style="font-size:13px; margin-bottom:8px;"></div>
+                            <div class="ck-form-group">
+                                <label class="ck-label">Email</label>
+                                <input type="text" name="email" placeholder="votre@email.com" class="ck-input">
+                                <div class="text-danger email-error" style="font-size:12px; margin-top:4px;"></div>
+                            </div>
+                            <div class="ck-form-group">
+                                <label class="ck-label">Mot de passe</label>
+                                <input type="password" name="password" placeholder="••••••••" class="ck-input">
+                                <div class="text-danger password-error" style="font-size:12px; margin-top:4px;"></div>
+                            </div>
+                            <button type="submit" name="login"
+                                style="width:100%; padding:11px; background:#1a1a2e; color:#fff; border:none; border-radius:9px; font-weight:700; font-size:14px; cursor:pointer;">
+                                <i class="ti-unlock" style="margin-right:6px;"></i> Se connecter
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Billing address -->
+            <div class="ck-card">
+                <div class="ck-card-head">
+                    <div class="ck-card-head-icon"><i class="ti-map-alt"></i></div>
+                    <h5>Adresse de facturation</h5>
+                    {% if user.is_authenticated and user.adresses.all %}
+                    <small>{{ user.adresses.all|length }} adresse{{ user.adresses.all|length|pluralize }}</small>
+                    {% endif %}
+                </div>
+                <div class="ck-card-body">
+                    {% if user.is_authenticated %}
+                        {% if user.adresses.all %}
+                            <!-- Existing addresses -->
+                            <div class="ck-addr-hint">
+                                <i class="ti-info-alt"></i>
+                                <span>Cliquez sur une adresse pour la sélectionner. Elle sera utilisée pour la facturation.</span>
+                            </div>
+                            <div style="margin-bottom:14px;">
+                                {% for address in user.adresses.all %}
+                                <label class="ck-addr-card {% if address.id == address_billing_id %}selected{% endif %}" style="display:flex;">
+                                    <input type="radio" name="address_billing_id" value="{{ address.id }}"
+                                           id="billing_{{ address.id }}"
+                                           {% if address.id == address_billing_id %}checked{% endif %}
+                                           style="position:absolute;opacity:0;width:0;">
+                                    <div class="ck-addr-icon"><i class="ti-home"></i></div>
+                                    <div class="ck-addr-info">
+                                        <div class="ck-addr-name">{{ address.full_name }}</div>
+                                        <div class="ck-addr-line">{{ address.street }}, {{ address.code_postal }} {{ address.city }}</div>
+                                        <div class="ck-addr-line">{{ address.country }}</div>
+                                    </div>
+                                    <div class="ck-addr-selected-badge"><i class="ti-check"></i></div>
+                                </label>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Toggle: new address -->
+                            <label class="ck-switch-row" for="add_new_address" style="cursor:pointer;">
+                                <span class="ck-switch-label"><i class="ti-plus" style="margin-right:5px; color:#ff5722;"></i>Ajouter une nouvelle adresse</span>
+                                <input class="addNewAddress form-check-input" type="checkbox" id="add_new_address" style="width:36px; height:20px;">
+                            </label>
+                            <div class="d-none" id="addNewAddressForm" style="margin-top:14px;">
+                                <form action="{% url 'add_address' %}" method="post">
+                                    {% csrf_token %}
+                                    {% include "shop/partials/address_form_fields.html" with form=address_form %}
+                                    <button type="submit" style="width:100%; padding:11px; background:#ff5722; color:#fff; border:none; border-radius:9px; font-weight:700; font-size:14px; cursor:pointer; margin-top:4px;">
+                                        <i class="ti-save" style="margin-right:6px;"></i> Enregistrer l'adresse
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Toggle: different shipping address -->
+                            <label class="ck-switch-row" for="new_shipping_address" style="cursor:pointer; margin-top:6px;">
+                                <span class="ck-switch-label"><i class="ti-truck" style="margin-right:5px; color:#ff5722;"></i>Livrer à une autre adresse</span>
+                                <input name="new_shipping_address"
+                                       class="newShippingAddress form-check-input" type="checkbox"
+                                       id="new_shipping_address"
+                                       {% if new_shipping_address == 'true' %}checked{% endif %}
+                                       style="width:36px; height:20px;">
+                            </label>
+
+                            <!-- Shipping address (conditional) -->
+                            <div class="shipping_address_form {% if new_shipping_address != 'true' %}d-none{% endif %}" style="margin-top:14px;">
+                                <div style="font-size:12px; font-weight:700; color:#6c757d; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;">
+                                    <i class="ti-truck" style="margin-right:5px; color:#ff5722;"></i>Adresse de livraison
+                                </div>
+                                {% for address in user.adresses.all %}
+                                <label class="ck-addr-card {% if address.id == address_shipping_id %}selected{% endif %}" style="display:flex;">
+                                    <input type="radio" name="address_shipping_id" value="{{ address.id }}"
+                                           {% if address.id == address_shipping_id %}checked{% endif %}
+                                           style="position:absolute;opacity:0;width:0;">
+                                    <div class="ck-addr-icon"><i class="ti-truck"></i></div>
+                                    <div class="ck-addr-info">
+                                        <div class="ck-addr-name">{{ address.full_name }}</div>
+                                        <div class="ck-addr-line">{{ address.street }}, {{ address.code_postal }} {{ address.city }}</div>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+
+                        {% else %}
+                            <!-- No address yet -->
+                            <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Aucune adresse enregistrée. Remplissez le formulaire ci-dessous.</p>
+                            <form action="{% url 'add_address' %}" method="post">
+                                {% csrf_token %}
+                                {% include "shop/partials/address_form_fields.html" with form=address_form %}
+                                <button type="submit" style="width:100%; padding:12px; background:#ff5722; color:#fff; border:none; border-radius:9px; font-weight:700; font-size:14px; cursor:pointer; margin-top:4px;">
+                                    <i class="ti-save" style="margin-right:6px;"></i> Enregistrer et continuer
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <!-- Guest form -->
+                        <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Remplissez vos coordonnées pour continuer.</p>
+                        <form action="{% url 'add_address' %}" method="post">
+                            {% csrf_token %}
+                            {% include "shop/partials/address_form_fields.html" with form=address_form %}
+                            <button type="submit" style="width:100%; padding:12px; background:#ff5722; color:#fff; border:none; border-radius:9px; font-weight:700; font-size:14px; cursor:pointer; margin-top:4px;">
+                                <i class="ti-arrow-right" style="margin-right:6px;"></i> Continuer
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Carrier selection -->
+            {% if carriers %}
+            <div class="ck-card">
+                <div class="ck-card-head">
+                    <div class="ck-card-head-icon"><i class="ti-truck"></i></div>
+                    <h5>Mode de livraison</h5>
+                </div>
+                <div class="ck-card-body">
+                    <div class="ck-carrier-grid">
+                        {% for carrier in carriers %}
+                        <label class="ck-carrier {% if cart.carrier_id == carrier.id %}checked{% endif %}" id="carrier-label-{{ carrier.id }}">
+                            <input type="radio" name="carrier_id" value="{{ carrier.id }}"
+                                   id="carrier_id"
+                                   {% if cart.carrier_id == carrier.id %}checked{% endif %}>
+                            <div class="ck-carrier-img">
+                                {% if carrier.image %}
+                                <img src="{{ carrier.image.url }}" alt="{{ carrier.name }}">
+                                {% else %}
+                                <i class="ti-truck" style="color:#ced4da; font-size:18px;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ck-carrier-info">
+                                <div class="ck-carrier-name">{{ carrier.name }}</div>
+                                <div class="ck-carrier-desc">{{ carrier.description }}</div>
+                            </div>
+                            <div class="ck-carrier-price {% if carrier.price == 0 %}free{% endif %}">
+                                {% if carrier.price == 0 %}Gratuit{% else %}{{ carrier.price|price_convert }}{% endif %}
+                            </div>
+                            <div class="ck-carrier-check"><i class="ti-check"></i></div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div><!-- /ck-left -->
+
+        <!-- ════════════════════ RIGHT COLUMN ════════════════════ -->
+        <div class="ck-summary">
+            <div class="ck-card">
+                <div class="ck-card-head">
+                    <div class="ck-card-head-icon"><i class="linearicons-cart"></i></div>
+                    <h5>Récapitulatif</h5>
+                    <span class="ck-badge">{{ cart.cart_count }} article{{ cart.cart_count|pluralize }}</span>
+                </div>
+                <div class="ck-card-body">
+
+                    <!-- Items -->
+                    <div class="ck-items-list">
+                        {% for item in cart.items %}
+                        <div class="ck-item">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image }}" alt="{{ item.product.name }}" class="ck-item-img">
+                            {% else %}
+                            <div class="ck-item-img" style="display:flex;align-items:center;justify-content:center;">
+                                <i class="ti-image" style="color:#ced4da;font-size:20px;"></i>
+                            </div>
+                            {% endif %}
+                            <div class="ck-item-info">
+                                <div class="ck-item-name">{{ item.product.name }}</div>
+                                <div class="ck-item-unit">{{ item.product.solde_price|price_convert }} / unité</div>
+                            </div>
+                            <span class="ck-item-qty">×{{ item.quantity }}</span>
+                            <div class="ck-item-total">{{ item.sub_total_ttc|price_convert }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr class="ck-divider" style="margin: 12px 0 8px;">
+
+                    <!-- Price breakdown -->
+                    <div class="ck-price-block">
+                        <div class="ck-price-row">
+                            <span>Sous-total HT</span>
+                            <span style="font-weight:600; color:#1a1a2e;">{{ cart.sub_total_ht|price_convert }}</span>
+                        </div>
+                        <div class="ck-price-row">
+                            <span>Taxes</span>
+                            <span style="font-weight:600; color:#1a1a2e;">{{ cart.taxe_amount|price_convert }}</span>
+                        </div>
+                        <div class="ck-price-row">
+                            <span>
+                                Livraison
+                                {% if cart.carrier_name %}
+                                <small style="display:block; color:#adb5bd; font-size:12px; margin-top:1px;">{{ cart.carrier_name }}</small>
+                                {% endif %}
+                            </span>
+                            <span style="font-weight:700; {% if cart.shipping_is_free %}color:#22c55e;{% else %}color:#1a1a2e;{% endif %}">
+                                {% if cart.shipping_is_free %}<i class="ti-gift" style="margin-right:4px;"></i>Gratuit{% else %}{{ cart.shipping_price|price_convert }}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="ck-total-row">
+                        <span class="ck-total-label">Total TTC</span>
+                        <span class="ck-total-amount">{{ cart.sub_total_with_shipping|price_convert }}</span>
+                    </div>
+
+                    <!-- CTA -->
+                    {% if ready_to_pay %}
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#paymentModal" class="ck-pay-btn">
+                        <i class="ti-lock"></i>
+                        Payer · {{ cart.sub_total_with_shipping|price_convert }}
+                    </a>
+                    {% else %}
+                    <div class="ck-not-ready">
+                        <i class="ti-map-alt" style="margin-right:7px;"></i>
+                        Sélectionnez une adresse pour continuer
+                    </div>
+                    {% endif %}
+
+                    <a href="{% url 'cart' %}" class="ck-back-cart">
+                        ← Modifier le panier
+                    </a>
+
+                    <div class="ck-secure-badge">
+                        <i class="ti-lock"></i> Paiement 100% sécurisé par Stripe
+                    </div>
+                </div>
+            </div>
+        </div><!-- /ck-summary -->
+
+    </div><!-- /ck-body -->
+</div><!-- /ck-page -->
+
+<!-- ══════════════ PAYMENT MODAL ══════════════ -->
+<div class="modal fade ck-modal" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title"><i class="ti-credit-card" style="margin-right:8px;"></i>Paiement sécurisé</h5>
+                    <div style="font-size:12px; color:rgba(255,255,255,.5); margin-top:2px;">
+                        Total : {{ cart.sub_total_with_shipping|price_convert }}
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="payment-form">
+                    {% csrf_token %}
+                    <div id="payment-element"></div>
+                    <button id="submit" type="submit">
+                        <div class="spinner" id="spinner"></div>
+                        <span id="button-text">
+                            <i class="ti-lock"></i>
+                            Confirmer le paiement — {{ cart.sub_total_with_shipping|price_convert }}
+                        </span>
+                    </button>
+                    <div id="payment-message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── Address card selection ── */
+document.querySelectorAll('.ck-addr-card').forEach(card => {
+    card.addEventListener('click', function() {
+        const radio = this.querySelector('input[type="radio"]');
+        const name = radio.name;
+        document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+            r.closest('.ck-addr-card').classList.remove('selected');
+        });
+        radio.checked = true;
+        this.classList.add('selected');
+        sendRequest({ target: radio });
+    });
+});
+
+/* ── Carrier card selection ── */
+document.querySelectorAll('.ck-carrier').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.ck-carrier').forEach(c => c.classList.remove('checked'));
+        this.classList.add('checked');
+        const radio = this.querySelector('input[type="radio"]');
+        radio.checked = true;
+        sendRequest({ target: radio });
+    });
+});
+
+/* ── sendRequest: update URL query params ── */
+const sendRequest = (event) => {
+    const { name, value, type } = event.target
+    const queryParams = new URLSearchParams(window.location.search)
+    if (type === 'checkbox') {
+        const { checked } = event.target
+        queryParams.set(name, checked)
+    } else {
+        queryParams.set(name, value)
+    }
+    window.location.href = `${window.location.origin}${window.location.pathname}?${queryParams.toString()}`
+}
+
+/* ── Toggle new address form ── */
+const addAddressInput  = document.querySelector('input.addNewAddress')
+const addAddressForm   = document.querySelector('#addNewAddressForm')
+const addShippingInput = document.querySelector('input.newShippingAddress')
+
+addAddressInput?.addEventListener('change', function() {
+    addAddressForm?.classList.toggle('d-none', !this.checked)
+})
+addShippingInput?.addEventListener('change', sendRequest)
+
+/* ── Login form AJAX ── */
+const loginForm       = document.querySelector('form#login_form')
+const loginFormButton = loginForm?.querySelector('button[name="login"]')
+
+const handleSubmitForm = (event) => {
+    event.preventDefault()
+    const formError    = loginForm.querySelector('.form-error')
+    const emailError   = loginForm.querySelector('.email-error')
+    const passwordError = loginForm.querySelector('.password-error')
+    const email    = loginForm.elements['email'].value
+    const password = loginForm.elements['password'].value
+    const token    = loginForm.elements['csrfmiddlewaretoken'].value
+
+    if (email.trim() === '') { emailError.innerText = 'Veuillez renseigner votre email'; return }
+    else emailError.innerText = ''
+    if (password.trim() === '') { passwordError.innerText = 'Veuillez renseigner votre mot de passe'; return }
+    else passwordError.innerText = ''
+
+    const formData = new FormData()
+    formData.append('email', email)
+    formData.append('password', password)
+    formData.append('csrfmiddlewaretoken', token)
+
+    fetch("{% url 'login_form' %}", { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.isSuccess) { formError.innerText = data.message }
+            else { formError.innerText = ''; window.location.reload() }
+        })
+        .catch(err => console.error('Login error:', err))
+}
+loginFormButton?.addEventListener('click', handleSubmitForm)
+</script>
+
+{% if ready_to_pay %}
+<script>
+const stripe = Stripe("{{ public_key }}");
+let elements;
+
+initialize();
+checkStatus();
+document.querySelector("#payment-form").addEventListener("submit", handleSubmit);
+
+async function initialize() {
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const response = await fetch("{% url 'create_payment_intent' order_id %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+    });
+    const { clientSecret } = await response.json();
+    elements = stripe.elements({ appearance: { theme: 'stripe' }, clientSecret });
+    elements.create("payment", { layout: "tabs" }).mount("#payment-element");
+}
+
+async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: { return_url: window.location.origin + "{% url 'payment_success' %}" },
+    });
+    if (error?.type === "card_error" || error?.type === "validation_error") {
+        showMessage(error.message);
+    } else {
+        showMessage("Une erreur inattendue s'est produite.");
+    }
+    setLoading(false);
+}
+
+async function checkStatus() {
+    const clientSecret = new URLSearchParams(window.location.search).get("payment_intent_client_secret");
+    if (!clientSecret) return;
+    const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
+    const msgs = {
+        succeeded: "Paiement réussi !",
+        processing: "Votre paiement est en cours de traitement.",
+        requires_payment_method: "Paiement échoué, veuillez réessayer."
+    };
+    showMessage(msgs[paymentIntent.status] || "Une erreur s'est produite.");
+}
+
+function showMessage(text) {
+    const el = document.querySelector("#payment-message");
+    el.textContent = text;
+    el.classList.add("visible");
+    setTimeout(() => { el.classList.remove("visible"); el.textContent = ""; }, 5000);
+}
+
+function setLoading(loading) {
+    document.querySelector("#submit").disabled = loading;
+    document.querySelector("#spinner").classList.toggle("visible", loading);
+    document.querySelector("#button-text").classList.toggle("hidden", loading);
+}
+</script>
+{% endif %}
+{% endblock %}

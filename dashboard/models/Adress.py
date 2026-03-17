@@ -13,7 +13,11 @@ class Adress(models.Model):
     country = models.CharField(max_length=255)
     more_details = models.TextField(max_length=500, null=True, blank=True)
     author = models.ForeignKey(
-        Customer, on_delete=models.CASCADE, null=True, blank=True
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="adresses",
+        null=True,
+        blank=True,
     )
     adress_type = models.CharField(max_length=255, choices=ADRESS_TYPE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -21,3 +25,14 @@ class Adress(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_adress_as_string(self):
+        adress_parts = [
+            self.name,
+            self.full_name,
+            self.street,
+            f"{self.code_postal} {self.city}",
+            self.country,
+            # ajoutez d autres champs si necessaire
+        ]
+        return ", ".join(filter(None, adress_parts))

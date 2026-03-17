@@ -128,23 +128,109 @@
 
     /* ── Summary ── */
     .summary-card {
-        background:#fff; border-radius:14px;
-        border:1px solid #f0f0f0;
-        box-shadow:0 2px 16px rgba(0,0,0,0.06);
-        position:sticky; top:90px;
+        background: #fff;
+        border-radius: 18px;
+        border: none;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+        position: sticky; top: 90px;
+        overflow: hidden;
+        animation: summaryIn .5s cubic-bezier(.22,.68,0,1.2) both;
+    }
+    @keyframes summaryIn {
+        from { opacity:0; transform: translateY(20px) scale(.97); }
+        to   { opacity:1; transform: translateY(0) scale(1); }
     }
     .summary-card-header {
-        padding:18px 24px; border-bottom:1px solid #f0f0f0;
-        font-weight:700; font-size:16px; color:#1a1a2e;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4e 100%);
+        color: #fff;
+        font-weight: 700; font-size: 17px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .summary-card-header i {
+        width: 36px; height: 36px; border-radius: 9px;
+        background: rgba(255,87,34,.2); color: #ff8a65;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; flex-shrink: 0;
+    }
+    .summary-card-body { padding: 20px 24px; }
+
+    .summary-price-block {
+        background: #f8f9fa; border-radius: 12px;
+        padding: 14px 16px; margin-bottom: 6px;
+        animation: fadeUp .4s .2s ease both;
+    }
+    @keyframes fadeUp {
+        from { opacity:0; transform:translateY(10px); }
+        to   { opacity:1; transform:translateY(0); }
     }
     .summary-row {
-        display:flex; justify-content:space-between; align-items:center;
-        padding:11px 0; font-size:14px; color:#6c757d;
-        border-bottom:1px dashed #f0f0f0;
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 7px 0; font-size: 14px; color: #6c757d;
+        border-bottom: 1px dashed #e9ecef;
     }
-    .summary-row:last-of-type { border-bottom:none; }
-    .summary-row strong { color:#1a1a2e; font-size:17px; }
-    .summary-row span { font-weight:600; }
+    .summary-row:last-of-type { border-bottom: none; }
+    .summary-row span { font-weight: 600; color: #1a1a2e; }
+
+    .summary-total-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 14px 0 8px;
+        animation: fadeUp .4s .35s ease both;
+    }
+    .summary-total-label { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+    .summary-total-amount {
+        font-size: 26px; font-weight: 800; color: #ff5722;
+        letter-spacing: -.5px;
+        animation: popIn .5s .5s cubic-bezier(.22,.68,0,1.4) both;
+    }
+    @keyframes popIn {
+        from { opacity:0; transform:scale(.7); }
+        to   { opacity:1; transform:scale(1); }
+    }
+
+    .summary-checkout-btn {
+        display: flex; align-items: center; justify-content: center; gap: 9px;
+        width: 100%; padding: 16px;
+        background: linear-gradient(135deg, #ff5722, #ff8a65);
+        color: #fff; font-size: 15.5px; font-weight: 700;
+        border: none; border-radius: 13px; cursor: pointer;
+        text-decoration: none; text-align: center;
+        transition: all .25s; margin-top: 6px;
+        box-shadow: 0 6px 20px rgba(255,87,34,.4);
+        position: relative; overflow: hidden;
+        animation: fadeUp .4s .5s ease both;
+    }
+    .summary-checkout-btn::after {
+        content: '';
+        position: absolute; top: -50%; left: -60%;
+        width: 40%; height: 200%;
+        background: rgba(255,255,255,.15);
+        transform: skewX(-20deg);
+        animation: shimmer 2.5s 1.5s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0% { left:-60%; } 100% { left:120%; } }
+    .summary-checkout-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(255,87,34,.5);
+        color: #fff;
+    }
+    .summary-continue-btn {
+        display: block; text-align: center;
+        padding: 12px; margin-top: 10px;
+        border: 1.5px solid #e9ecef; border-radius: 12px;
+        color: #6c757d; font-size: 14px; font-weight: 600;
+        text-decoration: none; transition: all .2s;
+        animation: fadeUp .4s .6s ease both;
+    }
+    .summary-continue-btn:hover { border-color: #1a1a2e; color: #1a1a2e; background: #f8f9fa; }
+
+    .summary-secure {
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        margin-top: 14px; font-size: 12.5px; color: #adb5bd;
+        animation: fadeUp .4s .7s ease both;
+    }
+    .summary-secure i { color: #22c55e; animation: pulseLock 2s 2s ease-in-out infinite; }
+    @keyframes pulseLock { 0%,100% { transform:scale(1); } 50% { transform:scale(1.2); } }
 
     /* ── Empty ── */
     .empty-cart { text-align:center; padding:100px 0; }
@@ -285,61 +371,63 @@
             <!-- ── Summary ── -->
             <div class="col-lg-4">
                 <div class="summary-card">
-                    <div class="summary-card-header">Résumé de la commande</div>
-                    <div style="padding:20px 24px;">
+                    <div class="summary-card-header">
+                        <i class="linearicons-cart"></i>
+                        Résumé de la commande
+                    </div>
+                    <div class="summary-card-body">
 
-                        <div class="summary-row">
-                            <span>Sous-total HT</span>
-                            <span id="s-ht">{% if summary %}{{ summary.sub_total_ht }}{% endif %}</span>
+                        <div class="summary-price-block">
+                            <div class="summary-row">
+                                <span style="color:#6c757d; font-weight:400;">Sous-total HT</span>
+                                <span id="s-ht">{% if summary %}{{ summary.sub_total_ht }}{% endif %}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span style="color:#6c757d; font-weight:400;">Taxes</span>
+                                <span id="s-tva">{% if summary %}{{ summary.taxe_amount }}{% endif %}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span style="color:#6c757d; font-weight:400;">Sous-total TTC</span>
+                                <span id="s-ttc">{% if summary %}{{ summary.sub_total_ttc }}{% endif %}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span style="color:#6c757d; font-weight:400;">
+                                    Livraison
+                                    <small id="s-carrier-name" style="display:block; color:#adb5bd; font-size:12px; font-weight:400; margin-top:1px;">
+                                        {% if summary and summary.carrier_name %}{{ summary.carrier_name }}{% endif %}
+                                    </small>
+                                </span>
+                                {% if summary and summary.has_carrier %}
+                                    {% if summary.shipping_is_free %}
+                                    <span id="s-shipping" style="color:#22c55e; font-weight:700;"><i class="ti-gift" style="margin-right:3px;"></i>Gratuit</span>
+                                    {% else %}
+                                    <span id="s-shipping">{{ summary.shipping_price }}</span>
+                                    {% endif %}
+                                {% else %}
+                                <span id="s-shipping" style="color:#adb5bd; font-style:italic; font-weight:400;">À calculer</span>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <div class="summary-row">
-                            <span>TCA</span>
-                            <span id="s-tva">{% if summary %}{{ summary.taxe_amount }}{% endif %}</span>
-                        </div>
-
-                        <div class="summary-row" style="font-weight:600; color:#1a1a2e;">
-                            <span>Sous-total TTC</span>
-                            <span id="s-ttc">{% if summary %}{{ summary.sub_total_ttc }}{% endif %}</span>
-                        </div>
-
-                        <!-- Livraison row -->
-                        <div class="summary-row">
-                            <span>
-                                Livraison
-                                <small id="s-carrier-name" style="display:block; color:#adb5bd; font-size:11px; font-weight:400;">
-                                    {% if summary and summary.carrier_name %}{{ summary.carrier_name }}{% endif %}
-                                </small>
-                            </span>
-                            {% if summary and summary.has_carrier %}
-                            {% if summary.shipping_is_free %}
-                            <span id="s-shipping" style="color:#22c55e; font-weight:700;">Gratuit</span>
-                            {% else %}
-                            <span id="s-shipping">{{ summary.shipping_price }}</span>
-                            {% endif %}
-                            {% else %}
-                            <span id="s-shipping" style="color:#6c757d; font-style:italic;">À calculer</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="summary-row" style="margin-top:10px; padding-top:14px; border-top:2px solid #f0f0f0;">
-                            <strong style="font-size:15px;">Total TTC</strong>
-                            <strong id="s-total" style="color:#ff5722; font-size:20px;">
+                        <div class="summary-total-row">
+                            <span class="summary-total-label">Total TTC</span>
+                            <strong id="s-total" class="summary-total-amount">
                                 {% if summary %}{{ summary.sub_total_with_shipping }}{% endif %}
                             </strong>
                         </div>
 
-                        <button class="btn btn-fill-out w-100 mt-4"
-                                style="border-radius:10px; padding:14px; font-size:15px; font-weight:600;"
-                                onclick="showToast('Le paiement sera bientôt disponible.', 'info')">
-                            <i class="ti-lock" style="margin-right:8px;"></i>
+                        <a href="{% url 'checkout' %}" class="summary-checkout-btn">
+                            <i class="ti-lock"></i>
                             Procéder au paiement
-                        </button>
+                        </a>
 
-                        <a href="{% url 'shop_list' %}" class="btn btn-fill-line w-100 mt-2"
-                           style="border-radius:10px; padding:12px; font-size:14px;">
+                        <a href="{% url 'shop_list' %}" class="summary-continue-btn">
                             Continuer mes achats
                         </a>
+
+                        <div class="summary-secure">
+                            <i class="ti-lock"></i> Paiement 100% sécurisé
+                        </div>
                     </div>
                 </div>
             </div>
