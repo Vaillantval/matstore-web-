@@ -1,7 +1,12 @@
 from django.urls import path
 
 from shop.views import checkout_view
-from shop.views.payment_view import index as payment_intent_view, payment_success
+from shop.views.payment_view import (
+    create_payment_intent,
+    payment_success,
+    moncash_initiate,
+    moncash_callback,
+)
 from shop.views.shop_view import (
     index,
     shop_list,
@@ -41,32 +46,34 @@ urlpatterns = [
     path("faq/", faq, name="faq"),
     path("terms/", terms, name="terms"),
     path("page/<slug:slug>/", page_detail, name="page_detail"),
+
     # Cart
     path("cart/", cart_detail, name="cart"),
     path("cart/add/<int:product_id>/", add_to_cart, name="add_to_cart"),
     path("cart/remove/<int:product_id>/", remove_from_cart, name="remove_from_cart"),
     path("cart/update/<int:product_id>/", update_cart, name="update_cart"),
     path("cart/carrier/", select_carrier, name="select_carrier"),
+
     # Comparaison
     path("comparer/", compare_detail, name="compare"),
     path("comparer/ajouter/<int:product_id>/", add_to_compare, name="add_to_compare"),
-    path(
-        "comparer/retirer/<int:product_id>/",
-        remove_from_compare,
-        name="remove_from_compare",
-    ),
-    # Liste de souhaits
+    path("comparer/retirer/<int:product_id>/", remove_from_compare, name="remove_from_compare"),
+
+    # Wishlist
     path("liste-de-souhaits/", wishlist_detail, name="wishlist"),
     path("liste-de-souhaits/vider/", clear_wishlist, name="clear_wishlist"),
-    path(
-        "liste-de-souhaits/toggle/<int:product_id>/",
-        toggle_wishlist,
-        name="toggle_wishlist",
-    ),
+    path("liste-de-souhaits/toggle/<int:product_id>/", toggle_wishlist, name="toggle_wishlist"),
+
     # Checkout
     path("checkout/", checkout_view.index, name="checkout"),
     path("checkout/add-address/", checkout_view.add_address, name="add_address"),
     path("checkout/login/", checkout_view.login_form, name="login_form"),
-    path("create-payment-intent/<int:order_id>/", payment_intent_view, name="create_payment_intent"),
+
+    # Paiement Stripe
+    path("create-payment-intent/<int:order_id>/", create_payment_intent, name="create_payment_intent"),
     path("payment-success/", payment_success, name="payment_success"),
+
+    # Paiement MonCash
+    path("moncash/pay/<int:order_id>/", moncash_initiate, name="moncash_initiate"),
+    path("moncash/callback/", moncash_callback, name="moncash_callback"),
 ]

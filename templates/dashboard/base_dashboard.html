@@ -317,7 +317,7 @@
         <a href="{% url 'dashboard:account' %}" class="ds-nav-link {% block nav_profile %}{% endblock %}">
             <i class="ti-user"></i> Mon profil
         </a>
-        <a href="#" class="ds-nav-link {% block nav_orders %}{% endblock %}">
+        <a href="{% url 'dashboard:orders' %}" class="ds-nav-link {% block nav_orders %}{% endblock %}">
             <i class="ti-package"></i> Mes commandes
         </a>
         <a href="{% url 'dashboard:addresses' %}" class="ds-nav-link {% block nav_addresses %}{% endblock %}">

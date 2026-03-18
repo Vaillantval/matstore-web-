@@ -1,0 +1,152 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static price_filters %}
+
+{% block title %}Mes commandes{% endblock %}
+{% block page_title %}Mes commandes{% endblock %}
+{% block nav_orders %}active{% endblock %}
+
+{% block breadcrumb_extra %}
+    <i class="ti-angle-right" style="font-size:9px;"></i>
+    <span>Commandes</span>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+.orders-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+.orders-table th {
+    padding:10px 14px;
+    background:var(--bg); border-bottom:2px solid var(--border);
+    color:var(--muted); font-size:10.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.6px; text-align:left;
+}
+.orders-table td { padding:13px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.orders-table tr:last-child td { border-bottom:none; }
+.orders-table tr:hover td { background:#fafafa; }
+
+.o-badge {
+    display:inline-block; padding:3px 11px;
+    border-radius:20px; font-size:11px; font-weight:700;
+}
+.o-badge-pending    { background:#fff8e1; color:#f59e0b; }
+.o-badge-processing { background:#eff6ff; color:#3b82f6; }
+.o-badge-shipped    { background:#f5f3ff; color:#8b5cf6; }
+.o-badge-delivered  { background:#f0fdf4; color:#22c55e; }
+.o-badge-canceled   { background:#fef2f2; color:#ef4444; }
+
+.o-paid-yes { color:#22c55e; font-weight:700; }
+.o-paid-no  { color:#ef4444; font-weight:700; }
+
+.o-detail-btn {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:6px 14px; border-radius:7px;
+    background:var(--accent); color:#fff;
+    font-size:12px; font-weight:700; text-decoration:none;
+    transition:opacity .18s;
+}
+.o-detail-btn:hover { color:#fff; opacity:.85; }
+
+@media(max-width:700px) {
+    .orders-table thead { display:none; }
+    .orders-table tr { display:block; margin-bottom:12px; border:1px solid var(--border); border-radius:8px; }
+    .orders-table td { display:flex; justify-content:space-between; align-items:center; padding:9px 14px; border-bottom:1px dashed var(--border); }
+    .orders-table td:last-child { border-bottom:none; }
+    .orders-table td::before { content:attr(data-label); color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- En-tête -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+    <div>
+        <h1 style="font-size:20px;font-weight:800;color:var(--dark);margin:0 0 3px;">Mes commandes</h1>
+        <p style="font-size:13px;color:var(--muted);margin:0;">
+            {{ orders|length }} commande{{ orders|length|pluralize }} au total
+        </p>
+    </div>
+    <a href="{% url 'shop_list' %}" style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:var(--accent);color:#fff;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">
+        <i class="ti-shopping-cart"></i> Boutique
+    </a>
+</div>
+
+<div class="ds-card" style="padding:0;overflow:hidden;">
+
+{% if orders %}
+    <table class="orders-table">
+        <thead>
+            <tr>
+                <th>N° commande</th>
+                <th>Date</th>
+                <th>Articles</th>
+                <th>Total TTC</th>
+                <th>Livraison</th>
+                <th>Paiement</th>
+                <th>Statut</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for order in orders %}
+        <tr>
+            <td data-label="N°" style="font-weight:700;color:var(--dark);">
+                #{{ order.id }}
+            </td>
+            <td data-label="Date" style="color:var(--muted);">
+                {{ order.created_at|date:"d/m/Y" }}
+                <div style="font-size:11px;margin-top:1px;">{{ order.created_at|date:"H:i" }}</div>
+            </td>
+            <td data-label="Articles">
+                {{ order.quantity }} article{{ order.quantity|pluralize }}
+            </td>
+            <td data-label="Total" style="font-weight:800;color:var(--dark);">
+                {{ order.order_cost_ttc|price_convert }}
+            </td>
+            <td data-label="Livraison" style="color:var(--muted);">
+                {{ order.carrier_name }}
+                {% if order.carrier_price == 0 %}
+                    <span style="color:#22c55e;font-size:11px;display:block;">Gratuit</span>
+                {% endif %}
+            </td>
+            <td data-label="Paiement">
+                {% if order.is_paid %}
+                    <span class="o-paid-yes"><i class="ti-check"></i> Payée</span>
+                {% else %}
+                    <span class="o-paid-no"><i class="ti-close"></i> Non payée</span>
+                {% endif %}
+            </td>
+            <td data-label="Statut">
+                {% if order.status == 'pending' %}
+                    <span class="o-badge o-badge-pending">En attente</span>
+                {% elif order.status == 'processing' %}
+                    <span class="o-badge o-badge-processing">En traitement</span>
+                {% elif order.status == 'shipped' %}
+                    <span class="o-badge o-badge-shipped">Expédiée</span>
+                {% elif order.status == 'delivered' %}
+                    <span class="o-badge o-badge-delivered">Livrée</span>
+                {% elif order.status == 'canceled' %}
+                    <span class="o-badge o-badge-canceled">Annulée</span>
+                {% endif %}
+            </td>
+            <td data-label="">
+                <a href="{% url 'dashboard:order_detail' order.pk %}" class="o-detail-btn">
+                    <i class="ti-eye"></i> Détails
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% else %}
+    <div class="ds-empty" style="padding:60px 20px;">
+        <i class="ti-package"></i>
+        <p>Vous n'avez pas encore passé de commande.</p>
+        <a href="{% url 'shop_list' %}" class="ds-empty-btn">
+            <i class="ti-shopping-cart"></i> Découvrir la boutique
+        </a>
+    </div>
+{% endif %}
+
+</div>
+{% endblock %}

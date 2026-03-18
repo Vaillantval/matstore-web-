@@ -4,8 +4,8 @@ from django.conf import settings
 
 class StripeService:
     def __init__(self):
-        # V�rifie si la m�thode Stripe est disponible
-        self.method = Method.objects.filter(name='Stripe').first()
+        # Fix #1 : on exclut les méthodes désactivées (is_available=False)
+        self.method = Method.objects.filter(name='Stripe', is_available=True).first()
 
     # Impl�mentez ici la logique de votre service
     def get_public_key(self):

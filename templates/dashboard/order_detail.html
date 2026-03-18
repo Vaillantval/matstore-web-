@@ -1,0 +1,334 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static price_filters %}
+
+{% block title %}Commande #{{ order.id }}{% endblock %}
+{% block page_title %}Commande #{{ order.id }}{% endblock %}
+{% block nav_orders %}active{% endblock %}
+
+{% block breadcrumb_extra %}
+    <i class="ti-angle-right" style="font-size:9px;"></i>
+    <a href="{% url 'dashboard:orders' %}">Commandes</a>
+    <i class="ti-angle-right" style="font-size:9px;"></i>
+    <span>#{{ order.id }}</span>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+.od-grid {
+    display:grid;
+    grid-template-columns:1fr 340px;
+    gap:18px;
+    align-items:start;
+}
+@media(max-width:860px) { .od-grid { grid-template-columns:1fr; } }
+
+.od-badge {
+    display:inline-block; padding:4px 14px;
+    border-radius:20px; font-size:12px; font-weight:700;
+}
+.od-badge-pending    { background:#fff8e1; color:#f59e0b; }
+.od-badge-processing { background:#eff6ff; color:#3b82f6; }
+.od-badge-shipped    { background:#f5f3ff; color:#8b5cf6; }
+.od-badge-delivered  { background:#f0fdf4; color:#22c55e; }
+.od-badge-canceled   { background:#fef2f2; color:#ef4444; }
+
+.od-items-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+.od-items-table th {
+    padding:9px 12px;
+    background:var(--bg); border-bottom:2px solid var(--border);
+    color:var(--muted); font-size:10.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.5px; text-align:left;
+}
+.od-items-table td { padding:12px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.od-items-table tr:last-child td { border-bottom:none; }
+
+.od-addr-block {
+    background:var(--bg); border:1px solid var(--border);
+    border-radius:8px; padding:13px 16px;
+    font-size:13px; color:var(--dark);
+    line-height:1.7;
+}
+
+.od-price-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 0; font-size:13.5px; color:var(--muted);
+    border-bottom:1px dashed var(--border);
+}
+.od-price-row:last-child { border-bottom:none; }
+.od-total-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:13px 0 4px; font-size:15px; font-weight:800; color:var(--dark);
+    border-top:2px solid var(--border); margin-top:6px;
+}
+.od-total-row span:last-child { color:var(--accent); font-size:20px; }
+
+.od-timeline { list-style:none; padding:0; margin:0; }
+.od-tl-item {
+    display:flex; align-items:flex-start; gap:12px;
+    padding:8px 0; position:relative;
+}
+.od-tl-item:not(:last-child)::before {
+    content:''; position:absolute;
+    left:14px; top:32px; bottom:-8px;
+    width:2px; background:var(--border);
+}
+.od-tl-dot {
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; border:2px solid var(--border);
+    background:var(--card); color:var(--muted);
+    position:relative; z-index:1;
+}
+.od-tl-dot.done  { background:#f0fdf4; border-color:#22c55e; color:#22c55e; }
+.od-tl-dot.active{ background:#eff6ff; border-color:#3b82f6; color:#3b82f6; }
+.od-tl-label { font-size:13px; font-weight:600; color:var(--dark); margin-top:4px; }
+.od-tl-sub   { font-size:11.5px; color:var(--muted); margin-top:1px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- En-tête commande -->
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:22px;">
+    <div>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <h1 style="font-size:20px;font-weight:800;color:var(--dark);margin:0;">
+                Commande #{{ order.id }}
+            </h1>
+            {% if order.status == 'pending' %}
+                <span class="od-badge od-badge-pending">En attente</span>
+            {% elif order.status == 'processing' %}
+                <span class="od-badge od-badge-processing">En traitement</span>
+            {% elif order.status == 'shipped' %}
+                <span class="od-badge od-badge-shipped">Expédiée</span>
+            {% elif order.status == 'delivered' %}
+                <span class="od-badge od-badge-delivered">Livrée</span>
+            {% elif order.status == 'canceled' %}
+                <span class="od-badge od-badge-canceled">Annulée</span>
+            {% endif %}
+        </div>
+        <p style="font-size:12.5px;color:var(--muted);margin:4px 0 0;">
+            Passée le {{ order.created_at|date:"d F Y à H:i" }}
+            · {{ order.quantity }} article{{ order.quantity|pluralize }}
+            · Paiement :
+            {% if order.is_paid %}
+                <span style="color:#22c55e;font-weight:700;">Confirmé</span>
+            {% else %}
+                <span style="color:#ef4444;font-weight:700;">En attente</span>
+            {% endif %}
+        </p>
+    </div>
+    <a href="{% url 'dashboard:orders' %}"
+       style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;">
+        <i class="ti-arrow-left"></i> Retour aux commandes
+    </a>
+</div>
+
+<div class="od-grid">
+
+    <!-- ── Colonne gauche ── -->
+    <div>
+
+        <!-- Articles commandés -->
+        <div class="ds-card" style="padding:0;overflow:hidden;margin-bottom:18px;">
+            <div class="ds-card-title" style="padding:16px 20px;margin:0;border-radius:0;">
+                <i class="ti-package"></i> Articles commandés
+                <span style="margin-left:auto;font-size:12px;color:var(--muted);font-weight:400;">
+                    {{ order_items|length }} article{{ order_items|length|pluralize }}
+                </span>
+            </div>
+            <table class="od-items-table">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th style="text-align:center;">Qté</th>
+                        <th style="text-align:right;">Prix unit.</th>
+                        <th style="text-align:right;">Sous-total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in order_items %}
+                <tr>
+                    <td>
+                        <div style="font-weight:600;color:var(--dark);">{{ item.product_name }}</div>
+                        {% if item.product_description %}
+                        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">
+                            {{ item.product_description|truncatechars:80 }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center;">
+                        <span style="background:var(--bg);border:1px solid var(--border);
+                                     padding:2px 10px;border-radius:20px;font-weight:700;">
+                            ×{{ item.quantity }}
+                        </span>
+                    </td>
+                    <td style="text-align:right;color:var(--muted);">{{ item.solde_price|price_convert }}</td>
+                    <td style="text-align:right;font-weight:700;color:var(--dark);">{{ item.sub_total_ttc|price_convert }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">Aucun article trouvé.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Adresses -->
+        <div class="ds-card" style="margin-bottom:18px;">
+            <div class="ds-card-title"><i class="ti-map-alt"></i> Adresses</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div>
+                    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">
+                        Facturation
+                    </div>
+                    <div class="od-addr-block">{{ order.billing_address }}</div>
+                </div>
+                <div>
+                    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">
+                        Livraison
+                    </div>
+                    <div class="od-addr-block">{{ order.shipping_address }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Méthode de paiement & livraison -->
+        <div class="ds-card">
+            <div class="ds-card-title"><i class="ti-credit-card"></i> Paiement & livraison</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div>
+                    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">
+                        Moyen de paiement
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-weight:600;color:var(--dark);">
+                        <i class="ti-credit-card" style="color:var(--muted);"></i>
+                        {{ order.payment_method }}
+                        {% if order.is_paid %}
+                            <i class="ti-check-box" style="color:#22c55e;" title="Paiement confirmé"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">
+                        Transporteur
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-weight:600;color:var(--dark);">
+                        <i class="ti-truck" style="color:var(--muted);"></i>
+                        {{ order.carrier_name }}
+                        {% if order.carrier_price == 0 %}
+                            <span style="font-size:11px;background:#f0fdf4;color:#22c55e;padding:2px 8px;border-radius:20px;font-weight:700;">Gratuit</span>
+                        {% else %}
+                            <span style="color:var(--muted);font-size:12.5px;">{{ order.carrier_price|price_convert }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /colonne gauche -->
+
+    <!-- ── Colonne droite ── -->
+    <div>
+
+        <!-- Récapitulatif des prix -->
+        <div class="ds-card" style="margin-bottom:18px;">
+            <div class="ds-card-title"><i class="ti-receipt"></i> Récapitulatif</div>
+
+            <div class="od-price-row">
+                <span>Sous-total HT</span>
+                <span style="font-weight:600;color:var(--dark);">{{ order.order_cost|price_convert }}</span>
+            </div>
+            <div class="od-price-row">
+                <span>Taxes</span>
+                <span style="font-weight:600;color:var(--dark);">{{ order.taxe|price_convert }}</span>
+            </div>
+            <div class="od-price-row">
+                <span>Livraison</span>
+                {% if order.carrier_price == 0 %}
+                    <span style="font-weight:700;color:#22c55e;"><i class="ti-gift"></i> Gratuit</span>
+                {% else %}
+                    <span style="font-weight:600;color:var(--dark);">{{ order.carrier_price|price_convert }}</span>
+                {% endif %}
+            </div>
+
+            <div class="od-total-row">
+                <span>Total TTC</span>
+                <span>{{ order.order_cost_ttc|price_convert }}</span>
+            </div>
+        </div>
+
+        <!-- Suivi de commande -->
+        <div class="ds-card">
+            <div class="ds-card-title"><i class="ti-map"></i> Suivi de commande</div>
+            <ul class="od-timeline">
+
+                <li class="od-tl-item">
+                    <div class="od-tl-dot {% if order.is_paid or order.status != 'pending' %}done{% elif order.status == 'pending' %}active{% endif %}">
+                        <i class="ti-check"></i>
+                    </div>
+                    <div>
+                        <div class="od-tl-label">Commande reçue</div>
+                        <div class="od-tl-sub">{{ order.created_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                </li>
+
+                <li class="od-tl-item">
+                    <div class="od-tl-dot {% if order.is_paid %}done{% endif %}">
+                        <i class="ti-credit-card"></i>
+                    </div>
+                    <div>
+                        <div class="od-tl-label">Paiement confirmé</div>
+                        <div class="od-tl-sub">
+                            {% if order.is_paid %}Paiement validé{% else %}En attente{% endif %}
+                        </div>
+                    </div>
+                </li>
+
+                <li class="od-tl-item">
+                    <div class="od-tl-dot {% if order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %}done{% endif %}">
+                        <i class="ti-settings"></i>
+                    </div>
+                    <div>
+                        <div class="od-tl-label">En préparation</div>
+                        <div class="od-tl-sub">
+                            {% if order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %}
+                                Commande en traitement
+                            {% else %}En attente{% endif %}
+                        </div>
+                    </div>
+                </li>
+
+                <li class="od-tl-item">
+                    <div class="od-tl-dot {% if order.status == 'shipped' or order.status == 'delivered' %}done{% endif %}">
+                        <i class="ti-truck"></i>
+                    </div>
+                    <div>
+                        <div class="od-tl-label">Expédiée</div>
+                        <div class="od-tl-sub">
+                            {% if order.status == 'shipped' or order.status == 'delivered' %}
+                                Colis en route
+                            {% else %}En attente{% endif %}
+                        </div>
+                    </div>
+                </li>
+
+                <li class="od-tl-item">
+                    <div class="od-tl-dot {% if order.status == 'delivered' %}done{% endif %}">
+                        <i class="ti-home"></i>
+                    </div>
+                    <div>
+                        <div class="od-tl-label">Livrée</div>
+                        <div class="od-tl-sub">
+                            {% if order.status == 'delivered' %}Commande livrée{% else %}En attente{% endif %}
+                        </div>
+                    </div>
+                </li>
+
+            </ul>
+        </div>
+
+    </div><!-- /colonne droite -->
+
+</div><!-- /od-grid -->
+{% endblock %}

@@ -45,6 +45,8 @@ class CarrierAdmin(admin.ModelAdmin):
     }
 
     def display_image(self, obj):
+        if not obj.image:
+            return "—"
         return format_html(
             '<img src="{}" width="100px" height="100px" />', obj.image.url
         )
@@ -231,10 +233,9 @@ class MethodAdmin(admin.ModelAdmin):
     )
 
     def display_image(self, obj):
-        first_image = obj.logo
-        if not first_image:
-            return ""
-        return format_html(f'<img src="{ first_image.url }" height="40" width="100" />')
+        if not obj.logo:
+            return "—"
+        return format_html('<img src="{}" height="40" width="100" />', obj.logo.url)
 
     display_image.short_description = "image"
 

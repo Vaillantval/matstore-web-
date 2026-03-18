@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from shop.services.cart_service import CartService
 from shop.models.Carrier import Carrier
 from shop.forms.CheckoutAddressForm import CheckoutAddressForm
@@ -12,9 +13,11 @@ import random
 import string
 from django.db import transaction
 from shop.models.Order import Order
-from dashboard.models.Adress import Adress  # Fix: nom correct du modèle
+from shop.models.Method import Method
+from dashboard.models.Adress import Adress
 from shop.models.OrderDetail import OrderDetail
 from shop.services.payment_service import StripeService
+from shop.services.moncash_service import MonCashService
 
 
 def index(request):
@@ -46,6 +49,10 @@ def index(request):
     cart = CartService.get_cart_details(request)
     carriers = Carrier.objects.all()
 
+    # Fix #5 : payment_service initialisé avant le bloc ready_to_pay
+    # pour pouvoir passer le nom de méthode à create_order
+    payment_service = StripeService()
+
     order_id = None
     if ready_to_pay:
         if new_shipping_address and new_shipping_address != 'false':
@@ -55,13 +62,17 @@ def index(request):
             billing_address = Adress.objects.filter(id=address_billing_id).first()
             shipping_address = None
 
-        # Fix: utiliser le bon nom de méthode get_adress_as_string()
         billing_address_str = billing_address.get_adress_as_string() if billing_address else ""
         shipping_address_str = shipping_address.get_adress_as_string() if shipping_address else None
 
-        # Fix: réutiliser l'ordre existant en session pour éviter les doublons
+        # Fix #7 : nom de méthode de paiement issu du modèle Method
+        payment_method_name = payment_service.method.name if payment_service.method else 'Stripe'
+
+        # Fix #4 : guard pour éviter les doublons de commandes pour les invités.
+        # On ne cherche un ordre existant en session que si l'utilisateur est authentifié,
+        # car le filtre author=request.user échoue silencieusement pour AnonymousUser.
         existing_order_id = request.session.get('pending_order_id')
-        if existing_order_id:
+        if existing_order_id and request.user.is_authenticated:
             existing_order = Order.objects.filter(
                 id=existing_order_id, is_paid=False, author=request.user
             ).first()
@@ -72,12 +83,17 @@ def index(request):
                 order_id = existing_order.id
 
         if not order_id:
-            order_id = create_order(request, billing_address_str, shipping_address_str)
+            order_id = create_order(
+                request, billing_address_str, shipping_address_str, payment_method_name
+            )
             request.session['pending_order_id'] = order_id
 
     address_form = CheckoutAddressForm()
     login_form_instance = CustomLoginForm()
-    payment_service = StripeService()
+
+    # Méthodes de paiement disponibles (depuis Admin)
+    payment_methods = Method.objects.filter(is_available=True)
+    moncash_configured = MonCashService.is_configured()
 
     return render(request, 'shop/checkout.html', {
         'cart': cart,
@@ -90,6 +106,8 @@ def index(request):
         'new_shipping_address': new_shipping_address,
         'public_key': payment_service.get_public_key(),
         'order_id': order_id,
+        'payment_methods': payment_methods,
+        'moncash_configured': moncash_configured,
     })
 
 
@@ -99,7 +117,6 @@ def add_address(request):
         address_form = CheckoutAddressForm(request.POST)
         if not user.is_authenticated:
             email = request.POST.get('email')
-            # Fix: .first() pour obtenir un objet, pas un QuerySet
             existing_user = Customer.objects.filter(email=email).first()
 
             if existing_user:
@@ -111,7 +128,6 @@ def add_address(request):
                 new_user.email = email
                 password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
                 new_user.password = make_password(password)
-                # Envoi de mail de création de compte, contenant le mot de passe
                 new_user.save()
                 login(request, new_user)
                 user = new_user
@@ -122,9 +138,9 @@ def add_address(request):
             address.save()
             messages.success(request, 'Address added successfully.')
 
-    # Fix: préserver les query params pour ne pas perdre les sélections
+    # Fix #6 : reverse() au lieu d'un chemin hardcodé '/checkout/'
     query_string = request.GET.urlencode()
-    redirect_url = f"{'/checkout/'}"
+    redirect_url = reverse('checkout')
     if query_string:
         redirect_url += f"?{query_string}"
     return redirect(redirect_url)
@@ -150,11 +166,10 @@ def login_form(request):
     return JsonResponse({"isSuccess": False, 'message': 'Error, Invalid request method !'})
 
 
-def create_order(request, billing_address, shipping_address=None):
+def create_order(request, billing_address, shipping_address=None, payment_method='Stripe'):
     cart = CartService.get_cart_details(request)
     user = request.user
 
-    # Fix: carrier peut être un dict (session) ou un objet Carrier (fallback)
     carrier_data = request.session.get('carrier')
     if carrier_data and isinstance(carrier_data, dict):
         carrier_name = carrier_data.get('name', '')
@@ -164,7 +179,6 @@ def create_order(request, billing_address, shipping_address=None):
         carrier_name = fallback_carrier.name if fallback_carrier else ''
         carrier_price = float(fallback_carrier.price) if fallback_carrier else 0
 
-    # Fix: tout dans un seul bloc atomic pour cohérence
     with transaction.atomic():
         order = Order()
         order.client_name = user.username
@@ -177,7 +191,8 @@ def create_order(request, billing_address, shipping_address=None):
         order.order_cost = cart['sub_total_ht']
         order.taxe = cart['taxe_amount']
         order.order_cost_ttc = cart['sub_total_with_shipping']
-        order.payment_method = 'Stripe'
+        # Fix #7 : méthode de paiement dynamique, non hardcodée
+        order.payment_method = payment_method
         order.save()
 
         for item in cart['items']:

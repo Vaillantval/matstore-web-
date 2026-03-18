@@ -635,6 +635,61 @@ body { background: #f4f6f9; }
                 </div>
             </div>
 
+            <!-- ── Méthode de paiement (visible seulement quand adresse sélectionnée) ── -->
+            {% if ready_to_pay %}
+            {% if payment_methods or moncash_configured %}
+            <div class="ck-card">
+                <div class="ck-card-head">
+                    <div class="ck-card-head-icon"><i class="ti-credit-card"></i></div>
+                    <h5>Méthode de paiement</h5>
+                </div>
+                <div class="ck-card-body">
+                    <div class="ck-carrier-grid">
+
+                        {% for method in payment_methods %}
+                        <label class="ck-carrier ck-payment-method" id="pm-label-{{ method.id }}"
+                               data-method-type="{% if 'stripe' in method.name|lower %}stripe{% else %}other{% endif %}"
+                               data-method-id="{{ method.id }}">
+                            <input type="radio" name="payment_method_choice"
+                                   value="{% if 'stripe' in method.name|lower %}stripe{% else %}other_{{ method.id }}{% endif %}"
+                                   id="pm_{{ method.id }}">
+                            <div class="ck-carrier-img">
+                                {% if method.logo %}
+                                <img src="{{ method.logo.url }}" alt="{{ method.name }}">
+                                {% else %}
+                                <i class="ti-credit-card" style="color:#ced4da;font-size:18px;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ck-carrier-info">
+                                <div class="ck-carrier-name">{{ method.name }}</div>
+                                <div class="ck-carrier-desc">{{ method.description }}</div>
+                            </div>
+                            <div class="ck-carrier-check"><i class="ti-check"></i></div>
+                        </label>
+                        {% endfor %}
+
+                        {% if moncash_configured %}
+                        <label class="ck-carrier ck-payment-method" id="pm-label-moncash"
+                               data-method-type="moncash">
+                            <input type="radio" name="payment_method_choice"
+                                   value="moncash" id="pm_moncash">
+                            <div class="ck-carrier-img" style="background:#e52329;">
+                                <span style="color:#fff;font-size:11px;font-weight:900;letter-spacing:-.5px;">MON<br>CASH</span>
+                            </div>
+                            <div class="ck-carrier-info">
+                                <div class="ck-carrier-name">MonCash</div>
+                                <div class="ck-carrier-desc">Paiement mobile via Digicel MonCash</div>
+                            </div>
+                            <div class="ck-carrier-check"><i class="ti-check"></i></div>
+                        </label>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
             <!-- Carrier selection -->
             {% if carriers %}
             <div class="ck-card">
@@ -737,10 +792,41 @@ body { background: #f4f6f9; }
 
                     <!-- CTA -->
                     {% if ready_to_pay %}
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#paymentModal" class="ck-pay-btn">
-                        <i class="ti-lock"></i>
-                        Payer · {{ cart.sub_total_with_shipping|price_convert }}
-                    </a>
+
+                        {% if payment_methods or moncash_configured %}
+
+                        <!-- Hint : choisir méthode avant (caché dès qu'une méthode est choisie) -->
+                        <div id="pm-hint" class="ck-not-ready">
+                            <i class="ti-credit-card" style="margin-right:7px;"></i>
+                            Choisissez une méthode de paiement
+                        </div>
+
+                        <!-- Bouton Stripe (toujours dans le DOM, affiché par JS) -->
+                        <a id="stripe-pay-btn" href="#"
+                           class="ck-pay-btn" style="display:none;">
+                            <i class="ti-lock"></i>
+                            Payer · {{ cart.sub_total_with_shipping|price_convert }}
+                        </a>
+
+                        <!-- Bouton MonCash (caché par défaut) -->
+                        {% if moncash_configured and order_id %}
+                        <form id="moncash-form" action="{% url 'moncash_initiate' order_id %}" method="post" style="display:none;">
+                            {% csrf_token %}
+                        </form>
+                        <button id="moncash-pay-btn" type="button"
+                                class="ck-pay-btn" style="display:none; background:linear-gradient(135deg,#e52329,#ff6060);">
+                            <i class="ti-mobile"></i>
+                            Payer avec MonCash · {{ cart.sub_total_with_shipping|price_convert }}
+                        </button>
+                        {% endif %}
+
+                        {% else %}
+                        <div class="ck-not-ready">
+                            <i class="ti-credit-card" style="margin-right:7px;"></i>
+                            Aucune méthode de paiement disponible
+                        </div>
+                        {% endif %}
+
                     {% else %}
                     <div class="ck-not-ready">
                         <i class="ti-map-alt" style="margin-right:7px;"></i>
@@ -812,14 +898,69 @@ document.querySelectorAll('.ck-addr-card').forEach(card => {
 });
 
 /* ── Carrier card selection ── */
-document.querySelectorAll('.ck-carrier').forEach(card => {
+document.querySelectorAll('.ck-carrier:not(.ck-payment-method)').forEach(card => {
     card.addEventListener('click', function() {
-        document.querySelectorAll('.ck-carrier').forEach(c => c.classList.remove('checked'));
+        document.querySelectorAll('.ck-carrier:not(.ck-payment-method)').forEach(c => c.classList.remove('checked'));
         this.classList.add('checked');
         const radio = this.querySelector('input[type="radio"]');
         radio.checked = true;
         sendRequest({ target: radio });
     });
+});
+
+/* ── Payment method selection ── */
+const pmHint       = document.getElementById('pm-hint');
+const stripePayBtn = document.getElementById('stripe-pay-btn');
+const moncashPayBtn= document.getElementById('moncash-pay-btn');
+const moncashForm  = document.getElementById('moncash-form');
+
+// Valeurs par défaut — écrasées par le bloc Stripe si public_key est disponible
+let paymentElementMounted = false;
+let elementsReady = Promise.resolve(null);
+
+function showPayBtn(type) {
+    if (pmHint)        pmHint.style.display        = 'none';
+    if (stripePayBtn)  stripePayBtn.style.display  = type === 'stripe'  ? '' : 'none';
+    if (moncashPayBtn) moncashPayBtn.style.display = type === 'moncash' ? '' : 'none';
+}
+
+document.querySelectorAll('.ck-payment-method').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.ck-payment-method').forEach(c => c.classList.remove('checked'));
+        this.classList.add('checked');
+        const radio = this.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+        showPayBtn(this.dataset.methodType);
+    });
+});
+
+// Auto-sélectionner si une seule méthode disponible
+const pmCards = document.querySelectorAll('.ck-payment-method');
+if (pmCards.length === 1) pmCards[0].click();
+
+// Clic MonCash → soumettre le formulaire caché
+moncashPayBtn?.addEventListener('click', function() {
+    moncashForm?.submit();
+});
+
+// Clic Stripe → ouvrir le modal puis monter le PaymentElement
+stripePayBtn?.addEventListener('click', async function(e) {
+    e.preventDefault();
+    const modalEl = document.getElementById('paymentModal');
+    if (!modalEl) return;
+
+    // Ouvrir le modal immédiatement
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+
+    // Monter le PaymentElement si pas encore fait
+    if (!paymentElementMounted) {
+        const el = await elementsReady;
+        if (el && !paymentElementMounted) {
+            el.create("payment", { layout: "tabs" }).mount("#payment-element");
+            paymentElementMounted = true;
+        }
+    }
 });
 
 /* ── sendRequest: update URL query params ── */
@@ -879,29 +1020,40 @@ const handleSubmitForm = (event) => {
 loginFormButton?.addEventListener('click', handleSubmitForm)
 </script>
 
-{% if ready_to_pay %}
+{% if ready_to_pay and public_key %}
 <script>
 const stripe = Stripe("{{ public_key }}");
 let elements;
 
-initialize();
+// Démarre le chargement du PaymentIntent en arrière-plan et stocke la promesse
+// (écrase les valeurs par défaut définies plus haut)
+elementsReady = initialize();
+
 checkStatus();
 document.querySelector("#payment-form").addEventListener("submit", handleSubmit);
 
 async function initialize() {
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const response = await fetch("{% url 'create_payment_intent' order_id %}", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
-    });
-    const { clientSecret } = await response.json();
-    elements = stripe.elements({ appearance: { theme: 'stripe' }, clientSecret });
-    elements.create("payment", { layout: "tabs" }).mount("#payment-element");
+    try {
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const response = await fetch("{% url 'create_payment_intent' order_id %}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+        });
+        const data = await response.json();
+        if (data.error) { console.error('PaymentIntent:', data.error); return null; }
+        elements = stripe.elements({ appearance: { theme: 'stripe' }, clientSecret: data.clientSecret });
+        return elements;
+    } catch (err) {
+        console.error('initialize() failed:', err);
+        return null;
+    }
 }
+
 
 async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
+    if (!elements) elements = await elementsReady;
     const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: { return_url: window.location.origin + "{% url 'payment_success' %}" },

@@ -26,6 +26,7 @@ urlpatterns = [
     path("", include("shop.urls")),
     path("dashboard/", include("dashboard.urls")),
     path("accounts/", include("accounts.urls")),
+    path("payment/", include("django_moncash.urls")),
 ]
 
 if settings.DEBUG:

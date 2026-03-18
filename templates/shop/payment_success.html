@@ -1,27 +1,187 @@
-{% extends "base.html" %}
+{% extends "base_checkout.html" %}
+{% load static price_filters %}
 
 {% block content %}
+<div class="section" style="min-height:100vh; background:#f8f9fa; padding: 60px 0;">
+    <div class="container">
 
-{% include "partials/top_page.html" with name="Order Completed" %}
-
-
-<div class="section">
-	<div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="text-center order_complete">
-                	<i class="fas fa-check-circle"></i>
-                    <div class="heading_s1">
-                  	<h3>Your order is completed!</h3>
-                    </div>
-                  	<p>Thank you for your order! Your order is being processed and will be completed within 3-6 hours. You will receive an email confirmation when your order is completed.</p>
-                    <a href="{% url 'shop:home' %}" class="btn btn-fill-out">
-                        Continue Shopping
-                    </a>
+        {# ── En-tête confirmation ── #}
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-8 text-center">
+                <div style="
+                    width:80px; height:80px; border-radius:50%;
+                    background:#28a745; display:inline-flex;
+                    align-items:center; justify-content:center; margin-bottom:20px;">
+                    <i class="ti-check" style="font-size:36px; color:#fff;"></i>
                 </div>
+                <h2 style="font-weight:700; color:#1a1a2e; margin-bottom:8px;">
+                    Commande confirmée !
+                </h2>
+                <p class="text-muted">
+                    Merci pour votre achat. Votre commande a bien été enregistrée et est en cours de traitement.
+                </p>
             </div>
         </div>
+
+        {% if order %}
+        <div class="row justify-content-center">
+
+            {# ── Colonne principale ── #}
+            <div class="col-lg-7 col-md-8 mb-4">
+
+                {# Récapitulatif commande #}
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header" style="background:#1a1a2e; color:#fff; border-radius:6px 6px 0 0;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span style="font-weight:600;">
+                                <i class="ti-receipt" style="margin-right:6px;"></i>
+                                Commande N° {{ order.id }}
+                            </span>
+                            <small style="opacity:.75;">{{ order.created_at|date:"d/m/Y à H:i" }}</small>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0" style="font-size:14px;">
+                            <thead style="background:#f1f3f5;">
+                                <tr>
+                                    <th class="pl-3">Produit</th>
+                                    <th class="text-center">Qté</th>
+                                    <th class="text-right pr-3">Sous-total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.orderdetail_set.all %}
+                                <tr>
+                                    <td class="pl-3" style="vertical-align:middle;">
+                                        {{ item.product_name }}
+                                    </td>
+                                    <td class="text-center" style="vertical-align:middle;">
+                                        {{ item.quantity }}
+                                    </td>
+                                    <td class="text-right pr-3" style="vertical-align:middle;">
+                                        {{ item.sub_total_ttc|price_convert }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">Aucun article.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {# Adresses #}
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body" style="font-size:14px;">
+                        <div class="row">
+                            <div class="col-6">
+                                <p style="font-weight:600; margin-bottom:4px; color:#1a1a2e;">
+                                    <i class="ti-home" style="margin-right:4px;"></i> Adresse de facturation
+                                </p>
+                                <p class="text-muted mb-0" style="white-space:pre-line;">{{ order.billing_address }}</p>
+                            </div>
+                            <div class="col-6">
+                                <p style="font-weight:600; margin-bottom:4px; color:#1a1a2e;">
+                                    <i class="ti-truck" style="margin-right:4px;"></i> Adresse de livraison
+                                </p>
+                                <p class="text-muted mb-0" style="white-space:pre-line;">{{ order.shipping_address }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {# ── Colonne résumé ── #}
+            <div class="col-lg-4 col-md-8 mb-4">
+
+                {# Totaux #}
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header" style="background:#1a1a2e; color:#fff; border-radius:6px 6px 0 0;">
+                        <span style="font-weight:600;">
+                            <i class="ti-money" style="margin-right:6px;"></i>Récapitulatif
+                        </span>
+                    </div>
+                    <div class="card-body" style="font-size:14px;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Sous-total HT</span>
+                            <span>{{ order.order_cost|price_convert }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Taxes</span>
+                            <span>{{ order.taxe|price_convert }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Livraison ({{ order.carrier_name }})</span>
+                            <span>{{ order.carrier_price|price_convert }}</span>
+                        </div>
+                        <hr style="margin:10px 0;">
+                        <div class="d-flex justify-content-between" style="font-weight:700; font-size:16px;">
+                            <span>Total TTC</span>
+                            <span style="color:#ff5722;">{{ order.order_cost_ttc|price_convert }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {# Infos paiement & statut #}
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body" style="font-size:14px;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Méthode de paiement</span>
+                            <span style="font-weight:600;">{{ order.payment_method }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Paiement</span>
+                            {% if order.is_paid %}
+                                <span class="badge badge-success">Payé</span>
+                            {% else %}
+                                <span class="badge badge-warning">En attente</span>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Statut</span>
+                            {% if order.status == 'pending' %}
+                                <span class="badge" style="background:#ffc107; color:#333;">En attente</span>
+                            {% elif order.status == 'processing' %}
+                                <span class="badge" style="background:#17a2b8; color:#fff;">En cours</span>
+                            {% elif order.status == 'shipped' %}
+                                <span class="badge" style="background:#007bff; color:#fff;">Expédiée</span>
+                            {% elif order.status == 'delivered' %}
+                                <span class="badge" style="background:#28a745; color:#fff;">Livrée</span>
+                            {% elif order.status == 'canceled' %}
+                                <span class="badge" style="background:#dc3545; color:#fff;">Annulée</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ order.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {# CTA #}
+                <div class="text-center">
+                    <a href="{% url 'home' %}" class="btn btn-fill-out w-100 mb-2">
+                        Continuer mes achats
+                    </a>
+                    {% if request.user.is_authenticated %}
+                    <a href="{% url 'dashboard:order_detail' order.pk %}" class="btn btn-outline-secondary w-100" style="font-size:13px;">
+                        Suivre ma commande
+                    </a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+        {% else %}
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <p class="text-muted">Aucun détail de commande disponible.</p>
+                <a href="{% url 'home' %}" class="btn btn-fill-out">Retour à l'accueil</a>
+            </div>
+        </div>
+        {% endif %}
+
     </div>
 </div>
-
 {% endblock %}
