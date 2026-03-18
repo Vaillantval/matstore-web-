@@ -803,6 +803,7 @@ body { background: #f4f6f9; }
 
                         <!-- Bouton Stripe (toujours dans le DOM, affiché par JS) -->
                         <a id="stripe-pay-btn" href="#"
+                           data-bs-toggle="modal" data-bs-target="#paymentModal"
                            class="ck-pay-btn" style="display:none;">
                             <i class="ti-lock"></i>
                             Payer · {{ cart.sub_total_with_shipping|price_convert }}
@@ -914,9 +915,6 @@ const stripePayBtn = document.getElementById('stripe-pay-btn');
 const moncashPayBtn= document.getElementById('moncash-pay-btn');
 const moncashForm  = document.getElementById('moncash-form');
 
-// Valeurs par défaut — écrasées par le bloc Stripe si public_key est disponible
-let paymentElementMounted = false;
-let elementsReady = Promise.resolve(null);
 
 function showPayBtn(type) {
     if (pmHint)        pmHint.style.display        = 'none';
@@ -943,25 +941,6 @@ moncashPayBtn?.addEventListener('click', function() {
     moncashForm?.submit();
 });
 
-// Clic Stripe → ouvrir le modal puis monter le PaymentElement
-stripePayBtn?.addEventListener('click', async function(e) {
-    e.preventDefault();
-    const modalEl = document.getElementById('paymentModal');
-    if (!modalEl) return;
-
-    // Ouvrir le modal immédiatement
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
-
-    // Monter le PaymentElement si pas encore fait
-    if (!paymentElementMounted) {
-        const el = await elementsReady;
-        if (el && !paymentElementMounted) {
-            el.create("payment", { layout: "tabs" }).mount("#payment-element");
-            paymentElementMounted = true;
-        }
-    }
-});
 
 /* ── sendRequest: update URL query params ── */
 const sendRequest = (event) => {
@@ -1025,28 +1004,20 @@ loginFormButton?.addEventListener('click', handleSubmitForm)
 const stripe = Stripe("{{ public_key }}");
 let elements;
 
-// Démarre le chargement du PaymentIntent en arrière-plan et stocke la promesse
-// (écrase les valeurs par défaut définies plus haut)
-elementsReady = initialize();
-
+initialize();
 checkStatus();
 document.querySelector("#payment-form").addEventListener("submit", handleSubmit);
 
 async function initialize() {
-    try {
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const response = await fetch("{% url 'create_payment_intent' order_id %}", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
-        });
-        const data = await response.json();
-        if (data.error) { console.error('PaymentIntent:', data.error); return null; }
-        elements = stripe.elements({ appearance: { theme: 'stripe' }, clientSecret: data.clientSecret });
-        return elements;
-    } catch (err) {
-        console.error('initialize() failed:', err);
-        return null;
-    }
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const response = await fetch("{% url 'create_payment_intent' order_id %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+    });
+    const { clientSecret } = await response.json();
+    elements = stripe.elements({ appearance: { theme: 'stripe' }, clientSecret });
+    const paymentElement = elements.create("payment", { layout: "tabs" });
+    paymentElement.mount("#payment-element");
 }
 
 
