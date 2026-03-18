@@ -30,7 +30,10 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" ls-files --others --exclude-standard)",
-      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" diff templates/shop/checkout.html)"
+      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" diff templates/shop/checkout.html)",
+      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" ls-files media/test/jstore)",
+      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" rm -r --cached media/test/jstore/)",
+      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" status --short)"
     ]
   }
 }
