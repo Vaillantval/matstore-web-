@@ -29,7 +29,7 @@ COPY . /app/
 # Fichiers statiques compilés dans l'image
 RUN python manage.py collectstatic --noinput
 
-EXPOSE 8000
+EXPOSE 8080
 
 # Commande de démarrage : migrate + gunicorn
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8080 --workers 2 --timeout 120"]
