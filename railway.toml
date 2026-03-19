@@ -1,15 +1,6 @@
-[build]
-builder = "dockerfile"
-dockerfilePath = "Dockerfile"
-
 [deploy]
-# On s'assure que la commande de démarrage utilise aussi $PORT
-startCommand = "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
-
-# Utilise ta route dédiée que tu as créée dans urls.py
+# On enlève le migrate pour l'instant pour voir l'erreur Gunicorn
+startCommand = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --log-level debug --access-logfile - --error-logfile -"
 healthcheckPath = "/health/"
-
-# SURTOUT : Ne pas mettre de healthcheckPort ici.
-# Railway utilisera par défaut le port sur lequel l'app tourne.
 healthcheckTimeout = 120
 restartPolicyType = "on_failure"
