@@ -1,205 +1,162 @@
 import os
 from pathlib import Path
+import dj_database_url
+from django.utils.translation import gettext_lazy as _
 
+# Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# --- SÉCURITÉ & DEBUG ---
+DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-default-change-me")
 
-# ── Chargement du fichier .env (sans dépendance externe) ──────────────────────
-def _load_dotenv(path: Path) -> None:
-    """Charge les variables d'un fichier .env dans os.environ (setdefault)."""
-    if not path.exists():
-        return
-    with path.open(encoding="utf-8") as f:
-        for raw in f:
-            line = raw.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, _, val = line.partition("=")
-            os.environ.setdefault(key.strip(), val.strip())
+# --- GESTION DES HÔTES (IMPORTÉ DE KOULAKAY) ---
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
+# Récupération automatique du domaine Railway
+_railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
+if _railway_domain:
+    ALLOWED_HOSTS.append(_railway_domain)
 
-_load_dotenv(BASE_DIR / ".env")
-# ──────────────────────────────────────────────────────────────────────────────
+# Ajout des domaines personnalisés depuis les variables d'environnement
+_extra_hosts = os.environ.get('ALLOWED_HOSTS', '')
+if _extra_hosts:
+    ALLOWED_HOSTS += [h.strip() for h in _extra_hosts.split(',') if h.strip()]
 
+# --- APPLICATION DEFINITION ---
+INSTALLED_APPS = [
+    'jazzmin',  # Avant l'admin
+    'modeltranslation',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django_ckeditor_5',
+    'crispy_forms',
+    'crispy_bootstrap4',
+    'accounts',
+    'shop',
+    'dashboard',
+]
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "django-insecure-8-+mm$qw&1!uy*y0v!80gco0pw__t!xay2g4l%fz+xi-6yw7z0",
-)
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Pour les fichiers statiques
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+ROOT_URLCONF = 'config.urls'
 
-_allowed = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1")
-ALLOWED_HOSTS = [h.strip() for h in _allowed.split(",") if h.strip()]
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'shop.context_processors.site_settings',
+                'shop.context_processors.cart_context',
+            ],
+        },
+    },
+]
 
-_csrf = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf.split(",") if o.strip()]
+WSGI_APPLICATION = 'config.wsgi.application'
 
-# ── MonCash ───────────────────────────────────────────────────────────────────
+# --- BASE DE DONNÉES (VERSION ROBUSTE) ---
+_DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if _DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=_DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=not DEBUG  # SSL requis uniquement en production
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+# --- FICHIERS STATIQUES & WHITENOISE ---
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Utilisation d'un stockage plus tolérant pour éviter les crashs au boot
+if DEBUG:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    }
+else:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+    }
+
+# --- SÉCURITÉ PROXY & HTTPS (IMPORTÉ DE KOULAKAY) ---
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = False  # Railway gère le SSL, Django ne doit pas rediriger
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# --- CSRF TRUSTED ORIGINS ---
+CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://127.0.0.1']
+if _railway_domain:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{_railway_domain}')
+_extra_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if _extra_origins:
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in _extra_origins.split(',') if o.strip()]
+
+# --- AUTHENTICATION ---
+AUTH_USER_MODEL = 'accounts.Customer' # Vérifie que 'Customer' a bien une majuscule dans ton code
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- INTERNATIONALIZATION ---
+LANGUAGE_CODE = 'fr'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
+
+# --- MEDIA ---
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# --- CONFIGURATIONS TIERCES (MONCASH, STRIPE, ETC.) ---
 MONCASH = {
     "CLIENT_ID": os.environ.get("MONCASH_CLIENT_ID", ""),
     "SECRET_KEY": os.environ.get("MONCASH_SECRET_KEY", ""),
     "ENVIRONMENT": os.environ.get("MONCASH_ENVIRONMENT", "sandbox"),
 }
-# ── Stripe ────────────────────────────────────────────────────────────────────
+
 STRIPE = {
-    "TEST_PUBLIC_KEY": os.environ.get("STRIPE_TEST_PUBLIC_KEY", ""),
-    "TEST_SECRET_KEY": os.environ.get("STRIPE_TEST_SECRET_KEY", ""),
-    "LIVE_PUBLIC_KEY": os.environ.get("STRIPE_LIVE_PUBLIC_KEY", ""),
-    "LIVE_SECRET_KEY": os.environ.get("STRIPE_LIVE_SECRET_KEY", ""),
+    "PUBLIC_KEY": os.environ.get("STRIPE_PUBLIC_KEY", ""),
+    "SECRET_KEY": os.environ.get("STRIPE_SECRET_KEY", ""),
     "WEBHOOK_SECRET": os.environ.get("STRIPE_WEBHOOK_SECRET", ""),
 }
-# ──────────────────────────────────────────────────────────────────────────────
 
-INSTALLED_APPS = [
-    "jazzmin",  # ← doit être AVANT django.contrib.admin
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "django_ckeditor_5",
-    "shop",
-    "dashboard",
-    "accounts",
-]
-
-MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ← static files en prod
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
-
-ROOT_URLCONF = "config.urls"
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "shop.context_processors.site_settings",
-                "shop.context_processors.cart_context",
-            ],
-        },
-    },
-]
-
-WSGI_APPLICATION = "config.wsgi.application"
-
-# Base de données : PostgreSQL en prod (DATABASE_URL injecté par Railway),
-# SQLite en local si DATABASE_URL absent.
-import dj_database_url
-
-_DATABASE_URL = os.environ.get("DATABASE_URL")
-
-if _DATABASE_URL:
-    DATABASES = {
-        "default": dj_database_url.config(default=_DATABASE_URL, conn_max_age=600)
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "mat_store_ecommerce.db",
-        }
-    }
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-]
-
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
-USE_I18N = True
-USE_TZ = True
-
-STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"  # dossier collectstatic
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# ── Sécurité HTTPS (activée uniquement hors DEBUG) ────────────────────────────
-if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SECURE_SSL_REDIRECT = False
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_HSTS_SECONDS = 31536000  # 1 an
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    X_FRAME_OPTIONS = "DENY"
-
-AUTH_USER_MODEL = "accounts.customer"
-
-# ── CKEditor 5 ────────────────────────────────────────────────────────────────
-CKEDITOR_5_UPLOAD_PATH = "ckeditor_uploads/"
-CKEDITOR_5_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-
-CKEDITOR_5_CONFIGS = {
-    "default": {
-        "toolbar": [
-            "heading",
-            "|",
-            "bold",
-            "italic",
-            "underline",
-            "strikethrough",
-            "|",
-            "bulletedList",
-            "numberedList",
-            "blockQuote",
-            "|",
-            "link",
-            "insertImage",
-            "insertTable",
-            "|",
-            "fontSize",
-            "fontColor",
-            "fontBackgroundColor",
-            "|",
-            "outdent",
-            "indent",
-            "alignment",
-            "|",
-            "undo",
-            "redo",
-        ],
-        "image": {
-            "toolbar": [
-                "imageTextAlternative",
-                "imageStyle:inline",
-                "imageStyle:block",
-                "imageStyle:side",
-            ],
-        },
-        "height": "300px",
-        "width": "100%",
-    },
-}
+# Jazzmin settings... (tu peux garder tes réglages JAZZMIN_SETTINGS actuels ici)
 
 # ── Jazzmin — Admin UI ────────────────────────────────────────────────────────
 JAZZMIN_SETTINGS = {
