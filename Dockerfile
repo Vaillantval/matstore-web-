@@ -3,10 +3,7 @@ FROM python:3.13-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=config.settings
-ENV SECRET_KEY=build-time-placeholder-key
-ENV DEBUG=False
-ENV APP_PORT=8080
-ENV HEALTH_CHECK_PORT=8081
+# On ne définit plus APP_PORT ici
 
 WORKDIR /app
 
@@ -24,6 +21,8 @@ COPY . /app/
 
 RUN python manage.py collectstatic --noinput
 
-EXPOSE 8080 8081
+# Railway utilise la variable d'environnement $PORT automatiquement
+EXPOSE 8080
 
-CMD ["sh", "-c", "gunicorn config.wsgi:application --bind 0.0.0.0:${APP_PORT} --workers 2 --timeout 120"]
+# Utilise $PORT (variable système Railway) plutôt que APP_PORT
+CMD ["sh", "-c", "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"]
