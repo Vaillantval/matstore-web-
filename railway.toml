@@ -3,9 +3,8 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-# On utilise les doubles guillemets pour que le shell interprète le $
-startCommand = "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level debug"
+# Les parenthèses forcent Gunicorn à se lancer QUOI QU'IL ARRIVE après la tentative de création
+startCommand = "python manage.py migrate --noinput && (python manage.py createsuperuser --noinput || true) && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
 healthcheckPath = "/health/"
 healthcheckTimeout = 120
 restartPolicyType = "on_failure"
-# SURTOUT : ne rajoute PAS de healthcheckPort ici
