@@ -4,7 +4,7 @@ dockerfilePath = "Dockerfile"
 
 # Les parenthèses forcent Gunicorn à se lancer QUOI QU'IL ARRIVE après la tentative de création
 [deploy]
-startCommand = "sh -c 'python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --log-level debug'"
+startCommand = "sh -c 'python manage.py migrate --noinput && python manage.py check && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 600 --workers 1 --log-level debug --access-logfile - --error-logfile -'"
 healthcheckPath = "/health/"
-healthcheckTimeout = 120
+healthcheckTimeout = 200 # On lui donne encore plus de temps
 restartPolicyType = "on_failure"
