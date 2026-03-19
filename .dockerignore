@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Environnement Python local
+myenv/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Fichiers Django locaux
+.env
+*.db
+mat_store_ecommerce.db
+
+# Statiques déjà collectés (recréés dans l'image)
+staticfiles/
+
+# Médias uploadées (gérées par volume)
+media/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# IDE / OS
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# Docs / tests
+*.md
+templates/testDocker/

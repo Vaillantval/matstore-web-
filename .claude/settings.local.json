@@ -33,7 +33,18 @@
       "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" diff templates/shop/checkout.html)",
       "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" ls-files media/test/jstore)",
       "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" rm -r --cached media/test/jstore/)",
-      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" status --short)"
+      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" status --short)",
+      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" remote add origin https://github.com/Vaillantval/matstore-web-.git)",
+      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" log --oneline)",
+      "Bash(git -C \"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\matstore\" log --all --oneline -- .env mat_store_ecommerce.db)",
+      "Bash(pip show:*)",
+      "Bash(pip list:*)",
+      "Bash(python -c \":*)",
+      "Bash(pip install:*)",
+      "Bash(\"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\myenv\\\\Scripts\\\\pip.exe\" install:*)",
+      "Bash(\"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\myenv\\\\Scripts\\\\python.exe\" -c \"import jazzmin, os; path = os.path.dirname\\(jazzmin.__file__\\); print\\(os.listdir\\(os.path.join\\(path, 'static', 'jazzmin', 'css', 'themes'\\)\\)\\)\")",
+      "Bash(\"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\myenv\\\\Scripts\\\\pip.exe\" freeze:*)",
+      "Bash(cat config/__pycache__/*)"
     ]
   }
 }

@@ -17,6 +17,7 @@ class CheckoutAddressForm(forms.ModelForm):
             "email",
             "name",
             "full_name",
+            "phone",
             "street",
             "code_postal",
             "city",
@@ -39,6 +40,9 @@ class CheckoutAddressForm(forms.ModelForm):
             "city": forms.TextInput(attrs={"class": "form-control custom-text-input"}),
             "country": forms.TextInput(
                 attrs={"class": "form-control custom-text-input"}
+            ),
+            "phone": forms.TextInput(
+                attrs={"class": "form-control custom-text-input", "id": "id_phone"}
             ),
             "more_details": forms.Textarea(
                 attrs={"class": "form-control custom-textarea"}

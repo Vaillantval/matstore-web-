@@ -145,6 +145,9 @@
             <i class="ti-map"></i>
             {{ addr.code_postal }} {{ addr.city }}{% if addr.country %}, {{ addr.country }}{% endif %}
         </div>
+        {% if addr.phone %}
+        <div class="addr-line"><i class="ti-mobile"></i> {{ addr.phone }}</div>
+        {% endif %}
         {% if addr.more_details %}
         <div class="addr-line"><i class="ti-comment-alt"></i> {{ addr.more_details }}</div>
         {% endif %}

@@ -11,6 +11,7 @@ class Adress(models.Model):
     code_postal = models.CharField(max_length=10)
     city = models.CharField(max_length=255)
     country = models.CharField(max_length=255)
+    phone = models.CharField(max_length=30, null=True, blank=True)
     more_details = models.TextField(max_length=500, null=True, blank=True)
     author = models.ForeignKey(
         Customer,
@@ -33,6 +34,6 @@ class Adress(models.Model):
             self.street,
             f"{self.code_postal} {self.city}",
             self.country,
-            # ajoutez d autres champs si necessaire
+            self.phone,
         ]
         return ", ".join(filter(None, adress_parts))

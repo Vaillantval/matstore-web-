@@ -48,6 +48,37 @@
         box-shadow: 0 0 0 3px rgba(255,87,34,.10);
     }
     .ds-textarea { resize: vertical; min-height: 80px; }
+    .ds-phone-row { display: flex; gap: 8px; align-items: center; }
+    .ds-phone-number { flex: 1; }
+    .dial-wrap { position: relative; flex-shrink: 0; }
+    .dial-btn {
+        display: flex; align-items: center; gap: 6px;
+        padding: 10px 11px;
+        border: 1.5px solid var(--border); border-radius: 8px;
+        background: #fff; cursor: pointer; outline: none;
+        font-size: 13.5px; color: var(--text); white-space: nowrap; font-family: inherit;
+        transition: border-color .18s, box-shadow .18s;
+    }
+    .dial-btn:focus, .dial-btn[aria-expanded="true"] {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255,87,34,.10);
+    }
+    .dial-menu {
+        position: absolute; top: calc(100% + 4px); left: 0;
+        background: #fff; border: 1.5px solid var(--border); border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.12);
+        z-index: 999; min-width: 210px; max-height: 240px; overflow-y: auto;
+        padding: 4px; list-style: none; margin: 0;
+    }
+    .dial-opt {
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 10px; border-radius: 7px; cursor: pointer;
+        font-size: 13px; color: var(--text);
+    }
+    .dial-opt:hover { background: #fff4f0; }
+    .dial-opt-code { font-weight: 600; min-width: 48px; }
+    .dial-opt-name { color: var(--muted); font-size: 12px; }
+    .dial-btn .fi, .dial-opt .fi { width: 1.4em; border-radius: 2px; flex-shrink: 0; }
     .ds-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238a94a6' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px; cursor: pointer; }
 
     .ds-field-error { font-size: 12px; color: #dc2626; margin-top: 2px; }
@@ -141,6 +172,53 @@
                     {% for e in form.full_name.errors %}<div class="ds-field-error">{{ e }}</div>{% endfor %}
                 </div>
 
+                <!-- Téléphone -->
+                <div class="ds-field ds-field-full">
+                    <label class="ds-label">Téléphone</label>
+                    <div class="ds-phone-row">
+                        <div class="dial-wrap">
+                            <button type="button" class="dial-btn" aria-haspopup="listbox" aria-expanded="false">
+                                <span class="fi fi-ht"></span>
+                                <span class="dial-code">+509</span>
+                                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style="flex-shrink:0">
+                                    <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <ul class="dial-menu" role="listbox" hidden>
+                                <li class="dial-opt" data-code="+509" data-iso="ht" role="option"><span class="fi fi-ht"></span><span class="dial-opt-code">+509</span><span class="dial-opt-name">Haïti</span></li>
+                                <li class="dial-opt" data-code="+1"   data-iso="us" role="option"><span class="fi fi-us"></span><span class="dial-opt-code">+1</span><span class="dial-opt-name">États-Unis</span></li>
+                                <li class="dial-opt" data-code="+1"   data-iso="ca" role="option"><span class="fi fi-ca"></span><span class="dial-opt-code">+1</span><span class="dial-opt-name">Canada</span></li>
+                                <li class="dial-opt" data-code="+33"  data-iso="fr" role="option"><span class="fi fi-fr"></span><span class="dial-opt-code">+33</span><span class="dial-opt-name">France</span></li>
+                                <li class="dial-opt" data-code="+34"  data-iso="es" role="option"><span class="fi fi-es"></span><span class="dial-opt-code">+34</span><span class="dial-opt-name">Espagne</span></li>
+                                <li class="dial-opt" data-code="+39"  data-iso="it" role="option"><span class="fi fi-it"></span><span class="dial-opt-code">+39</span><span class="dial-opt-name">Italie</span></li>
+                                <li class="dial-opt" data-code="+44"  data-iso="gb" role="option"><span class="fi fi-gb"></span><span class="dial-opt-code">+44</span><span class="dial-opt-name">Royaume-Uni</span></li>
+                                <li class="dial-opt" data-code="+49"  data-iso="de" role="option"><span class="fi fi-de"></span><span class="dial-opt-code">+49</span><span class="dial-opt-name">Allemagne</span></li>
+                                <li class="dial-opt" data-code="+55"  data-iso="br" role="option"><span class="fi fi-br"></span><span class="dial-opt-code">+55</span><span class="dial-opt-name">Brésil</span></li>
+                                <li class="dial-opt" data-code="+57"  data-iso="co" role="option"><span class="fi fi-co"></span><span class="dial-opt-code">+57</span><span class="dial-opt-name">Colombie</span></li>
+                                <li class="dial-opt" data-code="+58"  data-iso="ve" role="option"><span class="fi fi-ve"></span><span class="dial-opt-code">+58</span><span class="dial-opt-name">Venezuela</span></li>
+                                <li class="dial-opt" data-code="+53"  data-iso="cu" role="option"><span class="fi fi-cu"></span><span class="dial-opt-code">+53</span><span class="dial-opt-name">Cuba</span></li>
+                                <li class="dial-opt" data-code="+1-809" data-iso="do" role="option"><span class="fi fi-do"></span><span class="dial-opt-code">+1-809</span><span class="dial-opt-name">Rép. Dominicaine</span></li>
+                                <li class="dial-opt" data-code="+1-876" data-iso="jm" role="option"><span class="fi fi-jm"></span><span class="dial-opt-code">+1-876</span><span class="dial-opt-name">Jamaïque</span></li>
+                                <li class="dial-opt" data-code="+596" data-iso="mq" role="option"><span class="fi fi-mq"></span><span class="dial-opt-code">+596</span><span class="dial-opt-name">Martinique</span></li>
+                                <li class="dial-opt" data-code="+590" data-iso="gp" role="option"><span class="fi fi-gp"></span><span class="dial-opt-code">+590</span><span class="dial-opt-name">Guadeloupe</span></li>
+                                <li class="dial-opt" data-code="+32"  data-iso="be" role="option"><span class="fi fi-be"></span><span class="dial-opt-code">+32</span><span class="dial-opt-name">Belgique</span></li>
+                                <li class="dial-opt" data-code="+41"  data-iso="ch" role="option"><span class="fi fi-ch"></span><span class="dial-opt-code">+41</span><span class="dial-opt-name">Suisse</span></li>
+                                <li class="dial-opt" data-code="+212" data-iso="ma" role="option"><span class="fi fi-ma"></span><span class="dial-opt-code">+212</span><span class="dial-opt-name">Maroc</span></li>
+                                <li class="dial-opt" data-code="+221" data-iso="sn" role="option"><span class="fi fi-sn"></span><span class="dial-opt-code">+221</span><span class="dial-opt-name">Sénégal</span></li>
+                                <li class="dial-opt" data-code="+225" data-iso="ci" role="option"><span class="fi fi-ci"></span><span class="dial-opt-code">+225</span><span class="dial-opt-name">Côte d'Ivoire</span></li>
+                                <li class="dial-opt" data-code="+237" data-iso="cm" role="option"><span class="fi fi-cm"></span><span class="dial-opt-code">+237</span><span class="dial-opt-name">Cameroun</span></li>
+                                <li class="dial-opt" data-code="+243" data-iso="cd" role="option"><span class="fi fi-cd"></span><span class="dial-opt-code">+243</span><span class="dial-opt-name">Rép. Dém. du Congo</span></li>
+                            </ul>
+                            <input type="hidden" class="dial-hidden" value="+509">
+                        </div>
+                        <input type="text" id="ds-phone-number" placeholder="Ex: 3712-3456"
+                               class="ds-input ds-phone-number" autocomplete="tel-national">
+                    </div>
+                    {# champ caché soumis au formulaire #}
+                    <input type="hidden" name="phone" id="ds-phone-hidden" value="{{ form.phone.value|default:'' }}">
+                    {% for e in form.phone.errors %}<div class="ds-field-error">{{ e }}</div>{% endfor %}
+                </div>
+
                 <!-- Adresse -->
                 <div class="ds-field ds-field-full">
                     <label class="ds-label" for="id_street">Adresse <span class="req">*</span></label>
@@ -219,6 +297,68 @@
     </div>
 
 </div>
+
+{% block extra_scripts %}
+<script>
+(function () {
+    var wrap       = document.querySelector('.dial-wrap');
+    var numberInput = document.getElementById('ds-phone-number');
+    var hiddenPhone = document.getElementById('ds-phone-hidden');
+
+    /* ── Dropdown open/close/select ── */
+    function closeMenu() {
+        var menu = wrap.querySelector('.dial-menu');
+        menu.hidden = true;
+        wrap.querySelector('.dial-btn').setAttribute('aria-expanded', 'false');
+    }
+    wrap.querySelector('.dial-btn').addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var menu = wrap.querySelector('.dial-menu');
+        menu.hidden = !menu.hidden;
+        this.setAttribute('aria-expanded', String(!menu.hidden));
+    });
+    wrap.querySelector('.dial-menu').addEventListener('click', function (e) {
+        e.stopPropagation();
+        var opt = e.target.closest('.dial-opt');
+        if (!opt) return;
+        var code = opt.dataset.code, iso = opt.dataset.iso;
+        wrap.querySelector('.dial-btn .fi').className = 'fi fi-' + iso;
+        wrap.querySelector('.dial-code').textContent = code;
+        wrap.querySelector('.dial-hidden').value = code;
+        closeMenu();
+    });
+    document.addEventListener('click', function (e) {
+        if (!wrap.contains(e.target)) closeMenu();
+    });
+
+    /* ── Pré-remplissage en mode édition ── */
+    var existing = (hiddenPhone ? hiddenPhone.value : '').trim();
+    if (existing) {
+        var spaceIdx = existing.indexOf(' ');
+        if (spaceIdx !== -1) {
+            var code = existing.slice(0, spaceIdx);
+            var num  = existing.slice(spaceIdx + 1);
+            var opt  = wrap.querySelector('.dial-opt[data-code="' + code + '"]');
+            if (opt) {
+                wrap.querySelector('.dial-btn .fi').className = 'fi fi-' + opt.dataset.iso;
+                wrap.querySelector('.dial-code').textContent = code;
+                wrap.querySelector('.dial-hidden').value = code;
+            }
+            numberInput.value = num;
+        } else {
+            numberInput.value = existing;
+        }
+    }
+
+    /* ── Combine avant soumission ── */
+    wrap.closest('form').addEventListener('submit', function () {
+        var num = numberInput.value.trim();
+        if (hiddenPhone) hiddenPhone.value = num ? wrap.querySelector('.dial-hidden').value + ' ' + num : '';
+    });
+})();
+</script>
+{% endblock %}
 
 <!-- ── Datalist libellés ── -->
 <datalist id="label-list">

@@ -1,41 +1,211 @@
-  <div  class="banner_section slide_medium shop_banner_slider staggered-animation-wrap">
-        <div  id="carouselExampleControls" data-bs-ride="carousel"
-            class="carousel slide carousel-fade light_arrow">
-            <div  class="carousel-inner">
-                {% for slide in sliders %}
+<style>
+/* ── Slider container ── */
+.banner_section.slide_medium,
+.banner_section.slide_medium .carousel-item {
+    min-height: 520px;
+}
 
-                <div  class="carousel-item background_bg {% if forloop.first %}active {% endif %}"
+/* ── Overlay gradient sur chaque slide ── */
+.sl-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        100deg,
+        rgba(10, 10, 20, 0.72) 0%,
+        rgba(10, 10, 20, 0.45) 55%,
+        rgba(10, 10, 20, 0.10) 100%
+    );
+    z-index: 0;
+}
 
-                    data-img-src="{{ slide.image.url }}"
-                    style="background-image: url({{ slide.image.url }});">
-                    <div  class="banner_slide_content">
-                        <div  class="container">
-                            <div  class="row">
-                                <div  class="col-lg-7 col-9">
-                                    <div  class="banner_content overflow-hidden">
-                                        <h5  data-animation="slideInLeft"
-                                            data-animation-delay="0.5s"
-                                            class="mb-3 staggered-animation font-weight-light animated slideInLeft"
-                                            style="animation-delay: 0.5s; opacity: 1;">{{ slide.description }}</h5>
-                                        <h2  data-animation="slideInLeft"
-                                            data-animation-delay="1s" class="staggered-animation animated slideInLeft"
-                                            style="animation-delay: 1s; opacity: 1;">{{ slide.title }}</h2><a
-                                             data-animation="slideInLeft"
-                                            data-animation-delay="1.5s"
-                                            class="btn btn-fill-out rounded-0 staggered-animation text-uppercase animated slideInLeft"
-                                            href="{{ slide.button_link }}"
-                                            style="animation-delay: 1.5s; opacity: 1;">{{ slide.button_text }}</a>
-                                    </div>
+/* ── Contenu centré au-dessus de l'overlay ── */
+.banner_slide_content { z-index: 1; }
+
+/* ── Sous-titre (description) ── */
+.sl-subtitle {
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.82);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+
+/* ── Titre principal ── */
+.sl-title {
+    font-size: 52px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 28px;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.55);
+}
+
+/* ── Bouton CTA ── */
+.sl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 34px;
+    background: #ff5722;
+    color: #fff !important;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(255,87,34,0.45);
+    transition: background .2s, transform .2s, box-shadow .2s;
+}
+.sl-btn:hover {
+    background: #e64a19;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(255,87,34,0.55);
+    color: #fff !important;
+}
+.sl-btn i { font-size: 13px; }
+
+/* ── Flèches de navigation ── */
+.banner_section .carousel-control-prev,
+.banner_section .carousel-control-next {
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(6px);
+    border: 1.5px solid rgba(255,255,255,0.35);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1 !important;
+    transition: background .2s, border-color .2s;
+    font-size: 20px;
+    color: #fff;
+}
+.banner_section .carousel-control-prev { left: 20px; }
+.banner_section .carousel-control-next { right: 20px; }
+.banner_section .carousel-control-prev:hover,
+.banner_section .carousel-control-next:hover {
+    background: #ff5722;
+    border-color: #ff5722;
+    color: #fff;
+}
+
+/* ── Indicateurs (points) ── */
+.sl-indicators {
+    position: absolute;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+    list-style: none;
+    margin: 0; padding: 0;
+}
+.sl-indicators li {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+}
+.sl-indicators li.active {
+    background: #ff5722;
+    transform: scale(1.3);
+}
+
+@media (max-width: 768px) {
+    .sl-title { font-size: 32px; }
+    .sl-subtitle { font-size: 12px; letter-spacing: 2px; }
+    .sl-btn { padding: 11px 22px; font-size: 12px; }
+}
+</style>
+
+<div class="banner_section slide_medium shop_banner_slider staggered-animation-wrap">
+    <div id="carouselExampleControls" data-bs-ride="carousel"
+         class="carousel slide carousel-fade" style="position:relative;">
+
+        <div class="carousel-inner">
+            {% for slide in sliders %}
+            <div class="carousel-item background_bg {% if forloop.first %}active{% endif %}"
+                 style="background-image: url({{ slide.image.url }}); background-size:cover; background-position:center; min-height:520px;">
+
+                <!-- Overlay gradient -->
+                <div class="sl-overlay"></div>
+
+                <div class="banner_slide_content">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-7 col-10">
+                                <div class="banner_content overflow-hidden">
+
+                                    {% if slide.description %}
+                                    <p class="sl-subtitle staggered-animation"
+                                       data-animation="slideInLeft" data-animation-delay="0.4s"
+                                       style="animation-delay:0.4s; opacity:1;">
+                                        {{ slide.description }}
+                                    </p>
+                                    {% endif %}
+
+                                    <h2 class="sl-title staggered-animation"
+                                        data-animation="slideInLeft" data-animation-delay="0.8s"
+                                        style="animation-delay:0.8s; opacity:1;">
+                                        {{ slide.title }}
+                                    </h2>
+
+                                    {% if slide.button_text %}
+                                    <a href="{{ slide.button_link }}"
+                                       class="sl-btn staggered-animation"
+                                       data-animation="slideInLeft" data-animation-delay="1.2s"
+                                       style="animation-delay:1.2s; opacity:1;">
+                                        {{ slide.button_text }}
+                                        <i class="ti-arrow-right"></i>
+                                    </a>
+                                    {% endif %}
+
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
-
-            </div><a  href="#carouselExampleControls" role="button" data-bs-slide="prev"
-                class="carousel-control-prev"><i  class="ion-chevron-left"></i></a><a
-                 href="#carouselExampleControls" role="button" data-bs-slide="next"
-                class="carousel-control-next"><i  class="ion-chevron-right"></i></a>
+            </div>
+            {% endfor %}
         </div>
+
+        <!-- Flèches -->
+        <a href="#carouselExampleControls" role="button" data-bs-slide="prev"
+           class="carousel-control-prev">
+            <i class="ion-chevron-left"></i>
+        </a>
+        <a href="#carouselExampleControls" role="button" data-bs-slide="next"
+           class="carousel-control-next">
+            <i class="ion-chevron-right"></i>
+        </a>
+
+        <!-- Indicateurs -->
+        {% if sliders|length > 1 %}
+        <ol class="sl-indicators" id="sliderDots">
+            {% for slide in sliders %}
+            <li class="{% if forloop.first %}active{% endif %}"
+                data-bs-target="#carouselExampleControls"
+                data-bs-slide-to="{{ forloop.counter0 }}"></li>
+            {% endfor %}
+        </ol>
+        {% endif %}
     </div>
+</div>
+
+<script>
+// Sync dots avec le carousel
+(function() {
+    const carousel = document.getElementById('carouselExampleControls');
+    const dots = document.querySelectorAll('.sl-indicators li');
+    if (!carousel || !dots.length) return;
+    carousel.addEventListener('slide.bs.carousel', function(e) {
+        dots.forEach(d => d.classList.remove('active'));
+        if (dots[e.to]) dots[e.to].classList.add('active');
+    });
+})();
+</script>

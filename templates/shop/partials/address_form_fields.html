@@ -21,6 +21,51 @@
 </div>
 
 <div class="ck-form-group">
+    <label class="ck-label">Téléphone</label>
+    <div class="ck-phone-row">
+        <div class="dial-wrap">
+            <button type="button" class="dial-btn" aria-haspopup="listbox" aria-expanded="false">
+                <span class="fi fi-ht"></span>
+                <span class="dial-code">+509</span>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style="flex-shrink:0">
+                    <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <ul class="dial-menu" role="listbox" hidden>
+                <li class="dial-opt" data-code="+509" data-iso="ht" role="option"><span class="fi fi-ht"></span><span class="dial-opt-code">+509</span><span class="dial-opt-name">Haïti</span></li>
+                <li class="dial-opt" data-code="+1"   data-iso="us" role="option"><span class="fi fi-us"></span><span class="dial-opt-code">+1</span><span class="dial-opt-name">États-Unis</span></li>
+                <li class="dial-opt" data-code="+1"   data-iso="ca" role="option"><span class="fi fi-ca"></span><span class="dial-opt-code">+1</span><span class="dial-opt-name">Canada</span></li>
+                <li class="dial-opt" data-code="+33"  data-iso="fr" role="option"><span class="fi fi-fr"></span><span class="dial-opt-code">+33</span><span class="dial-opt-name">France</span></li>
+                <li class="dial-opt" data-code="+34"  data-iso="es" role="option"><span class="fi fi-es"></span><span class="dial-opt-code">+34</span><span class="dial-opt-name">Espagne</span></li>
+                <li class="dial-opt" data-code="+39"  data-iso="it" role="option"><span class="fi fi-it"></span><span class="dial-opt-code">+39</span><span class="dial-opt-name">Italie</span></li>
+                <li class="dial-opt" data-code="+44"  data-iso="gb" role="option"><span class="fi fi-gb"></span><span class="dial-opt-code">+44</span><span class="dial-opt-name">Royaume-Uni</span></li>
+                <li class="dial-opt" data-code="+49"  data-iso="de" role="option"><span class="fi fi-de"></span><span class="dial-opt-code">+49</span><span class="dial-opt-name">Allemagne</span></li>
+                <li class="dial-opt" data-code="+55"  data-iso="br" role="option"><span class="fi fi-br"></span><span class="dial-opt-code">+55</span><span class="dial-opt-name">Brésil</span></li>
+                <li class="dial-opt" data-code="+57"  data-iso="co" role="option"><span class="fi fi-co"></span><span class="dial-opt-code">+57</span><span class="dial-opt-name">Colombie</span></li>
+                <li class="dial-opt" data-code="+58"  data-iso="ve" role="option"><span class="fi fi-ve"></span><span class="dial-opt-code">+58</span><span class="dial-opt-name">Venezuela</span></li>
+                <li class="dial-opt" data-code="+53"  data-iso="cu" role="option"><span class="fi fi-cu"></span><span class="dial-opt-code">+53</span><span class="dial-opt-name">Cuba</span></li>
+                <li class="dial-opt" data-code="+1-809" data-iso="do" role="option"><span class="fi fi-do"></span><span class="dial-opt-code">+1-809</span><span class="dial-opt-name">Rép. Dominicaine</span></li>
+                <li class="dial-opt" data-code="+1-876" data-iso="jm" role="option"><span class="fi fi-jm"></span><span class="dial-opt-code">+1-876</span><span class="dial-opt-name">Jamaïque</span></li>
+                <li class="dial-opt" data-code="+596" data-iso="mq" role="option"><span class="fi fi-mq"></span><span class="dial-opt-code">+596</span><span class="dial-opt-name">Martinique</span></li>
+                <li class="dial-opt" data-code="+590" data-iso="gp" role="option"><span class="fi fi-gp"></span><span class="dial-opt-code">+590</span><span class="dial-opt-name">Guadeloupe</span></li>
+                <li class="dial-opt" data-code="+32"  data-iso="be" role="option"><span class="fi fi-be"></span><span class="dial-opt-code">+32</span><span class="dial-opt-name">Belgique</span></li>
+                <li class="dial-opt" data-code="+41"  data-iso="ch" role="option"><span class="fi fi-ch"></span><span class="dial-opt-code">+41</span><span class="dial-opt-name">Suisse</span></li>
+                <li class="dial-opt" data-code="+212" data-iso="ma" role="option"><span class="fi fi-ma"></span><span class="dial-opt-code">+212</span><span class="dial-opt-name">Maroc</span></li>
+                <li class="dial-opt" data-code="+221" data-iso="sn" role="option"><span class="fi fi-sn"></span><span class="dial-opt-code">+221</span><span class="dial-opt-name">Sénégal</span></li>
+                <li class="dial-opt" data-code="+225" data-iso="ci" role="option"><span class="fi fi-ci"></span><span class="dial-opt-code">+225</span><span class="dial-opt-name">Côte d'Ivoire</span></li>
+                <li class="dial-opt" data-code="+237" data-iso="cm" role="option"><span class="fi fi-cm"></span><span class="dial-opt-code">+237</span><span class="dial-opt-name">Cameroun</span></li>
+                <li class="dial-opt" data-code="+243" data-iso="cd" role="option"><span class="fi fi-cd"></span><span class="dial-opt-code">+243</span><span class="dial-opt-name">Rép. Dém. du Congo</span></li>
+            </ul>
+            <input type="hidden" class="dial-hidden" value="+509">
+        </div>
+        <input type="text" name="phone_number" placeholder="Ex: 3712-3456" class="ck-input ck-phone-number"
+               value="">
+    </div>
+    <input type="hidden" name="phone" class="ck-phone-hidden" value="{{ form.phone.value|default:'' }}">
+    {% if form.phone.errors %}<div style="color:#dc3545;font-size:12px;margin-top:4px;">{{ form.phone.errors|join:", " }}</div>{% endif %}
+</div>
+
+<div class="ck-form-group">
     <label class="ck-label">Adresse</label>
     <input type="text" name="street" placeholder="Rue, numéro..." class="ck-input"
            value="{{ form.street.value|default:'' }}">

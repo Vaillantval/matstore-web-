@@ -14,7 +14,7 @@ PLACEHOLDER = {
 class AdressForm(forms.ModelForm):
     class Meta:
         model  = Adress
-        fields = ('name', 'full_name', 'street', 'code_postal', 'city', 'country', 'more_details', 'adress_type')
+        fields = ('name', 'full_name', 'phone', 'street', 'code_postal', 'city', 'country', 'more_details', 'adress_type')
         widgets = {
             'name':         forms.TextInput(attrs={'class': 'ds-input', 'placeholder': PLACEHOLDER['name'], 'list': 'label-list', 'autocomplete': 'off'}),
             'full_name':    forms.TextInput(attrs={'class': 'ds-input', 'placeholder': PLACEHOLDER['full_name']}),
@@ -22,6 +22,7 @@ class AdressForm(forms.ModelForm):
             'code_postal':  forms.TextInput(attrs={'class': 'ds-input', 'placeholder': PLACEHOLDER['code_postal']}),
             'city':         forms.TextInput(attrs={'class': 'ds-input', 'placeholder': PLACEHOLDER['city']}),
             'country':      forms.TextInput(attrs={'class': 'ds-input', 'placeholder': PLACEHOLDER['country'], 'list': 'country-list', 'autocomplete': 'off'}),
+            'phone':        forms.TextInput(attrs={'class': 'ds-input', 'id': 'id_phone_hidden'}),
             'more_details': forms.Textarea(attrs={'class': 'ds-input ds-textarea', 'placeholder': PLACEHOLDER['more_details'], 'rows': 3}),
             'adress_type':  forms.Select(attrs={'class': 'ds-input ds-select'}),
         }
@@ -33,5 +34,6 @@ class AdressForm(forms.ModelForm):
             'city':         'Ville',
             'country':      'Pays',
             'more_details': 'Complément',
+            'phone':        'Téléphone',
             'adress_type':  'Type d\'adresse',
         }

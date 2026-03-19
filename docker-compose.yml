@@ -1,0 +1,38 @@
+services:
+
+  db:
+    image: postgres:15
+    container_name: matstore_db
+    environment:
+      POSTGRES_DB: matstore
+      POSTGRES_USER: matstore
+      POSTGRES_PASSWORD: matstore123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  web:
+    build: .
+    container_name: matstore_web
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --reload"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://matstore:matstore123@db:5432/matstore
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

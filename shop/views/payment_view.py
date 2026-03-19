@@ -54,6 +54,12 @@ def create_payment_intent(request, order_id):
             amount=amount,
             currency="usd",
             automatic_payment_methods={"enabled": True},
+            metadata={
+                "order_id": str(order.id),
+                "user_id":  str(order.author_id),
+            },
+            description=f"matstore — commande #{order.id}",
+            receipt_email=order.author.email if order.author_id else None,
         )
         order.stripe_payment_intent = payment_intent["id"]
         order.save()
@@ -103,9 +109,9 @@ def payment_success(request):
 def moncash_initiate(request, order_id):
     """
     Lance un paiement MonCash :
-    1. Récupère la commande (vérification auteur)
-    2. Appelle init_payment() du SDK
-    3. Redirige le user vers la page de paiement MonCash
+    1. Récupère la commande
+    2. Appelle MonCashService.create_payment() (REST API directe)
+    3. Redirige vers la page de paiement MonCash
     """
     if not request.user.is_authenticated:
         return redirect("checkout")
@@ -116,37 +122,28 @@ def moncash_initiate(request, order_id):
         messages.error(request, "MonCash n'est pas configuré sur ce site.")
         return redirect("checkout")
 
-    from django_moncash.utils import init_payment
-
-    # Identifiant unique de transaction MonCash (max 50 chars)
-    mc_order_id = f"ord{order.id}_{uuid.uuid4().hex[:8]}"
-
-    # URL de retour après paiement MonCash
-    callback_url = request.build_absolute_uri(reverse("moncash_callback"))
+    # orderId unique envoyé à MonCash — retrouvé dans payment.reference au callback
+    mc_order_id = f"{order.id}-{uuid.uuid4().hex[:8]}"
 
     try:
-        payment = init_payment(
-            request,
-            amount=round(order.order_cost_ttc, 2),
-            return_url=callback_url,
+        result = MonCashService.create_payment(
+            amount=round(float(order.order_cost_ttc), 2),
             order_id=mc_order_id,
-            meta_data={"order_id": order.id},
         )
         request.session["moncash_mc_order_id"] = mc_order_id
         request.session["moncash_order_id"]    = order.id
-        return redirect(payment["payment_url"])
+        return redirect(result["redirect_url"])
 
     except Exception as e:
-        # Log complet dans la console Django pour débogage
         print("=" * 60)
         print(f"[MonCash ERROR] order_id={order_id}  mc_order_id={mc_order_id}")
         print(f"  Exception type : {type(e).__name__}")
         print(f"  Message        : {str(e)}")
         print(f"  Environment    : {MonCashService.get_environment()}")
-        print(f"  Amount         : {round(order.order_cost_ttc, 2)}")
+        print(f"  Amount         : {round(float(order.order_cost_ttc), 2)}")
         print(traceback.format_exc())
         print("=" * 60)
-        messages.error(request, f"Erreur MonCash : {str(e)}")
+        messages.error(request, f"Erreur MonCash [{type(e).__name__}] : {str(e) or repr(e)}")
         return redirect("checkout")
 
 
@@ -154,39 +151,53 @@ def moncash_callback(request):
     """
     Callback MonCash après paiement.
     MonCash redirige ici avec ?transactionId=XXXX
-    On consomme la transaction et on marque la commande comme payée.
+    On vérifie la transaction via REST et on marque la commande comme payée.
     """
-    from django_moncash.utils import consume_payment
+    transaction_id = request.GET.get("transactionId")
+    if not transaction_id:
+        messages.error(request, "Paramètre transactionId manquant.")
+        return redirect("checkout")
 
     try:
-        result = consume_payment(request)
+        payment = MonCashService.retrieve_transaction(transaction_id)
 
-        if result["success"]:
-            order_id = result["payment"]["transaction"].meta_data.get("order_id")
-            order = get_object_or_404(Order, id=order_id)
-            order.is_paid      = True
-            order.status       = "processing"
-            order.payment_method = "MonCash"
-            order.save()
-
-            CartService.clear_cart(request)
-            request.session.pop("pending_order_id",    None)
-            request.session.pop("moncash_mc_order_id", None)
-            request.session.pop("moncash_order_id",    None)
-            return render(request, "shop/payment_success.html", {"order": order})
-
-        elif result.get("error") == "USED":
-            # Transaction déjà consommée — on cherche la commande en session
-            order_id = request.session.get("moncash_order_id")
-            if order_id:
-                order = Order.objects.filter(id=order_id, is_paid=True).first()
-                if order:
-                    return render(request, "shop/payment_success.html", {"order": order})
-            return redirect("home")
-
-        else:
+        if payment.get("message") != "successful":
             messages.error(request, "Paiement MonCash introuvable ou annulé.")
             return redirect("checkout")
+
+        # payment["reference"] = mc_order_id envoyé (ex. "2-a1b2c3d4")
+        # On extrait l'order.id depuis le préfixe avant le tiret, avec fallback session
+        order = None
+        reference = payment.get("reference", "")
+        try:
+            raw_id = reference.split("-")[0]
+            order = Order.objects.filter(id=int(raw_id)).first()
+        except (ValueError, IndexError):
+            pass
+
+        if not order:
+            session_order_id = request.session.get("moncash_order_id")
+            if session_order_id:
+                order = Order.objects.filter(id=session_order_id).first()
+
+        if not order:
+            messages.error(request, "Commande introuvable.")
+            return redirect("checkout")
+
+        # Idempotence — déjà payée (ex. double appel du callback)
+        if order.is_paid:
+            return render(request, "shop/payment_success.html", {"order": order})
+
+        order.is_paid        = True
+        order.status         = "processing"
+        order.payment_method = "MonCash"
+        order.save()
+
+        CartService.clear_cart(request)
+        request.session.pop("pending_order_id",    None)
+        request.session.pop("moncash_mc_order_id", None)
+        request.session.pop("moncash_order_id",    None)
+        return render(request, "shop/payment_success.html", {"order": order})
 
     except Exception as e:
         messages.error(request, f"Erreur lors de la vérification MonCash : {str(e)}")
