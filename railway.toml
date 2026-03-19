@@ -4,7 +4,8 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 # Les parenthèses forcent Gunicorn à se lancer QUOI QU'IL ARRIVE après la tentative de création
-startCommand = "python manage.py migrate --noinput && (python manage.py createsuperuser --noinput || true) && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+[deploy]
+startCommand = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --log-level debug --access-logfile - --error-logfile -"
 healthcheckPath = "/health/"
 healthcheckTimeout = 120
 restartPolicyType = "on_failure"
