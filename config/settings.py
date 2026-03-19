@@ -11,100 +11,102 @@ DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-default-change-me")
 
 # --- GESTION DES HÔTES (IMPORTÉ DE KOULAKAY) ---
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
 # Récupération automatique du domaine Railway
-_railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
+_railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
 if _railway_domain:
     ALLOWED_HOSTS.append(_railway_domain)
 
 # Ajout des domaines personnalisés depuis les variables d'environnement
-_extra_hosts = os.environ.get('ALLOWED_HOSTS', '')
+_extra_hosts = os.environ.get("ALLOWED_HOSTS", "")
 if _extra_hosts:
-    ALLOWED_HOSTS += [h.strip() for h in _extra_hosts.split(',') if h.strip()]
+    ALLOWED_HOSTS += [h.strip() for h in _extra_hosts.split(",") if h.strip()]
 
 # --- APPLICATION DEFINITION ---
 INSTALLED_APPS = [
-    'jazzmin',  # Avant l'admin
-    'modeltranslation',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.sites',
-    'django_ckeditor_5',
-    'crispy_forms',
-    'crispy_bootstrap4',
-    'accounts',
-    'shop',
-    'dashboard',
+    "jazzmin",  # Avant l'admin
+    "modeltranslation",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "django_ckeditor_5",
+    "crispy_forms",
+    "crispy_bootstrap4",
+    "accounts",
+    "shop",
+    "dashboard",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Pour les fichiers statiques
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Pour les fichiers statiques
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'shop.context_processors.site_settings',
-                'shop.context_processors.cart_context',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "shop.context_processors.site_settings",
+                "shop.context_processors.cart_context",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 # --- BASE DE DONNÉES (VERSION ROBUSTE) ---
 _DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if _DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.config(
+        "default": dj_database_url.config(
             default=_DATABASE_URL,
             conn_max_age=600,
-            ssl_require=not DEBUG  # SSL requis uniquement en production
+            ssl_require=not DEBUG,  # SSL requis uniquement en production
         )
     }
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
 # --- FICHIERS STATIQUES & WHITENOISE ---
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Utilisation d'un stockage plus tolérant pour éviter les crashs au boot
 if DEBUG:
     STORAGES = {
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        },
     }
 else:
     STORAGES = {
@@ -122,26 +124,28 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # --- CSRF TRUSTED ORIGINS ---
-CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ["http://localhost", "http://127.0.0.1"]
 if _railway_domain:
-    CSRF_TRUSTED_ORIGINS.append(f'https://{_railway_domain}')
-_extra_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_railway_domain}")
+_extra_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
 if _extra_origins:
-    CSRF_TRUSTED_ORIGINS += [o.strip() for o in _extra_origins.split(',') if o.strip()]
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in _extra_origins.split(",") if o.strip()]
 
 # --- AUTHENTICATION ---
-AUTH_USER_MODEL = 'accounts.Customer' # Vérifie que 'Customer' a bien une majuscule dans ton code
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = (
+    "accounts.Customer"  # Vérifie que 'Customer' a bien une majuscule dans ton code
+)
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- INTERNATIONALIZATION ---
-LANGUAGE_CODE = 'fr'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = "fr"
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
 # --- MEDIA ---
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # --- CONFIGURATIONS TIERCES (MONCASH, STRIPE, ETC.) ---
 MONCASH = {

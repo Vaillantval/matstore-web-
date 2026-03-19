@@ -1,3 +1,4 @@
+# --- Bibliothèques déjà présentes ---
 annotated-types==0.7.0
 asgiref==3.11.1
 certifi==2026.2.25
@@ -31,3 +32,10 @@ tzdata==2025.3
 urllib3==2.6.3
 wcwidth==0.6.0
 whitenoise==6.12.0
+
+# --- AJOUTS MANQUANTS (CRITIQUES) ---
+django-modeltranslation==0.19.11
+# Nécessaire car tu l'utilises dans INSTALLED_APPS et pour la traduction des modèles.
+
+psycopg2==2.9.11
+# Bien que tu aies le -binary, il est souvent plus sûr d'avoir le connecteur standard pour la prod Railway.
