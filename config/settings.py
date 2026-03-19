@@ -31,23 +31,11 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    ".ngrok-free.app",
-    ".ngrok-free.dev",
-    "matstorehaiti.online",
-    "www.matstorehaiti.online",
-    ".railway.app",
-]
+_allowed = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1")
+ALLOWED_HOSTS = [h.strip() for h in _allowed.split(",") if h.strip()]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.ngrok-free.app",
-    "https://*.ngrok-free.dev",
-    "https://matstorehaiti.online",
-    "https://www.matstorehaiti.online",
-    "https://*.railway.app",
-]
+_csrf = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf.split(",") if o.strip()]
 
 # ── MonCash ───────────────────────────────────────────────────────────────────
 MONCASH = {
