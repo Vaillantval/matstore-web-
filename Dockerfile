@@ -1,17 +1,15 @@
 FROM python:3.13-slim
 
-# Empêche Python d'écrire des .pyc et bufferise stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=config.settings
-
-# Placeholder build-time (les vraies clés viennent des variables Railway)
 ENV SECRET_KEY=build-time-placeholder-key
 ENV DEBUG=False
+ENV APP_PORT=8080
+ENV HEALTH_CHECK_PORT=8081
 
 WORKDIR /app
 
-# Dépendances système pour psycopg2 + Pillow
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
@@ -19,16 +17,13 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Dépendances Python
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Code source
 COPY . /app/
 
-# Fichiers statiques compilés dans l'image
 RUN python manage.py collectstatic --noinput
 
-EXPOSE 8080
+EXPOSE 8080 8081
 
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "2", "--timeout", "120"]
+CMD ["sh", "-c", "gunicorn config.wsgi:application --bind 0.0.0.0:${APP_PORT} --workers 2 --timeout 120"]
