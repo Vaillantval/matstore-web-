@@ -25,4 +25,5 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8080
 
 # Utilise $PORT (variable système Railway) plutôt que APP_PORT
-CMD ["sh", "-c", "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"]
+# À la fin de ton Dockerfile
+CMD gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
