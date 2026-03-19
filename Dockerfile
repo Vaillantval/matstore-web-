@@ -30,6 +30,3 @@ COPY . /app/
 RUN python manage.py collectstatic --noinput
 
 EXPOSE 8080
-
-# Commande de démarrage : migrate + gunicorn
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8080 --workers 2 --timeout 120"]
