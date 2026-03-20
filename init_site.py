@@ -5,6 +5,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
+from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 
 
@@ -14,5 +15,15 @@ def setup_site():
     )
 
 
+def create_superuser():
+    User = get_user_model()
+    username = os.environ.get("DJANGO_SUPERUSER_USERNAME")
+    password = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
+    email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "")
+    if username and password and not User.objects.filter(username=username).exists():
+        User.objects.create_superuser(username=username, password=password, email=email)
+
+
 if __name__ == "__main__":
     setup_site()
+    create_superuser()
