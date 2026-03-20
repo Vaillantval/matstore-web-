@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "shop",
     "dashboard",
 ]
+# --- CONFIGURATION DU SITE ID ---
+SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

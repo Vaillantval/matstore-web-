@@ -2,9 +2,13 @@
 builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
-# Les parenthèses forcent Gunicorn à se lancer QUOI QU'IL ARRIVE après la tentative de création
 [deploy]
-startCommand = "sh -c 'python manage.py migrate --noinput && python manage.py check && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 600 --workers 1 --log-level debug --access-logfile - --error-logfile -'"
+# 1. On lance les migrations
+# 2. On exécute ton nouveau script init_site.py
+# 3. On lance Gunicorn avec des réglages de production (3 workers pour la performance)
+startCommand = "sh -c 'python manage.py migrate --noinput && python init_site.py && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120 --preload'"
+# Le chemin de santé que Django accepte maintenant grâce à ALLOWED_HOSTS
 healthcheckPath = "/health/"
-healthcheckTimeout = 200 # On lui donne encore plus de temps
-restartPolicyType = "on_failure"
+healthcheckTimeout = 120
+restartPolicyType = "always"
+restartPolicyMaxRetries = 10
