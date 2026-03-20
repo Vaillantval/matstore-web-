@@ -97,6 +97,8 @@ class CartService:
             result["sub_total_with_shipping"] = round(
                 result["sub_total_ttc"] + carrier.price, 2
             )
+        else:
+            result["sub_total_with_shipping"] = result["sub_total_ttc"]
 
         return result
 
