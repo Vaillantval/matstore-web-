@@ -16,7 +16,6 @@ local_settings.py
 db.sqlite3
 *.db
 staticfiles/
-media/
 
 # Dossier de référence jstore (projet de test local)
 media/test/
