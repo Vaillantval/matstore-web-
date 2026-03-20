@@ -10,8 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-default-change-me")
 
-# --- GESTION DES HÔTES (IMPORTÉ DE KOULAKAY) ---
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+# --- GESTION DES HÔTES  ---
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "healthcheck.railway.app"]
 
 # Récupération automatique du domaine Railway
 _railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
