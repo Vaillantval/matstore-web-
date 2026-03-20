@@ -191,7 +191,8 @@
                 {% if faqs %}
                 <div id="faqList">
                     {% for item in faqs %}
-                    <div class="faq_item{% if forloop.first %} active{% endif %}" data-question="{{ item.question|lower }}">
+                    <div class="faq_item{% if forloop.first %} active{% endif %}"
+                         data-question="{{ item.question|lower }}">
                         <div class="faq_question" onclick="toggleFaq(this)">
                             <h6>{{ item.question }}</h6>
                             <div class="faq_toggle"><i class="ion-plus"></i></div>
@@ -223,7 +224,8 @@
 
             <div class="col-lg-4">
                 <div class="contact_cta mb-4">
-                    <i class="ti-headphone-alt" style="font-size:40px; color:#ff5722; margin-bottom:15px; display:block;"></i>
+                    <i class="ti-headphone-alt"
+                       style="font-size:40px; color:#ff5722; margin-bottom:15px; display:block;"></i>
                     <h5>Vous n'avez pas trouvé votre réponse ?</h5>
                     <p>Notre équipe est disponible pour vous aider du lundi au samedi, de 9h à 18h.</p>
                     <a href="{% url 'contact' %}" class="btn">Nous contacter</a>
@@ -234,7 +236,7 @@
                     <ul class="list-unstyled mb-0">
                         <li class="d-flex align-items-center gap-2 mb-2">
                             <i class="ti-check" style="color:#ff5722;"></i>
-                            <span style="font-size:14px; color:#6c757d;">Livraison gratuite dès 50€</span>
+                            <span style="font-size:14px; color:#6c757d;">Livraison gratuite dès 5000 HTG</span>
                         </li>
                         <li class="d-flex align-items-center gap-2 mb-2">
                             <i class="ti-check" style="color:#ff5722;"></i>
@@ -259,31 +261,31 @@
 
 {% block scripts %}
 <script>
-function toggleFaq(el) {
-    const item = el.parentElement;
-    const isActive = item.classList.contains('active');
-    document.querySelectorAll('.faq_item').forEach(i => i.classList.remove('active'));
-    if (!isActive) item.classList.add('active');
-}
+    function toggleFaq(el) {
+        const item = el.parentElement;
+        const isActive = item.classList.contains('active');
+        document.querySelectorAll('.faq_item').forEach(i => i.classList.remove('active'));
+        if (!isActive) item.classList.add('active');
+    }
 
-document.getElementById('faqSearch').addEventListener('input', function() {
-    const query = this.value.toLowerCase().trim();
-    const items = document.querySelectorAll('.faq_item');
-    let visible = 0;
+    document.getElementById('faqSearch').addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        const items = document.querySelectorAll('.faq_item');
+        let visible = 0;
 
-    items.forEach(item => {
-        const text = item.dataset.question + ' ' + item.querySelector('.faq_answer p').textContent.toLowerCase();
-        if (!query || text.includes(query)) {
-            item.style.display = '';
-            visible++;
-        } else {
-            item.style.display = 'none';
-            item.classList.remove('active');
-        }
+        items.forEach(item => {
+            const text = item.dataset.question + ' ' + item.querySelector('.faq_answer p').textContent.toLowerCase();
+            if (!query || text.includes(query)) {
+                item.style.display = '';
+                visible++;
+            } else {
+                item.style.display = 'none';
+                item.classList.remove('active');
+            }
+        });
+
+        document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+        document.getElementById('faqList').style.display = visible === 0 ? 'none' : 'block';
     });
-
-    document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
-    document.getElementById('faqList').style.display = visible === 0 ? 'none' : 'block';
-});
 </script>
 {% endblock %}

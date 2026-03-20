@@ -1,0 +1,55 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Bienvenue chez MatStore Haiti{% endblock %}
+
+{% block content %}
+<h2 style="margin:0 0 16px;font-size:22px;color:#333333;">
+  Bienvenue chez MatStore Haiti !
+</h2>
+<p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.7;">
+  Bonjour <strong>{% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}</strong>,<br><br>
+  Nous sommes ravis de vous accueillir sur <strong>MatStore Haiti</strong> — votre boutique
+  en ligne haïtienne de confiance pour vos produits alimentaires, cosmétiques, vêtements et bien plus.
+</p>
+
+<!-- Identifiants -->
+<table width="100%" cellpadding="18" cellspacing="0" border="0"
+       style="background-color:#fff5f5;border-radius:6px;border-left:5px solid #e63946;margin-bottom:28px;">
+  <tr>
+    <td>
+      <p style="margin:0;font-size:12px;color:#aaaaaa;text-transform:uppercase;letter-spacing:1px;">
+        Vos informations de connexion
+      </p>
+      <p style="margin:10px 0;font-size:14px;color:#333333;line-height:1.8;">
+        <strong>Identifiant :</strong> {{ user.email }}<br>
+        <strong>Mot de passe :</strong> Celui que vous avez choisi lors de l'inscription
+      </p>
+      <p style="margin:0;font-size:12px;color:#aaaaaa;">
+        Gardez vos identifiants en securite. Ne les partagez avec personne.
+      </p>
+    </td>
+  </tr>
+</table>
+
+<!-- Bouton boutique -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+  <tr>
+    <td align="center">
+      <a href="{{ site_url }}"
+         style="display:inline-block;background-color:#e63946;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:15px;font-weight:bold;">
+        Visiter la boutique
+      </a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 20px;font-size:13px;color:#888888;text-align:center;">
+  Vous avez déjà un compte ?
+  <a href="{{ login_url }}" style="color:#e63946;text-decoration:none;">Se connecter</a>
+</p>
+
+<p style="margin:0;font-size:14px;color:#555555;line-height:1.7;">
+  Merci de nous faire confiance. Bonne découverte !<br>
+  <strong>L'équipe MatStore Haiti</strong>
+</p>
+{% endblock %}

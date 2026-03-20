@@ -1,0 +1,58 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Mise à jour commande #{{ order.id }}{% endblock %}
+
+{% block content %}
+<h2 style="margin:0 0 16px;font-size:22px;color:#333333;">Mise à jour de votre commande</h2>
+<p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.7;">
+  Bonjour <strong>{{ order.client_name }}</strong>,<br>
+  Le statut de votre commande <strong>#{{ order.id }}</strong> vient d'être mis à jour.
+</p>
+
+<!-- Statut mis en avant -->
+<table width="100%" cellpadding="20" cellspacing="0" border="0"
+       style="background-color:#fff5f5;border-radius:6px;border-left:5px solid #e63946;margin-bottom:28px;">
+  <tr>
+    <td>
+      <p style="margin:0;font-size:12px;color:#aaaaaa;text-transform:uppercase;letter-spacing:1px;">
+        Nouveau statut
+      </p>
+      <p style="margin:8px 0;font-size:22px;font-weight:bold;color:#e63946;">
+        {{ status_label }}
+      </p>
+      <p style="margin:0;font-size:14px;color:#555555;line-height:1.7;">
+        {{ status_message }}
+      </p>
+    </td>
+  </tr>
+</table>
+
+<!-- Info commande -->
+<table width="100%" cellpadding="12" cellspacing="0" border="0"
+       style="background-color:#f9f9f9;border-radius:6px;margin-bottom:28px;">
+  <tr>
+    <td style="font-size:13px;color:#555555;line-height:1.8;">
+      Commande : <strong>#{{ order.id }}</strong><br>
+      Adresse : {{ order.shipping_address }}<br>
+      Transporteur : {{ order.carrier_name }}
+    </td>
+  </tr>
+</table>
+
+<!-- Bouton CTA -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+  <tr>
+    <td align="center">
+      <a href="{{ site_url }}/dashboard/orders/"
+         style="display:inline-block;background-color:#e63946;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:15px;font-weight:bold;">
+        Accéder à ma commande
+      </a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0;font-size:13px;color:#888888;line-height:1.6;">
+  Des questions ? Écrivez-nous à
+  <a href="mailto:info@matstorehaiti.online" style="color:#e63946;">info@matstorehaiti.online</a>
+</p>
+{% endblock %}

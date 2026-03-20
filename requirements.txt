@@ -14,6 +14,9 @@ django-ckeditor-5==0.2.20
 django-crispy-forms==2.3
 crispy-bootstrap4==2024.10
 
+# --- Email ---
+django-anymail==12.0
+
 # --- Traduction & Apps ---
 django-modeltranslation==0.19.11
 django_moncash==2.6.0

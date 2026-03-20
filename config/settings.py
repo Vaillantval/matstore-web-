@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "accounts",
     "shop",
     "dashboard",
+    "anymail",
+    "emails",
 ]
 # --- CONFIGURATION DU SITE ID ---
 SITE_ID = 1
@@ -313,3 +315,20 @@ JAZZMIN_UI_TWEAKS = {
     },
 }
 # ──────────────────────────────────────────────────────────────────────────────
+
+# --- EMAIL ---
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
+
+ANYMAIL = {
+    "MAILJET_API_KEY": os.environ.get("MAILJET_API_KEY", ""),
+    "MAILJET_SECRET_KEY": os.environ.get("MAILJET_SECRET_KEY", ""),
+}
+
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", "MatStore Haiti <info@matstorehaiti.online>"
+)
+ADMINS_NOTIFY = os.environ.get("ADMINS_NOTIFY", "info@matstorehaiti.online")
+SITE_URL = os.environ.get("SITE_URL", "https://matstorehaiti.online")

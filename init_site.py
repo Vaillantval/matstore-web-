@@ -10,9 +10,11 @@ from django.contrib.sites.models import Site
 
 
 def setup_site():
-    Site.objects.get_or_create(
+    site, created = Site.objects.get_or_create(
         id=1, defaults={"domain": "matstorehaiti.online", "name": "matstore"}
     )
+    status = "créé" if created else "mis à jour"
+    print(f"✓ Site {status}: {site.domain}")
 
 
 def create_superuser():

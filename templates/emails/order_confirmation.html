@@ -1,0 +1,92 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Confirmation commande #{{ order.id }}{% endblock %}
+
+{% block content %}
+<h2 style="margin:0 0 16px;font-size:22px;color:#333333;">Merci pour votre commande !</h2>
+<p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.7;">
+  Bonjour <strong>{{ order.client_name }}</strong>,<br>
+  Nous avons bien reçu votre commande et elle est en cours de traitement.
+  Vous recevrez une notification à chaque étape.
+</p>
+
+<!-- Numéro et infos commande -->
+<table width="100%" cellpadding="14" cellspacing="0" border="0"
+       style="background-color:#f9f9f9;border-radius:6px;margin-bottom:24px;border-left:4px solid #e63946;">
+  <tr>
+    <td style="font-size:14px;color:#333333;line-height:1.8;">
+      <strong>Commande #{{ order.id }}</strong><br>
+      Paiement : <strong>{{ order.payment_method }}</strong><br>
+      Adresse de livraison : {{ order.shipping_address }}<br>
+      Transporteur : <strong>{{ order.carrier_name }}</strong>
+    </td>
+  </tr>
+</table>
+
+<!-- Tableau des produits -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+  <tr>
+    <td style="padding:10px 8px;background-color:#e63946;color:#ffffff;font-size:13px;font-weight:bold;">Produit</td>
+    <td style="padding:10px 8px;background-color:#e63946;color:#ffffff;font-size:13px;font-weight:bold;text-align:center;width:60px;">Qté</td>
+    <td style="padding:10px 8px;background-color:#e63946;color:#ffffff;font-size:13px;font-weight:bold;text-align:right;width:110px;">Prix unit.</td>
+  </tr>
+  {% for detail in details %}
+  <tr>
+    <td style="padding:10px 8px;font-size:13px;color:#333333;border-bottom:1px solid #eeeeee;">
+      {{ detail.product_name }}
+    </td>
+    <td style="padding:10px 8px;font-size:13px;color:#333333;text-align:center;border-bottom:1px solid #eeeeee;">
+      {{ detail.quantity }}
+    </td>
+    <td style="padding:10px 8px;font-size:13px;color:#333333;text-align:right;border-bottom:1px solid #eeeeee;">
+      {{ detail.solde_price }} HTG
+    </td>
+  </tr>
+  {% endfor %}
+  <!-- Sous-total -->
+  <tr>
+    <td colspan="2" style="padding:8px;font-size:13px;color:#777777;text-align:right;border-top:2px solid #eeeeee;">
+      Sous-total :
+    </td>
+    <td style="padding:8px;font-size:13px;color:#333333;text-align:right;border-top:2px solid #eeeeee;">
+      {{ order.order_cost }} HTG
+    </td>
+  </tr>
+  <!-- Frais de livraison -->
+  <tr>
+    <td colspan="2" style="padding:8px;font-size:13px;color:#777777;text-align:right;">
+      Frais de livraison :
+    </td>
+    <td style="padding:8px;font-size:13px;color:#333333;text-align:right;">
+      {{ order.carrier_price }} HTG
+    </td>
+  </tr>
+  <!-- Total -->
+  <tr>
+    <td colspan="2" style="padding:12px 8px;font-size:16px;font-weight:bold;color:#333333;text-align:right;">
+      Total TTC :
+    </td>
+    <td style="padding:12px 8px;font-size:16px;font-weight:bold;color:#e63946;text-align:right;">
+      {{ order.order_cost_ttc }} HTG
+    </td>
+  </tr>
+</table>
+
+<!-- Bouton CTA -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+  <tr>
+    <td align="center">
+      <a href="{{ site_url }}/dashboard/orders/"
+         style="display:inline-block;background-color:#e63946;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:15px;font-weight:bold;">
+        Suivre ma commande
+      </a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0;font-size:13px;color:#888888;line-height:1.6;">
+  Délai de livraison estimé : <strong>2 à 5 jours ouvrables</strong><br>
+  Des questions ? Contactez-nous à
+  <a href="mailto:info@matstorehaiti.online" style="color:#e63946;">info@matstorehaiti.online</a>
+</p>
+{% endblock %}
