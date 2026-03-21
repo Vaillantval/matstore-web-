@@ -7,6 +7,8 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from shop.management.commands.fetch_rates import fetch_rates_for_base
+from shop.models.Setting import Setting
 
 
 def setup_site():
@@ -26,6 +28,17 @@ def create_superuser():
         User.objects.create_superuser(username=username, password=password, email=email)
 
 
+def fetch_exchange_rates():
+    setting = Setting.objects.first()
+    base = setting.base_currency if setting else "HTG"
+    try:
+        count = fetch_rates_for_base(base)
+        print(f"✓ Taux de change : {count} taux sauvegardés pour {base}.")
+    except Exception as e:
+        print(f"✗ Taux de change : erreur — {e}")
+
+
 if __name__ == "__main__":
     setup_site()
     create_superuser()
+    fetch_exchange_rates()
