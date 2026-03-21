@@ -22,6 +22,11 @@ from shop.services.moncash_service import MonCashService
 
 
 def index(request):
+    # Guard : panier vide sans commande en cours → pas de checkout possible
+    cart_items = request.session.get('cart', {})
+    if not cart_items and not request.session.get('pending_order_id'):
+        return redirect('cart')
+
     carrier_id = request.GET.get('carrier_id')
     new_shipping_address = request.GET.get('new_shipping_address', '')
     address_billing_id = request.GET.get('address_billing_id', '')
@@ -212,9 +217,9 @@ def offline_payment(request):
     order.save()
 
     CartService.clear_cart(request)
-    request.session.pop('pending_order_id', None)
-    request.session.pop('carrier_id', None)
-    request.session.pop('carrier', None)
+    for key in ('pending_order_id', 'carrier_id', 'carrier',
+                'moncash_mc_order_id', 'moncash_order_id'):
+        request.session.pop(key, None)
 
     from emails.utils import send_offline_order_notification, send_admin_new_order
     send_offline_order_notification(order)

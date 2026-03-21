@@ -91,7 +91,9 @@ def payment_success(request):
             order.payment_method = "Stripe"
             order.save()
             CartService.clear_cart(request)
-            request.session.pop("pending_order_id", None)
+            for key in ("pending_order_id", "carrier_id", "carrier",
+                        "moncash_mc_order_id", "moncash_order_id"):
+                request.session.pop(key, None)
             return render(request, "shop/payment_success.html", {"order": order})
         else:
             return redirect("home")
@@ -243,9 +245,9 @@ def moncash_callback(request):
         order.save()
 
         CartService.clear_cart(request)
-        request.session.pop("pending_order_id",    None)
-        request.session.pop("moncash_mc_order_id", None)
-        request.session.pop("moncash_order_id",    None)
+        for key in ("pending_order_id", "carrier_id", "carrier",
+                    "moncash_mc_order_id", "moncash_order_id"):
+            request.session.pop(key, None)
         return render(request, "shop/payment_success.html", {"order": order})
 
     except Exception as e:

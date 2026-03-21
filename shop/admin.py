@@ -199,7 +199,7 @@ class OrderAdmin(admin.ModelAdmin):
         "display_proof",
     )
     list_display_links = ("client_name",)
-    list_editable = ("status",)
+    list_editable = ("status", "is_paid")
     list_filter = ("is_paid", "created_at", "updated_at", "payment_method")
     search_fields = (
         "client_name",
@@ -301,7 +301,12 @@ class SettingAdmin(admin.ModelAdmin):
         (
             "📱 Application Mobile Android",
             {
-                "fields": ("show_app_banner", "apk_file", "apk_version", "apk_description"),
+                "fields": (
+                    "show_app_banner",
+                    "apk_file",
+                    "apk_version",
+                    "apk_description",
+                ),
                 "description": (
                     "<strong>APK :</strong> uploadez votre fichier .apk pour le rendre téléchargeable.<br>"
                     "Activez <em>Afficher le bandeau</em> pour inviter les visiteurs à télécharger l'app.<br>"

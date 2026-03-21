@@ -253,3 +253,13 @@ body { background: #f4f6f9; }
 
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+/* Empêche le retour vers checkout via bouton back navigateur / téléphone */
+history.pushState(null, '', window.location.href);
+window.addEventListener('popstate', function () {
+    window.location.replace("{% url 'shop_list' %}");
+});
+</script>
+{% endblock %}
