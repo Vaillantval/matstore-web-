@@ -1144,8 +1144,17 @@ body { background: #f4f6f9; }
                                 margin-top:6px; transition:all .2s;
                                 box-shadow: 0 4px 14px rgba(73,80,87,.35);
                             ">
-                        <i class="ti-check"></i>
-                        Confirmer ma commande
+                        <i class="ti-check" id="offline-btn-icon"></i>
+                        <span id="offline-btn-text">Confirmer ma commande</span>
+                        <!-- Spinner (caché par défaut) -->
+                        <span id="offline-btn-spinner" style="display:none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                 style="animation:spin .8s linear infinite; vertical-align:middle;">
+                                <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,.3)" stroke-width="3"/>
+                                <path d="M12 2 A10 10 0 0 1 22 12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                            Envoi en cours…
+                        </span>
                     </button>
                 </form>
             </div>
@@ -1153,6 +1162,30 @@ body { background: #f4f6f9; }
     </div>
 </div>
 {% endif %}
+
+<!-- ══ Overlay plein écran (connexion lente) ══ -->
+<div id="offline-loading-overlay" style="
+    display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(26,26,46,.82); backdrop-filter:blur(4px);
+    flex-direction:column; align-items:center; justify-content:center; gap:20px;
+">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+         style="animation:spin .9s linear infinite; filter:drop-shadow(0 0 12px rgba(255,87,34,.6));">
+        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,.15)" stroke-width="2.5"/>
+        <path d="M12 2 A10 10 0 0 1 22 12" stroke="#ff5722" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <div style="text-align:center;">
+        <div style="color:#fff; font-size:16px; font-weight:700; margin-bottom:6px;">
+            Envoi de votre commande…
+        </div>
+        <div style="color:rgba(255,255,255,.55); font-size:13px;">
+            Merci de patienter, cela peut prendre quelques secondes.
+        </div>
+    </div>
+</div>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 
 {% endblock %}
 
@@ -1313,6 +1346,33 @@ document.getElementById('offline-form')?.addEventListener('submit', function(e) 
         return false;
     }
     if (errorDiv) errorDiv.style.display = 'none';
+
+    /* ── Spinner sur le bouton ── */
+    const btn     = document.getElementById('offline-submit-btn');
+    const icon    = document.getElementById('offline-btn-icon');
+    const txt     = document.getElementById('offline-btn-text');
+    const spinner = document.getElementById('offline-btn-spinner');
+    if (btn) {
+        btn.disabled      = true;
+        btn.style.opacity = '.75';
+        btn.style.cursor  = 'not-allowed';
+    }
+    if (icon)    icon.style.display    = 'none';
+    if (txt)     txt.style.display     = 'none';
+    if (spinner) spinner.style.display = '';
+
+    /* ── Overlay plein écran dès fermeture du modal ── */
+    const overlay = document.getElementById('offline-loading-overlay');
+    if (overlay) {
+        const modalEl = document.getElementById('offlinePayModal');
+        if (modalEl) {
+            modalEl.addEventListener('hidden.bs.modal', function() {
+                overlay.style.display = 'flex';
+            }, { once: true });
+        } else {
+            overlay.style.display = 'flex';
+        }
+    }
 });
 document.getElementById('modal_payment_proof')?.addEventListener('change', function() {
     const errorDiv = document.getElementById('modal-proof-error');
