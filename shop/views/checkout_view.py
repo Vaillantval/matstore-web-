@@ -45,14 +45,13 @@ def index(request):
                 'name': carrier.name,
                 'price': float(carrier.price),
             }
+            # Sync avec la clé lue par cart_service.get_cart_details()
+            request.session['carrier_id'] = carrier.id
 
     cart = CartService.get_cart_details(request)
     carriers = Carrier.objects.all()
 
-    # Fix #5 : payment_service initialisé avant le bloc ready_to_pay
-    # pour pouvoir passer le nom de méthode à create_order
     payment_service = StripeService()
-
     order_id = None
     if ready_to_pay:
         if new_shipping_address and new_shipping_address != 'false':
@@ -65,16 +64,10 @@ def index(request):
         billing_address_str = billing_address.get_adress_as_string() if billing_address else ""
         shipping_address_str = shipping_address.get_adress_as_string() if shipping_address else None
 
-        # Fix #7 : nom de méthode de paiement issu du modèle Method
-        payment_method_name = payment_service.method.name if payment_service.method else 'Stripe'
-
-        # Fix #4 : guard pour éviter les doublons de commandes pour les invités.
-        # On ne cherche un ordre existant en session que si l'utilisateur est authentifié,
-        # car le filtre author=request.user échoue silencieusement pour AnonymousUser.
         existing_order_id = request.session.get('pending_order_id')
-        if existing_order_id and request.user.is_authenticated:
+        if existing_order_id:
             existing_order = Order.objects.filter(
-                id=existing_order_id, is_paid=False, author=request.user
+                id=existing_order_id, is_paid=False
             ).first()
             if existing_order:
                 existing_order.billing_address = billing_address_str
@@ -84,7 +77,7 @@ def index(request):
 
         if not order_id:
             order_id = create_order(
-                request, billing_address_str, shipping_address_str, payment_method_name
+                request, billing_address_str, shipping_address_str
             )
             request.session['pending_order_id'] = order_id
 
@@ -166,7 +159,7 @@ def login_form(request):
     return JsonResponse({"isSuccess": False, 'message': 'Error, Invalid request method !'})
 
 
-def create_order(request, billing_address, shipping_address=None, payment_method='Stripe'):
+def create_order(request, billing_address, shipping_address=None, payment_method='pending'):
     cart = CartService.get_cart_details(request)
     user = request.user
 
@@ -175,7 +168,13 @@ def create_order(request, billing_address, shipping_address=None, payment_method
         carrier_name = carrier_data.get('name', '')
         carrier_price = carrier_data.get('price', 0)
     else:
-        fallback_carrier = Carrier.objects.first()
+        # Fallback sur carrier_id stocké par cart_view (select_carrier)
+        session_carrier_id = request.session.get('carrier_id')
+        fallback_carrier = (
+            Carrier.objects.filter(id=session_carrier_id).first()
+            if session_carrier_id
+            else Carrier.objects.first()
+        )
         carrier_name = fallback_carrier.name if fallback_carrier else ''
         carrier_price = float(fallback_carrier.price) if fallback_carrier else 0
 

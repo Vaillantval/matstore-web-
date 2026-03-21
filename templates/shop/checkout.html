@@ -696,7 +696,7 @@ body { background: #f4f6f9; }
                         </label>
                         {% endfor %}
 
-                        {% if moncash_configured %}
+                        {% if moncash_configured and user.is_authenticated %}
                         <label class="ck-carrier ck-payment-method" id="pm-label-moncash"
                                data-method-type="moncash">
                             <input type="radio" name="payment_method_choice"

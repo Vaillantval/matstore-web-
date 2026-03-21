@@ -29,6 +29,8 @@ class SliderAdmin(admin.ModelAdmin):
     list_display_links = ("id", "title")
 
     def display_image(self, obj):
+        if not obj.image:
+            return "—"
         return format_html(
             '<img src="{}" width="100px" height="100px" />', obj.image.url
         )
@@ -108,6 +110,8 @@ class CollectionAdmin(admin.ModelAdmin):
     list_display_links = ("id", "title")
 
     def display_image(self, obj):
+        if not obj.image:
+            return "—"
         return format_html(
             '<img src="{}" width="100px" height="100px" />', obj.image.url
         )
@@ -122,6 +126,8 @@ class CategoryAdmin(admin.ModelAdmin):
     list_editable = ("is_mega",)
 
     def display_image(self, obj):
+        if not obj.image:
+            return "—"
         return format_html(
             '<img src="{}" width="100px" height="100px" />', obj.image.url
         )

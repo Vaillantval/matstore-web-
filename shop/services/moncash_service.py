@@ -85,7 +85,6 @@ class MonCashService:
         )
         if not response.ok:
             raise Exception(f"MonCash {response.status_code} — {response.text}")
-        response.raise_for_status()
         data          = response.json()
         payment_token = data["payment_token"]["token"]
         redirect_url  = f"{cls._gateway_url()}/Payment/Redirect?token={payment_token}"

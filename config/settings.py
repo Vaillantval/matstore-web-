@@ -26,7 +26,6 @@ if _extra_hosts:
 # --- APPLICATION DEFINITION ---
 INSTALLED_APPS = [
     "jazzmin",  # Avant l'admin
-    "modeltranslation",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

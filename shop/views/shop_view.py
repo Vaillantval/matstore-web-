@@ -5,6 +5,7 @@ from django.db.models import Q
 from shop.models import Slider, Collection, Product, Page, FAQ, ContactMessage, Category
 from shop.models.Setting import Setting
 from shop.forms import ContactForm
+from shop.services.compare_service import CompareService
 
 
 def index(request):
@@ -88,7 +89,7 @@ def product_detail(request, slug):
     images = product.images.all()
     related = Product.objects.filter(
         categories__in=product.categories.all(), is_available=True
-    ).exclude(pk=product.pk).distinct()[:8]
+    ).exclude(pk=product.pk).prefetch_related('images', 'categories').distinct()[:8]
 
     discount = 0
     if product.regular_price > product.solde_price > 0:
@@ -96,6 +97,7 @@ def product_detail(request, slug):
 
     wishlist = request.session.get('wishlist', [])
     in_wishlist = product.pk in wishlist
+    compare_ids = CompareService.get_compare(request)
 
     return render(request, 'shop/product_detail.html', {
         'product': product,
@@ -103,6 +105,7 @@ def product_detail(request, slug):
         'related': related,
         'discount': discount,
         'in_wishlist': in_wishlist,
+        'compare_ids': compare_ids,
     })
 
 

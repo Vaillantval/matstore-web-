@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 from shop.models.Order import Order
 from shop.models.Setting import Setting
@@ -87,6 +88,7 @@ def payment_success(request):
             order = get_object_or_404(Order, stripe_payment_intent=payment_intent_id)
             order.is_paid = True
             order.status = "processing"
+            order.payment_method = "Stripe"
             order.save()
             CartService.clear_cart(request)
             request.session.pop("pending_order_id", None)
@@ -106,6 +108,7 @@ def payment_success(request):
 # ══════════════════════════════════════════════════════════════════════════════
 
 
+@require_POST
 def moncash_initiate(request, order_id):
     """
     Lance un paiement MonCash :
@@ -114,6 +117,7 @@ def moncash_initiate(request, order_id):
     3. Redirige vers la page de paiement MonCash
     """
     if not request.user.is_authenticated:
+        messages.error(request, "Vous devez être connecté pour payer avec MonCash.")
         return redirect("checkout")
 
     order = get_object_or_404(Order, id=order_id, author=request.user, is_paid=False)
@@ -122,12 +126,30 @@ def moncash_initiate(request, order_id):
         messages.error(request, "MonCash n'est pas configuré sur ce site.")
         return redirect("checkout")
 
+    # Conversion vers HTG (MonCash n'accepte que des Gourdes haïtiennes)
+    setting = Setting.objects.first()
+    base_currency = setting.base_currency if setting else "HTG"
+    if base_currency == "HTG":
+        amount_htg = round(float(order.order_cost_ttc), 2)
+    else:
+        rate_obj = ExchangeRate.objects.filter(
+            base_currency=base_currency, target_currency="HTG"
+        ).first()
+        if not rate_obj:
+            messages.error(
+                request,
+                f"Taux de change {base_currency} → HTG introuvable. "
+                "Actualisez les taux depuis l'admin (Settings → Actualiser les taux)."
+            )
+            return redirect("checkout")
+        amount_htg = round(float(order.order_cost_ttc) * rate_obj.rate, 2)
+
     # orderId unique envoyé à MonCash — retrouvé dans payment.reference au callback
     mc_order_id = f"{order.id}-{uuid.uuid4().hex[:8]}"
 
     try:
         result = MonCashService.create_payment(
-            amount=round(float(order.order_cost_ttc), 2),
+            amount=amount_htg,
             order_id=mc_order_id,
         )
         request.session["moncash_mc_order_id"] = mc_order_id
@@ -187,6 +209,25 @@ def moncash_callback(request):
         # Idempotence — déjà payée (ex. double appel du callback)
         if order.is_paid:
             return render(request, "shop/payment_success.html", {"order": order})
+
+        # Vérification du montant payé vs montant attendu (tolérance 1 HTG)
+        paid_amount = float(payment.get("cost", 0))
+        setting = Setting.objects.first()
+        base_currency = setting.base_currency if setting else "HTG"
+        if base_currency == "HTG":
+            expected_htg = float(order.order_cost_ttc)
+        else:
+            rate_obj = ExchangeRate.objects.filter(
+                base_currency=base_currency, target_currency="HTG"
+            ).first()
+            expected_htg = float(order.order_cost_ttc) * (rate_obj.rate if rate_obj else 1.0)
+
+        if paid_amount < expected_htg - 1:
+            messages.error(
+                request,
+                f"Montant payé ({paid_amount} HTG) inférieur au montant attendu ({expected_htg:.2f} HTG)."
+            )
+            return redirect("checkout")
 
         order.is_paid        = True
         order.status         = "processing"

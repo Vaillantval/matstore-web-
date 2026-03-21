@@ -722,18 +722,125 @@
 /* ══════════════════════════
    RESPONSIVE
    ══════════════════════════ */
+
+/* ── Icônes mobiles toujours visibles (recherche + panier) ── */
+.hd-mobile-icons {
+    display: none;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    margin-right: 8px;
+}
+.hd-mobile-icons .nav-link {
+    padding: 10px 10px !important;
+    font-size: 21px;
+    color: #1a1a2e !important;
+    position: relative;
+    transition: color .2s;
+}
+.hd-mobile-icons .nav-link:hover { color: #ff5722 !important; }
+.hd-mobile-icons .cart_count {
+    top: 4px; right: 0px;
+}
+
+/* ── Section mobile dans le menu burger ── */
+.hd-mobile-nav-section {
+    display: none;
+    padding: 12px 16px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 4px;
+    gap: 8px;
+    flex-direction: column;
+}
+.hd-mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    color: #1a1a2e;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background .18s, color .18s;
+}
+.hd-mobile-nav-link i { font-size: 16px; color: #ff5722; width: 18px; text-align: center; }
+.hd-mobile-nav-link:hover { background: #fff6f3; color: #ff5722; }
+.hd-mobile-nav-link.logout { color: #dc3545; }
+.hd-mobile-nav-link.logout i { color: #dc3545; }
+.hd-mobile-nav-link.logout:hover { background: #fff5f5; }
+
 @media (max-width: 991px) {
-    .hd-topbar .hd-topbar-left { display: none; }
-    .hd-topbar .hd-topbar-right { justify-content: center; }
-    .hd-navbar-wrap .navbar { padding-left: 0 !important; }
+    /* Cacher la topbar entièrement sur mobile */
+    .hd-topbar { display: none; }
+
+    /* Navbar ajustements */
+    .hd-navbar-wrap .navbar {
+        padding-left: 0 !important;
+        min-height: 60px;
+    }
     .navbar-brand {
         position: static !important;
         border-radius: 0 !important;
         box-shadow: none !important;
         padding: 8px 0 !important;
     }
-    .navbar-brand img { max-height: 48px !important; }
-    .hd-account-dropdown { right: auto; left: 0; }
+    .navbar-brand img { max-height: 44px !important; }
+    .navbar-brand .brand-text { font-size: 20px; padding: 10px 0 4px; }
+
+    /* Icônes mobiles toujours visibles */
+    .hd-mobile-icons { display: flex; }
+
+    /* Cacher les icônes attr-nav du desktop dans le collapse mobile */
+    .attr-nav { display: none !important; }
+
+    /* Section mobile dans le burger */
+    .hd-mobile-nav-section { display: flex; }
+
+    /* Menu collapse : fond blanc, padding */
+    #navbarMain.show {
+        background: #fff;
+        border-top: 1px solid #f0f0f0;
+        padding: 8px 0 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    }
+
+    /* Nav links dans le collapse mobile */
+    .hd-navbar-wrap .navbar-nav > li > a.nav-link {
+        padding: 12px 20px !important;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    .hd-navbar-wrap .navbar-nav > li > a.nav-link::after { display: none; }
+
+    /* Dropdowns en mobile : inline */
+    .hd-navbar-wrap .dropdown-menu {
+        box-shadow: none;
+        border-radius: 0;
+        border: none;
+        background: #f8f9fa;
+        padding: 0;
+    }
+    .hd-navbar-wrap .dropdown-item {
+        padding: 10px 32px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* Mega menu mobile : simple liste */
+    .dropdown-mega-menu > .dropdown-menu {
+        min-width: unset !important;
+        left: 0 !important;
+        transform: none !important;
+        border-radius: 0 !important;
+    }
+    .mega-sidebar, .mega-footer { display: none; }
+    .mega-body { padding: 8px 0; }
+    .mega-body-header { padding: 8px 20px; }
+    .mega-cats-grid { grid-template-columns: 1fr; gap: 0; }
+    .mega-cat-header { border-radius: 0; background: #f0f0f0; margin-bottom: 0; }
+    .mega-cat-items { padding: 0 0 0 16px; }
+
+    .hd-account-dropdown { display: none; }
 }
 </style>
 
@@ -844,6 +951,17 @@
                     </div>
                     {% endif %}
                 </a>
+
+                <!-- Icônes mobiles : toujours visibles (recherche + panier) -->
+                <div class="hd-mobile-icons">
+                    <a href="javascript:void(0);" class="nav-link search_trigger">
+                        <i class="linearicons-magnifier"></i>
+                    </a>
+                    <a href="{% url 'cart' %}" class="nav-link" style="position:relative;">
+                        <i class="linearicons-cart"></i>
+                        <span class="cart_count" id="cart-count-badge-mobile">{{ cart_count|default:0 }}</span>
+                    </a>
+                </div>
 
                 <!-- Burger -->
                 <button type="button" class="navbar-toggler collapsed"
@@ -1169,6 +1287,39 @@
                         <!-- /.hd-cart-wrap -->
 
                     </ul>
+                    <!-- ── Section mobile uniquement : compte / favoris / comparer ── -->
+                    <div class="hd-mobile-nav-section">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard:overview' %}" class="hd-mobile-nav-link">
+                            <i class="ti-dashboard"></i> Tableau de bord
+                        </a>
+                        <a href="{% url 'dashboard:orders' %}" class="hd-mobile-nav-link">
+                            <i class="ti-package"></i> Mes commandes
+                        </a>
+                        {% else %}
+                        <a href="{% url 'accounts:signin' %}" class="hd-mobile-nav-link">
+                            <i class="ti-user"></i> Se connecter
+                        </a>
+                        <a href="{% url 'accounts:signup' %}" class="hd-mobile-nav-link">
+                            <i class="ti-pencil-alt"></i> Créer un compte
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'wishlist' %}" class="hd-mobile-nav-link">
+                            <i class="ti-heart"></i> Mes favoris
+                            {% if wishlist_count %}<span style="margin-left:auto;background:#ff5722;color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;">{{ wishlist_count }}</span>{% endif %}
+                        </a>
+                        <a href="{% url 'compare' %}" class="hd-mobile-nav-link">
+                            <i class="ti-control-shuffle"></i> Comparer
+                            {% if compare_count %}<span style="margin-left:auto;background:#ff5722;color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;">{{ compare_count }}</span>{% endif %}
+                        </a>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:logout' %}" class="hd-mobile-nav-link logout"
+                           onclick="return confirm('Se déconnecter ?');">
+                            <i class="ti-power-off"></i> Déconnexion
+                        </a>
+                        {% endif %}
+                    </div>
+
                 </div><!-- /.navbar-collapse -->
 
             </nav>
