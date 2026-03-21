@@ -846,6 +846,86 @@
 
 <header class="header_wrap fixed-top header_with_topbar active">
 
+    <!-- ── Bandeau Application Mobile ── -->
+    {% if show_app_banner %}
+    <div id="app-banner" style="
+        background: linear-gradient(90deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+        color: #fff;
+        font-size: 13px;
+        padding: 8px 0;
+        position: relative;
+        z-index: 1050;
+        border-bottom: 2px solid #ff5722;
+    ">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-center" style="gap: 14px; flex-wrap: wrap;">
+                <!-- Icône Android animée -->
+                <span style="font-size:20px; line-height:1;">📱</span>
+
+                <!-- Texte -->
+                <span style="font-weight: 500; color: rgba(255,255,255,0.90);">
+                    {{ apk_description|default:"Téléchargez notre application mobile" }}
+                    {% if apk_version %}
+                        <span style="color: rgba(255,255,255,0.50); font-size:11px; margin-left:4px;">v{{ apk_version }}</span>
+                    {% endif %}
+                </span>
+
+                <!-- Bouton téléchargement -->
+                <a href="{% url 'download_apk' %}"
+                   style="
+                       display: inline-flex;
+                       align-items: center;
+                       gap: 7px;
+                       background: #ff5722;
+                       color: #fff;
+                       font-size: 12.5px;
+                       font-weight: 700;
+                       padding: 5px 16px;
+                       border-radius: 20px;
+                       text-decoration: none;
+                       letter-spacing: 0.3px;
+                       transition: background .2s, transform .15s;
+                       white-space: nowrap;
+                   "
+                   onmouseover="this.style.background='#e64a19';this.style.transform='scale(1.04)'"
+                   onmouseout="this.style.background='#ff5722';this.style.transform='scale(1)'"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M14 0a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h12zM5.904 10.803 10 6.707v2.768a.5.5 0 0 0 1 0V5.5a.5.5 0 0 0-.5-.5H6.525a.5.5 0 1 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 .707.707z"/>
+                    </svg>
+                    Télécharger l'APK Android
+                </a>
+
+                <!-- Bouton fermer -->
+                <button onclick="
+                    document.getElementById('app-banner').style.display='none';
+                    localStorage.setItem('app_banner_closed','1');
+                " style="
+                    background: none;
+                    border: none;
+                    color: rgba(255,255,255,0.45);
+                    font-size: 16px;
+                    cursor: pointer;
+                    padding: 0 4px;
+                    line-height: 1;
+                    position: absolute;
+                    right: 16px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                " title="Fermer">✕</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Masquer le bandeau si l'user l'a déjà fermé dans cette session
+        if (localStorage.getItem('app_banner_closed') === '1') {
+            var b = document.getElementById('app-banner');
+            if (b) b.style.display = 'none';
+        }
+    </script>
+    {% endif %}
+    <!-- /.app-banner -->
+
     <!-- ── Top bar ── -->
     <div class="hd-topbar">
         <div class="container">

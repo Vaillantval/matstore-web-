@@ -1,3 +1,5 @@
+import os
+from django.http import FileResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
@@ -156,3 +158,25 @@ def terms(request):
 def page_detail(request, slug):
     page = get_object_or_404(Page, slug=slug)
     return render(request, "shop/page_detail.html", {"page": page})
+
+
+def download_apk(request):
+    """Sert le fichier APK en téléchargement direct."""
+    setting = Setting.objects.first()
+    if not setting or not setting.apk_file:
+        raise Http404("Aucun APK disponible pour le moment.")
+
+    apk_path = setting.apk_file.path
+    if not os.path.exists(apk_path):
+        raise Http404("Fichier APK introuvable sur le serveur.")
+
+    version = setting.apk_version or "latest"
+    filename = f"MatStore-Haiti-v{version}.apk"
+
+    response = FileResponse(
+        open(apk_path, "rb"),
+        content_type="application/vnd.android.package-archive",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response["Content-Length"] = os.path.getsize(apk_path)
+    return response

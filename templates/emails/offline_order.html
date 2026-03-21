@@ -1,0 +1,61 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Commande #{{ order.id }} — En attente de confirmation{% endblock %}
+
+{% block content %}
+<h2 style="margin:0 0 16px;font-size:22px;color:#333333;">Votre commande est bien reçue !</h2>
+<p style="margin:0 0 16px;font-size:15px;color:#555555;line-height:1.7;">
+  Bonjour <strong>{{ order.client_name }}</strong>,<br>
+  Nous avons bien enregistré votre commande avec un paiement <strong>hors ligne</strong>.
+  Notre équipe va vérifier votre preuve de paiement et vous contactera pour confirmer.
+</p>
+
+<!-- Alerte info -->
+<table width="100%" cellpadding="14" cellspacing="0" border="0"
+       style="background-color:#fff8e6;border-radius:6px;margin-bottom:24px;border-left:4px solid #f59e0b;">
+  <tr>
+    <td style="font-size:14px;color:#92400e;line-height:1.7;">
+      <strong>Prochaine étape :</strong> MatStore Haiti vous contactera par téléphone ou email
+      sous <strong>24 à 48 heures</strong> pour confirmer la réception de votre paiement et valider votre commande.
+    </td>
+  </tr>
+</table>
+
+<!-- Récap commande -->
+<table width="100%" cellpadding="14" cellspacing="0" border="0"
+       style="background-color:#f9f9f9;border-radius:6px;margin-bottom:24px;border-left:4px solid #e63946;">
+  <tr>
+    <td style="font-size:14px;color:#333333;line-height:1.8;">
+      <strong>Commande #{{ order.id }}</strong><br>
+      Méthode de paiement : <strong>Hors Ligne</strong><br>
+      Adresse de livraison : {{ order.shipping_address }}<br>
+      Transporteur : <strong>{{ order.carrier_name }}</strong>
+    </td>
+  </tr>
+</table>
+
+<!-- Produits -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+  <tr>
+    <td style="padding:10px 8px;background-color:#e63946;color:#ffffff;font-size:13px;font-weight:bold;">Produit</td>
+    <td style="padding:10px 8px;background-color:#e63946;color:#ffffff;font-size:13px;font-weight:bold;text-align:center;width:60px;">Qté</td>
+    <td style="padding:10px 8px;background-color:#e63946;color:#ffffff;font-size:13px;font-weight:bold;text-align:right;width:110px;">Sous-total</td>
+  </tr>
+  {% for detail in details %}
+  <tr>
+    <td style="padding:10px 8px;font-size:13px;color:#333333;border-bottom:1px solid #eeeeee;">{{ detail.product_name }}</td>
+    <td style="padding:10px 8px;font-size:13px;color:#333333;text-align:center;border-bottom:1px solid #eeeeee;">{{ detail.quantity }}</td>
+    <td style="padding:10px 8px;font-size:13px;color:#333333;text-align:right;border-bottom:1px solid #eeeeee;">{{ detail.sub_total_ttc }} HTG</td>
+  </tr>
+  {% endfor %}
+  <tr>
+    <td colspan="2" style="padding:12px 8px;font-size:15px;font-weight:bold;color:#1a1a2e;text-align:right;">Total TTC</td>
+    <td style="padding:12px 8px;font-size:15px;font-weight:bold;color:#e63946;text-align:right;">{{ order.order_cost_ttc }} HTG</td>
+  </tr>
+</table>
+
+<p style="margin:0 0 8px;font-size:13px;color:#888888;line-height:1.6;">
+  Si vous avez des questions, contactez-nous à
+  <a href="mailto:info@matstorehaiti.online" style="color:#e63946;">info@matstorehaiti.online</a>.
+</p>
+{% endblock %}

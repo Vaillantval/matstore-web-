@@ -23,6 +23,14 @@ django_moncash==2.6.0
 moncash==1.0.3
 stripe==14.4.1
 
+# --- API REST ---
+djangorestframework==3.17.0
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+drf-spectacular==0.29.0
+django-filter==25.2
+PyJWT==2.12.1
+
 # --- Utilitaires ---
 python-slugify==8.0.4
 requests==2.32.5

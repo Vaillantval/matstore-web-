@@ -34,6 +34,7 @@ from shop.views.compare_view import (
     add_to_compare,
     remove_from_compare,
 )
+from shop.views.shop_view import download_apk
 
 urlpatterns = [
     path("", index, name="home"),
@@ -68,6 +69,7 @@ urlpatterns = [
     path("checkout/", checkout_view.index, name="checkout"),
     path("checkout/add-address/", checkout_view.add_address, name="add_address"),
     path("checkout/login/", checkout_view.login_form, name="login_form"),
+    path("checkout/offline-pay/", checkout_view.offline_payment, name="offline_payment"),
 
     # Paiement Stripe
     path("create-payment-intent/<int:order_id>/", create_payment_intent, name="create_payment_intent"),
@@ -76,4 +78,7 @@ urlpatterns = [
     # Paiement MonCash
     path("moncash/pay/<int:order_id>/", moncash_initiate, name="moncash_initiate"),
     path("moncash/callback/", moncash_callback, name="moncash_callback"),
+
+    # Application mobile
+    path("app/download/", download_apk, name="download_apk"),
 ]

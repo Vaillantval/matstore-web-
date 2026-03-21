@@ -44,7 +44,9 @@
       "Bash(\"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\myenv\\\\Scripts\\\\pip.exe\" install:*)",
       "Bash(\"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\myenv\\\\Scripts\\\\python.exe\" -c \"import jazzmin, os; path = os.path.dirname\\(jazzmin.__file__\\); print\\(os.listdir\\(os.path.join\\(path, 'static', 'jazzmin', 'css', 'themes'\\)\\)\\)\")",
       "Bash(\"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\myenv\\\\Scripts\\\\pip.exe\" freeze:*)",
-      "Bash(cat config/__pycache__/*)"
+      "Bash(cat config/__pycache__/*)",
+      "Bash(\"../myenv/Scripts/pip\" install:*)",
+      "Bash(\"../myenv/Scripts/python\" manage.py check)"
     ]
   }
 }

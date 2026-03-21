@@ -41,6 +41,32 @@ class Setting(models.Model):
     phone = models.CharField(max_length=60, blank=False, null=False)
     email = models.EmailField(blank=False, null=False)
     copyright = models.TextField(blank=False, null=True)
+
+    # ── Application mobile ──────────────────────────────────────────────────
+    show_app_banner = models.BooleanField(
+        default=False,
+        help_text="Afficher le bandeau de téléchargement de l'app dans le header.",
+    )
+    apk_file = models.FileField(
+        upload_to="mobile/apk/",
+        blank=True,
+        null=True,
+        help_text="Fichier APK Android (.apk). Laisser vide si non disponible.",
+    )
+    apk_version = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Ex : 1.0.0 — affiché dans le bandeau.",
+    )
+    apk_description = models.CharField(
+        max_length=120,
+        blank=True,
+        null=True,
+        default="Téléchargez notre application mobile",
+        help_text="Texte d'invitation affiché dans le bandeau.",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

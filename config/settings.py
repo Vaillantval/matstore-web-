@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import timedelta
 import dj_database_url
 from django.utils.translation import gettext_lazy as _
 
@@ -41,6 +42,14 @@ INSTALLED_APPS = [
     "dashboard",
     "anymail",
     "emails",
+    # API
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "corsheaders",
+    "drf_spectacular",
+    "django_filters",
+    "api",
 ]
 # --- CONFIGURATION DU SITE ID ---
 SITE_ID = 1
@@ -48,6 +57,7 @@ SITE_ID = 1
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Pour les fichiers statiques
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -331,3 +341,49 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 )
 ADMINS_NOTIFY = os.environ.get("ADMINS_NOTIFY", "info@matstorehaiti.online")
 SITE_URL = os.environ.get("SITE_URL", "https://matstorehaiti.online")
+
+# --- DJANGO REST FRAMEWORK ---
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "api.pagination.StandardResultsPagination",
+    "PAGE_SIZE": 20,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "api.exceptions.custom_exception_handler",
+}
+
+# --- SIMPLE JWT ---
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=int(os.environ.get("JWT_ACCESS_TOKEN_LIFETIME_DAYS", 1))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ.get("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 30))),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+# --- CORS ---
+_cors_origins_env = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+CORS_ALLOWED_ORIGINS = (
+    [o.strip() for o in _cors_origins_env.split(",") if o.strip()]
+    if _cors_origins_env
+    else ["http://localhost:3000", "http://localhost:8080"]
+)
+CORS_ALLOW_CREDENTIALS = True
+
+# --- DRF SPECTACULAR (OpenAPI docs) ---
+SPECTACULAR_SETTINGS = {
+    "TITLE": "MatStore Haiti API",
+    "DESCRIPTION": "API REST pour l'application mobile et le back office MatStore Haiti.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+}

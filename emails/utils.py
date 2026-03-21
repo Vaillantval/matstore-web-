@@ -104,6 +104,34 @@ def send_order_status_update(order):
         logger.error(f'Email de statut non envoyé pour commande #{order.id} : {e}')
 
 
+def send_offline_order_notification(order):
+    """Email envoyé au client après une commande avec paiement hors ligne."""
+    try:
+        context = {
+            'order': order,
+            'details': order.order_details.all(),
+            'site_url': settings.SITE_URL,
+        }
+        subject = f'Commande #{order.id} reçue — en attente de confirmation — MatStore Haiti'
+        html_content = render_to_string('emails/offline_order.html', context)
+        text_content = (
+            f'Commande #{order.id} bien reçue. '
+            f'Paiement hors ligne en attente de vérification. '
+            f'MatStore Haiti vous contactera sous peu pour confirmer. '
+            f'Total : {order.order_cost_ttc} HTG.'
+        )
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[order.author.email],
+        )
+        msg.attach_alternative(html_content, 'text/html')
+        msg.send()
+    except Exception as e:
+        logger.error(f'Email offline non envoyé pour commande #{order.id} : {e}')
+
+
 def send_welcome_email(user):
     """Email de bienvenue envoyé au client après son inscription."""
     try:

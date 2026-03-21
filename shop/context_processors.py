@@ -134,6 +134,7 @@ def site_settings(request):
             "foot_pages": my_foot_pages,
             "my_mega_categories": my_mega_categories,
             "mega_collections": mega_collections,
+            "show_app_banner": False,
         }
 
     context = {
@@ -153,6 +154,10 @@ def site_settings(request):
         "foot_pages": my_foot_pages,
         "my_mega_categories": my_mega_categories,
         "mega_collections": mega_collections,
+        # Application mobile
+        "show_app_banner": getattr(settings_obj, "show_app_banner", False) and bool(getattr(settings_obj, "apk_file", None)),
+        "apk_version": getattr(settings_obj, "apk_version", None),
+        "apk_description": getattr(settings_obj, "apk_description", "Téléchargez notre application mobile"),
     }
 
     return context

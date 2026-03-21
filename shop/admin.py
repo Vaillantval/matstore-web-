@@ -196,10 +196,11 @@ class OrderAdmin(admin.ModelAdmin):
         "is_paid",
         "carrier_name",
         "carrier_price",
+        "display_proof",
     )
     list_display_links = ("client_name",)
     list_editable = ("status",)
-    list_filter = ("is_paid", "created_at", "updated_at")
+    list_filter = ("is_paid", "created_at", "updated_at", "payment_method")
     search_fields = (
         "client_name",
         "billing_address",
@@ -207,6 +208,17 @@ class OrderAdmin(admin.ModelAdmin):
         "carrier_name",
         "payment_method",
     )
+
+    def display_proof(self, obj):
+        if obj.payment_proof:
+            return format_html(
+                '<a href="{}" target="_blank" style="color:#ff5722;font-weight:600;">'
+                '<i class="fas fa-image"></i> Voir preuve</a>',
+                obj.payment_proof.url,
+            )
+        return "—"
+
+    display_proof.short_description = "Preuve paiement"
 
 
 class OrderDetailAdmin(admin.ModelAdmin):
@@ -255,6 +267,9 @@ class SettingAdmin(admin.ModelAdmin):
         "base_currency",
         "currency",
         "city",
+        "show_app_banner",
+        "apk_version",
+        "display_apk",
     )
     list_display_links = (
         "id",
@@ -283,6 +298,17 @@ class SettingAdmin(admin.ModelAdmin):
             {"fields": ("street", "city", "state", "code_postal", "phone", "email")},
         ),
         ("Textes", {"fields": ("copyright",)}),
+        (
+            "📱 Application Mobile Android",
+            {
+                "fields": ("show_app_banner", "apk_file", "apk_version", "apk_description"),
+                "description": (
+                    "<strong>APK :</strong> uploadez votre fichier .apk pour le rendre téléchargeable.<br>"
+                    "Activez <em>Afficher le bandeau</em> pour inviter les visiteurs à télécharger l'app.<br>"
+                    "Le bandeau s'affiche automatiquement dans le header dès qu'un APK est disponible et le bandeau activé."
+                ),
+            },
+        ),
     )
     actions = ["refresh_exchange_rates"]
 
@@ -295,6 +321,17 @@ class SettingAdmin(admin.ModelAdmin):
         return "—"
 
     display_logo.short_description = "Logo"
+
+    def display_apk(self, obj):
+        if obj.apk_file:
+            return format_html(
+                '<a href="{}" target="_blank" style="color:#28a745;font-weight:600;">'
+                '<i class="fas fa-android"></i> Télécharger APK</a>',
+                obj.apk_file.url,
+            )
+        return format_html('<span style="color:#999;">— Aucun APK</span>')
+
+    display_apk.short_description = "APK Android"
 
     def refresh_exchange_rates(self, request, queryset):
         from shop.management.commands.fetch_rates import fetch_rates_for_base

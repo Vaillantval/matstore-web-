@@ -78,10 +78,97 @@ body { background: #f4f6f9; }
 .ck-step.active .ck-step-num { background: #ff5722; color: #fff; box-shadow: 0 0 0 4px rgba(255,87,34,.15); }
 .ck-step.done .ck-step-num { background: #22c55e; color: #fff; }
 .ck-step-sep {
-    width: 56px; height: 2px; background: #e9ecef; margin: 0 8px;
+    width: 36px; height: 2px; background: #e9ecef; margin: 0 4px;
     flex-shrink: 0;
+    transition: background .3s;
 }
-.ck-step.done ~ .ck-step-sep { background: #22c55e; }
+.ck-step.done + .ck-step-sep { background: #22c55e; }
+
+/* ── Animated 4-step guide banner ── */
+.ck-guide-banner {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 55%, #2d1810 100%);
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    padding: 18px 22px 20px;
+    position: relative;
+    border: 1px solid rgba(255,87,34,.15);
+    animation: guideEntrance .55s cubic-bezier(.22,.68,0,1.2) both;
+}
+@keyframes guideEntrance {
+    from { opacity: 0; transform: translateY(-14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.ck-guide-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+}
+.ck-guide-head-icon {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: rgba(255,87,34,.2);
+    display: flex; align-items: center; justify-content: center;
+    color: #ff8a65; font-size: 15px; flex-shrink: 0;
+}
+.ck-guide-head-text { color: #fff; font-size: 14px; font-weight: 700; }
+.ck-guide-head-sub  { color: rgba(255,255,255,.45); font-size: 11.5px; margin-top: 1px; }
+.ck-guide-steps-row {
+    display: flex; align-items: flex-start; gap: 0;
+}
+.ck-gs {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 7px; position: relative;
+    opacity: 0; animation: gsSlideUp .45s ease forwards;
+}
+.ck-gs:nth-child(1) { animation-delay: .10s; }
+.ck-gs:nth-child(2) { animation-delay: .22s; }
+.ck-gs:nth-child(3) { animation-delay: .34s; }
+.ck-gs:nth-child(4) { animation-delay: .46s; }
+@keyframes gsSlideUp {
+    from { opacity: 0; transform: translateY(10px) scale(.9); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.ck-gs:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 15px; left: calc(50% + 16px);
+    right: calc(-50% + 16px);
+    height: 2px;
+    background: rgba(255,255,255,.1);
+    transition: background .4s;
+    z-index: 0;
+}
+.ck-gs.gs-done:not(:last-child)::after { background: rgba(34,197,94,.45); }
+.ck-gs-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,.08);
+    border: 2px solid rgba(255,255,255,.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: rgba(255,255,255,.3);
+    transition: all .35s;
+    z-index: 1; position: relative;
+}
+.ck-gs.gs-active .ck-gs-num {
+    background: #ff5722; border-color: #ff5722; color: #fff;
+    animation: gsActivePulse 2.2s ease-in-out infinite;
+}
+@keyframes gsActivePulse {
+    0%,100% { box-shadow: 0 0 0 3px rgba(255,87,34,.25); }
+    50%      { box-shadow: 0 0 0 8px rgba(255,87,34,.06); }
+}
+.ck-gs.gs-done .ck-gs-num {
+    background: #22c55e; border-color: #22c55e; color: #fff;
+    animation: none; box-shadow: none;
+}
+.ck-gs-icon { font-size: 12px; color: rgba(255,255,255,.22); transition: color .3s; }
+.ck-gs.gs-active .ck-gs-icon { color: #ff8a65; }
+.ck-gs.gs-done   .ck-gs-icon { color: #4ade80; }
+.ck-gs-label {
+    font-size: 10px; font-weight: 600; color: rgba(255,255,255,.28);
+    text-align: center; line-height: 1.3; max-width: 64px;
+    transition: color .3s;
+}
+.ck-gs.gs-active .ck-gs-label { color: rgba(255,255,255,.78); }
+.ck-gs.gs-done   .ck-gs-label { color: rgba(74,222,128,.8); }
 
 /* ── Layout ── */
 .ck-body {
@@ -497,21 +584,26 @@ body { background: #f4f6f9; }
         </div>
     </div>
 
-    <!-- ── Steps ── -->
-    <div class="ck-steps">
-        <div class="ck-step {% if not ready_to_pay %}active{% else %}done{% endif %}">
+    <!-- ── Steps (4 étapes) ── -->
+    <div class="ck-steps" id="ck-steps-bar">
+        <div class="ck-step {% if not ready_to_pay %}active{% else %}done{% endif %}" id="topstep-1">
             <div class="ck-step-num">{% if ready_to_pay %}<i class="ti-check"></i>{% else %}1{% endif %}</div>
-            <span>Adresse</span>
-        </div>
-        <div class="ck-step-sep"></div>
-        <div class="ck-step {% if ready_to_pay %}active{% endif %}">
-            <div class="ck-step-num">2</div>
             <span>Paiement</span>
         </div>
         <div class="ck-step-sep"></div>
-        <div class="ck-step">
+        <div class="ck-step {% if ready_to_pay and not cart.carrier_id %}active{% elif ready_to_pay and cart.carrier_id %}done{% endif %}" id="topstep-2">
+            <div class="ck-step-num">{% if ready_to_pay and cart.carrier_id %}<i class="ti-check"></i>{% else %}2{% endif %}</div>
+            <span>Adresse</span>
+        </div>
+        <div class="ck-step-sep"></div>
+        <div class="ck-step {% if ready_to_pay and cart.carrier_id %}active{% endif %}" id="topstep-3">
             <div class="ck-step-num">3</div>
-            <span>Confirmation</span>
+            <span>Livraison</span>
+        </div>
+        <div class="ck-step-sep"></div>
+        <div class="ck-step" id="topstep-4">
+            <div class="ck-step-num">4</div>
+            <span>Confirmer</span>
         </div>
     </div>
 
@@ -520,6 +612,39 @@ body { background: #f4f6f9; }
 
         <!-- ════════════════════ LEFT COLUMN ════════════════════ -->
         <div class="ck-left">
+
+            <!-- ── Guide animé 4 étapes ── -->
+            <div class="ck-guide-banner">
+                <div class="ck-guide-head">
+                    <div class="ck-guide-head-icon"><i class="ti-list"></i></div>
+                    <div>
+                        <div class="ck-guide-head-text">Comment finaliser votre commande</div>
+                        <div class="ck-guide-head-sub">Suivez ces 4 étapes simples dans l'ordre</div>
+                    </div>
+                </div>
+                <div class="ck-guide-steps-row">
+                    <div class="ck-gs {% if not ready_to_pay %}gs-active{% else %}gs-done{% endif %}" id="guide-step-1">
+                        <div class="ck-gs-num">{% if ready_to_pay %}<i class="ti-check"></i>{% else %}1{% endif %}</div>
+                        <div class="ck-gs-icon"><i class="ti-credit-card"></i></div>
+                        <div class="ck-gs-label">Méthode de paiement</div>
+                    </div>
+                    <div class="ck-gs {% if ready_to_pay and cart.carrier_id %}gs-done{% elif ready_to_pay %}gs-active{% endif %}" id="guide-step-2">
+                        <div class="ck-gs-num">{% if ready_to_pay and cart.carrier_id %}<i class="ti-check"></i>{% else %}2{% endif %}</div>
+                        <div class="ck-gs-icon"><i class="ti-map-alt"></i></div>
+                        <div class="ck-gs-label">Adresse facturation / livraison</div>
+                    </div>
+                    <div class="ck-gs {% if ready_to_pay and cart.carrier_id %}gs-active{% endif %}" id="guide-step-3">
+                        <div class="ck-gs-num">{% if ready_to_pay and cart.carrier_id %}<i class="ti-check"></i>{% else %}3{% endif %}</div>
+                        <div class="ck-gs-icon"><i class="ti-truck"></i></div>
+                        <div class="ck-gs-label">Mode de livraison</div>
+                    </div>
+                    <div class="ck-gs {% if ready_to_pay and cart.carrier_id %}gs-active{% endif %}" id="guide-step-4">
+                        <div class="ck-gs-num">4</div>
+                        <div class="ck-gs-icon"><i class="ti-shopping-cart"></i></div>
+                        <div class="ck-gs-label">Cliquer sur Payer</div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Login (guest only) -->
             {% if not user.is_authenticated %}
@@ -559,11 +684,102 @@ body { background: #f4f6f9; }
             </div>
             {% endif %}
 
+            <!-- ── Méthode de paiement (toujours visible) ── -->
+            <div class="ck-card" id="payment-method-card">
+                <div class="ck-card-head">
+                    <div class="ck-card-head-icon"><i class="ti-credit-card"></i></div>
+                    <h5>Méthode de paiement</h5>
+                    <span class="ck-badge">Étape 1</span>
+                </div>
+                <div class="ck-card-body">
+                    <div class="ck-carrier-grid">
+
+                        {% for method in payment_methods %}
+                        <label class="ck-carrier ck-payment-method" id="pm-label-{{ method.id }}"
+                               data-method-type="{% if 'stripe' in method.name|lower %}stripe{% else %}other{% endif %}"
+                               data-method-id="{{ method.id }}">
+                            <input type="radio" name="payment_method_choice"
+                                   value="{% if 'stripe' in method.name|lower %}stripe{% else %}other_{{ method.id }}{% endif %}"
+                                   id="pm_{{ method.id }}">
+                            <div class="ck-carrier-img">
+                                {% if method.logo %}
+                                <img src="{{ method.logo.url }}" alt="{{ method.name }}">
+                                {% else %}
+                                <i class="ti-credit-card" style="color:#ced4da;font-size:18px;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ck-carrier-info">
+                                <div class="ck-carrier-name">{{ method.name }}</div>
+                                <div class="ck-carrier-desc">{{ method.description }}</div>
+                            </div>
+                            <div class="ck-carrier-check"><i class="ti-check"></i></div>
+                        </label>
+                        {% endfor %}
+
+                        {% if moncash_configured and user.is_authenticated %}
+                        <label class="ck-carrier ck-payment-method" id="pm-label-moncash"
+                               data-method-type="moncash">
+                            <input type="radio" name="payment_method_choice"
+                                   value="moncash" id="pm_moncash">
+                            <div class="ck-carrier-img" style="background:#e52329;">
+                                <span style="color:#fff;font-size:11px;font-weight:900;letter-spacing:-.5px;">MON<br>CASH</span>
+                            </div>
+                            <div class="ck-carrier-info">
+                                <div class="ck-carrier-name">MonCash</div>
+                                <div class="ck-carrier-desc">Paiement mobile via Digicel MonCash</div>
+                            </div>
+                            <div class="ck-carrier-check"><i class="ti-check"></i></div>
+                        </label>
+                        {% endif %}
+
+                        <!-- ── Paiement Hors Ligne (toujours présent) ── -->
+                        <label class="ck-carrier ck-payment-method" id="pm-label-offline"
+                               data-method-type="offline">
+                            <input type="radio" name="payment_method_choice"
+                                   value="offline" id="pm_offline">
+                            <div class="ck-carrier-img" style="background:#6c757d;">
+                                <i class="ti-receipt" style="color:#fff; font-size:18px;"></i>
+                            </div>
+                            <div class="ck-carrier-info">
+                                <div class="ck-carrier-name">Paiement Hors Ligne</div>
+                                <div class="ck-carrier-desc">Virement, dépôt ou remise en main propre</div>
+                            </div>
+                            <div class="ck-carrier-check"><i class="ti-check"></i></div>
+                        </label>
+
+                    </div>
+
+                    <!-- ── Zone upload preuve (visible si offline sélectionné) ── -->
+                    <div id="offline-upload-area" style="display:none; margin-top:16px;">
+                        <div style="
+                            background:#f8f9fa; border:1.5px dashed #ced4da; border-radius:12px;
+                            padding:16px 18px;
+                        ">
+                            <p style="font-size:13.5px; color:#495057; margin:0 0 10px; line-height:1.6;">
+                                <i class="ti-info-alt" style="color:#f59e0b; margin-right:5px;"></i>
+                                Effectuez votre virement ou dépôt sur le compte MatStore Haiti,
+                                puis uploadez ici une <strong>photo ou capture de la preuve de paiement</strong>.
+                            </p>
+                            <label class="ck-label" for="id_payment_proof">Preuve de paiement <span style="color:#adb5bd; font-weight:400;">(optionnel mais recommandé)</span></label>
+                            <input type="file" id="id_payment_proof" name="payment_proof_preview"
+                                   accept="image/*,.pdf"
+                                   class="ck-input"
+                                   style="padding:8px 12px; cursor:pointer;">
+                            <p style="font-size:12px; color:#adb5bd; margin:8px 0 0;">
+                                Formats acceptés : JPG, PNG, PDF — Max 5 Mo
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
             <!-- Billing address -->
             <div class="ck-card">
                 <div class="ck-card-head">
                     <div class="ck-card-head-icon"><i class="ti-map-alt"></i></div>
                     <h5>Adresse de facturation</h5>
+                    <span class="ck-badge" style="background:#f0f7ff;color:#1a6ab1;border:1px solid #cce3ff;">Étape 2</span>
                     {% if user.is_authenticated and user.adresses.all %}
                     <small>{{ user.adresses.all|length }} adresse{{ user.adresses.all|length|pluralize }}</small>
                     {% endif %}
@@ -663,67 +879,13 @@ body { background: #f4f6f9; }
                 </div>
             </div>
 
-            <!-- ── Méthode de paiement (visible seulement quand adresse sélectionnée) ── -->
-            {% if ready_to_pay %}
-            {% if payment_methods or moncash_configured %}
-            <div class="ck-card">
-                <div class="ck-card-head">
-                    <div class="ck-card-head-icon"><i class="ti-credit-card"></i></div>
-                    <h5>Méthode de paiement</h5>
-                </div>
-                <div class="ck-card-body">
-                    <div class="ck-carrier-grid">
-
-                        {% for method in payment_methods %}
-                        <label class="ck-carrier ck-payment-method" id="pm-label-{{ method.id }}"
-                               data-method-type="{% if 'stripe' in method.name|lower %}stripe{% else %}other{% endif %}"
-                               data-method-id="{{ method.id }}">
-                            <input type="radio" name="payment_method_choice"
-                                   value="{% if 'stripe' in method.name|lower %}stripe{% else %}other_{{ method.id }}{% endif %}"
-                                   id="pm_{{ method.id }}">
-                            <div class="ck-carrier-img">
-                                {% if method.logo %}
-                                <img src="{{ method.logo.url }}" alt="{{ method.name }}">
-                                {% else %}
-                                <i class="ti-credit-card" style="color:#ced4da;font-size:18px;"></i>
-                                {% endif %}
-                            </div>
-                            <div class="ck-carrier-info">
-                                <div class="ck-carrier-name">{{ method.name }}</div>
-                                <div class="ck-carrier-desc">{{ method.description }}</div>
-                            </div>
-                            <div class="ck-carrier-check"><i class="ti-check"></i></div>
-                        </label>
-                        {% endfor %}
-
-                        {% if moncash_configured and user.is_authenticated %}
-                        <label class="ck-carrier ck-payment-method" id="pm-label-moncash"
-                               data-method-type="moncash">
-                            <input type="radio" name="payment_method_choice"
-                                   value="moncash" id="pm_moncash">
-                            <div class="ck-carrier-img" style="background:#e52329;">
-                                <span style="color:#fff;font-size:11px;font-weight:900;letter-spacing:-.5px;">MON<br>CASH</span>
-                            </div>
-                            <div class="ck-carrier-info">
-                                <div class="ck-carrier-name">MonCash</div>
-                                <div class="ck-carrier-desc">Paiement mobile via Digicel MonCash</div>
-                            </div>
-                            <div class="ck-carrier-check"><i class="ti-check"></i></div>
-                        </label>
-                        {% endif %}
-
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            {% endif %}
-
             <!-- Carrier selection -->
             {% if carriers %}
             <div class="ck-card">
                 <div class="ck-card-head">
                     <div class="ck-card-head-icon"><i class="ti-truck"></i></div>
                     <h5>Mode de livraison</h5>
+                    <span class="ck-badge" style="background:#f0fff4;color:#22c55e;border:1px solid #bbf7d0;">Étape 3</span>
                 </div>
                 <div class="ck-card-body">
                     <div class="ck-carrier-grid">
@@ -821,15 +983,13 @@ body { background: #f4f6f9; }
                     <!-- CTA -->
                     {% if ready_to_pay %}
 
-                        {% if payment_methods or moncash_configured %}
-
                         <!-- Hint : choisir méthode avant (caché dès qu'une méthode est choisie) -->
                         <div id="pm-hint" class="ck-not-ready">
                             <i class="ti-credit-card" style="margin-right:7px;"></i>
                             Choisissez une méthode de paiement
                         </div>
 
-                        <!-- Bouton Stripe (toujours dans le DOM, affiché par JS) -->
+                        <!-- Bouton Stripe (affiché par JS si méthode Stripe sélectionnée) -->
                         <a id="stripe-pay-btn" href="#"
                            data-bs-toggle="modal" data-bs-target="#paymentModal"
                            class="ck-pay-btn" style="display:none;">
@@ -837,7 +997,7 @@ body { background: #f4f6f9; }
                             Payer · {{ cart.sub_total_with_shipping|price_convert }}
                         </a>
 
-                        <!-- Bouton MonCash (caché par défaut) -->
+                        <!-- Bouton MonCash (affiché par JS si MonCash sélectionné) -->
                         {% if moncash_configured and order_id %}
                         <form id="moncash-form" action="{% url 'moncash_initiate' order_id %}" method="post" style="display:none;">
                             {% csrf_token %}
@@ -849,11 +1009,14 @@ body { background: #f4f6f9; }
                         </button>
                         {% endif %}
 
-                        {% else %}
-                        <div class="ck-not-ready">
-                            <i class="ti-credit-card" style="margin-right:7px;"></i>
-                            Aucune méthode de paiement disponible
-                        </div>
+                        <!-- Bouton Hors Ligne (affiché par JS si offline sélectionné) -->
+                        {% if order_id %}
+                        <button id="offline-pay-btn" type="button"
+                                data-bs-toggle="modal" data-bs-target="#offlinePayModal"
+                                class="ck-pay-btn" style="display:none; background:linear-gradient(135deg,#495057,#6c757d);">
+                            <i class="ti-receipt"></i>
+                            Envoyer ma commande
+                        </button>
                         {% endif %}
 
                     {% else %}
@@ -908,6 +1071,70 @@ body { background: #f4f6f9; }
     </div>
 </div>
 
+<!-- ══════════════ OFFLINE PAYMENT MODAL ══════════════ -->
+{% if ready_to_pay and order_id %}
+<div class="modal fade ck-modal" id="offlinePayModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title"><i class="ti-receipt" style="margin-right:8px;"></i>Paiement Hors Ligne</h5>
+                    <div style="font-size:12px; color:rgba(255,255,255,.5); margin-top:2px;">
+                        Total : {{ cart.sub_total_with_shipping|price_convert }}
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div style="
+                    background:#fffbeb; border:1px solid #fde68a; border-radius:10px;
+                    padding:14px 16px; margin-bottom:18px; font-size:13.5px; color:#92400e; line-height:1.6;
+                ">
+                    <i class="ti-info-alt" style="margin-right:6px; color:#f59e0b;"></i>
+                    Effectuez votre virement / dépôt puis uploadez la preuve ci-dessous.
+                    MatStore Haiti vous contactera sous <strong>24–48 h</strong> pour confirmer.
+                </div>
+
+                <form id="offline-form"
+                      action="{% url 'offline_payment' %}"
+                      method="post"
+                      enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" value="{{ order_id }}">
+
+                    <div class="ck-form-group">
+                        <label class="ck-label" for="modal_payment_proof">
+                            Preuve de paiement
+                            <span style="color:#adb5bd; font-weight:400; text-transform:none;">(optionnel mais recommandé)</span>
+                        </label>
+                        <input type="file" id="modal_payment_proof" name="payment_proof"
+                               accept="image/*,.pdf"
+                               class="ck-input" style="padding:9px 12px; cursor:pointer;">
+                        <div style="font-size:12px; color:#adb5bd; margin-top:5px;">
+                            JPG, PNG, PDF — Max 5 Mo
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            style="
+                                display:flex; align-items:center; justify-content:center; gap:8px;
+                                width:100%; padding:14px;
+                                background:linear-gradient(135deg,#495057,#6c757d);
+                                color:#fff; font-size:14.5px; font-weight:700;
+                                border:none; border-radius:10px; cursor:pointer;
+                                margin-top:6px; transition:all .2s;
+                                box-shadow: 0 4px 14px rgba(73,80,87,.35);
+                            ">
+                        <i class="ti-check"></i>
+                        Confirmer ma commande
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block scripts %}
@@ -933,6 +1160,21 @@ document.querySelectorAll('.ck-carrier:not(.ck-payment-method)').forEach(card =>
         this.classList.add('checked');
         const radio = this.querySelector('input[type="radio"]');
         radio.checked = true;
+
+        /* Update guide step 3 → done, step 4 → active */
+        const gs3 = document.getElementById('guide-step-3');
+        const gs4 = document.getElementById('guide-step-4');
+        if (gs3) {
+            gs3.classList.remove('gs-active'); gs3.classList.add('gs-done');
+            const n = gs3.querySelector('.ck-gs-num'); if (n) n.innerHTML = '<i class="ti-check"></i>';
+        }
+        if (gs4 && !gs4.classList.contains('gs-active')) gs4.classList.add('gs-active');
+        /* Top bar step 3 → done, step 4 → active */
+        const ts3 = document.getElementById('topstep-3');
+        if (ts3) { ts3.classList.remove('active'); ts3.classList.add('done'); }
+        const ts4 = document.getElementById('topstep-4');
+        if (ts4 && !ts4.classList.contains('active')) ts4.classList.add('active');
+
         sendRequest({ target: radio });
     });
 });
@@ -944,10 +1186,33 @@ const moncashPayBtn= document.getElementById('moncash-pay-btn');
 const moncashForm  = document.getElementById('moncash-form');
 
 
+const offlinePayBtn    = document.getElementById('offline-pay-btn');
+const offlineUploadArea = document.getElementById('offline-upload-area');
+
 function showPayBtn(type) {
-    if (pmHint)        pmHint.style.display        = 'none';
-    if (stripePayBtn)  stripePayBtn.style.display  = type === 'stripe'  ? '' : 'none';
-    if (moncashPayBtn) moncashPayBtn.style.display = type === 'moncash' ? '' : 'none';
+    if (pmHint)          pmHint.style.display          = 'none';
+    if (stripePayBtn)    stripePayBtn.style.display    = type === 'stripe'  ? '' : 'none';
+    if (moncashPayBtn)   moncashPayBtn.style.display   = type === 'moncash' ? '' : 'none';
+    if (offlinePayBtn)   offlinePayBtn.style.display   = type === 'offline' ? '' : 'none';
+    if (offlineUploadArea) offlineUploadArea.style.display = type === 'offline' ? '' : 'none';
+}
+
+/* ── Guide step helpers ── */
+function setGuideStep(el, state) {
+    if (!el) return;
+    el.classList.remove('gs-active', 'gs-done');
+    if (state) el.classList.add(state);
+    const numEl = el.querySelector('.ck-gs-num');
+    if (numEl && state === 'gs-done') numEl.innerHTML = '<i class="ti-check"></i>';
+    else if (numEl && state !== 'gs-done') numEl.textContent = numEl.dataset.n || numEl.textContent;
+}
+function setTopStep(id, state) {
+    const el = document.getElementById('topstep-' + id);
+    if (!el) return;
+    el.classList.remove('active', 'done');
+    if (state) el.classList.add(state);
+    const numEl = el.querySelector('.ck-step-num');
+    if (numEl && state === 'done') numEl.innerHTML = '<i class="ti-check"></i>';
 }
 
 document.querySelectorAll('.ck-payment-method').forEach(card => {
@@ -957,6 +1222,29 @@ document.querySelectorAll('.ck-payment-method').forEach(card => {
         const radio = this.querySelector('input[type="radio"]');
         if (radio) radio.checked = true;
         showPayBtn(this.dataset.methodType);
+
+        /* Update guide step 1 → done, step 2 → active (if not already done) */
+        const gs1 = document.getElementById('guide-step-1');
+        const gs2 = document.getElementById('guide-step-2');
+        if (gs1 && !gs1.classList.contains('gs-done')) {
+            gs1.classList.remove('gs-active'); gs1.classList.add('gs-done');
+            const n = gs1.querySelector('.ck-gs-num');
+            if (n) n.innerHTML = '<i class="ti-check"></i>';
+        }
+        if (gs2 && !gs2.classList.contains('gs-done') && !gs2.classList.contains('gs-active')) {
+            gs2.classList.add('gs-active');
+        }
+        /* Update top step bar */
+        const ts1 = document.getElementById('topstep-1');
+        if (ts1 && !ts1.classList.contains('done')) {
+            ts1.classList.remove('active'); ts1.classList.add('done');
+            const n = ts1.querySelector('.ck-step-num');
+            if (n) n.innerHTML = '<i class="ti-check"></i>';
+        }
+        const ts2 = document.getElementById('topstep-2');
+        if (ts2 && !ts2.classList.contains('done') && !ts2.classList.contains('active')) {
+            ts2.classList.add('active');
+        }
     });
 });
 

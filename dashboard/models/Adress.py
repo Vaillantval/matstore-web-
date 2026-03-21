@@ -21,6 +21,7 @@ class Adress(models.Model):
         blank=True,
     )
     adress_type = models.CharField(max_length=255, choices=ADRESS_TYPE_CHOICES)
+    is_default = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

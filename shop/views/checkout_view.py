@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 from shop.services.cart_service import CartService
 from shop.models.Carrier import Carrier
 from shop.forms.CheckoutAddressForm import CheckoutAddressForm
@@ -163,6 +164,40 @@ def login_form(request):
                                  'message': 'Invalid credentials. Unable to connect.'})
 
     return JsonResponse({"isSuccess": False, 'message': 'Error, Invalid request method !'})
+
+
+@require_POST
+def offline_payment(request):
+    """Traite une commande avec paiement hors ligne (virement, dépôt, etc.)."""
+    order_id = request.session.get('pending_order_id')
+    if not order_id:
+        messages.error(request, "Aucune commande en cours. Veuillez recommencer.")
+        return redirect('checkout')
+
+    order = Order.objects.filter(id=order_id, is_paid=False).first()
+    if not order:
+        messages.error(request, "Commande introuvable ou déjà traitée.")
+        return redirect('checkout')
+
+    proof = request.FILES.get('payment_proof')
+    if proof:
+        order.payment_proof = proof
+
+    order.payment_method = 'Hors Ligne'
+    order.is_paid = False
+    order.status = 'pending'
+    order.save()
+
+    CartService.clear_cart(request)
+    request.session.pop('pending_order_id', None)
+    request.session.pop('carrier_id', None)
+    request.session.pop('carrier', None)
+
+    from emails.utils import send_offline_order_notification, send_admin_new_order
+    send_offline_order_notification(order)
+    send_admin_new_order(order)
+
+    return render(request, 'shop/offline_confirm.html', {'order': order})
 
 
 def create_order(request, billing_address, shipping_address=None, payment_method='pending'):
