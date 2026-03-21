@@ -126,6 +126,14 @@ def moncash_initiate(request, order_id):
         messages.error(request, "MonCash n'est pas configuré sur ce site.")
         return redirect("checkout")
 
+    if order.order_cost_ttc <= 0:
+        messages.error(
+            request,
+            "Le montant de la commande est nul. "
+            "Retournez au panier et vérifiez vos produits."
+        )
+        return redirect("checkout")
+
     # Conversion vers HTG (MonCash n'accepte que des Gourdes haïtiennes)
     setting = Setting.objects.first()
     base_currency = setting.base_currency if setting else "HTG"

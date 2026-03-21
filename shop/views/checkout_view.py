@@ -72,6 +72,12 @@ def index(request):
             if existing_order:
                 existing_order.billing_address = billing_address_str
                 existing_order.shipping_address = shipping_address_str or billing_address_str
+                # Rafraîchir les montants depuis le panier courant
+                fresh_cart = CartService.get_cart_details(request)
+                existing_order.quantity        = fresh_cart['cart_count']
+                existing_order.order_cost      = fresh_cart['sub_total_ht']
+                existing_order.taxe            = fresh_cart['taxe_amount']
+                existing_order.order_cost_ttc  = fresh_cart['sub_total_with_shipping']
                 existing_order.save()
                 order_id = existing_order.id
 
