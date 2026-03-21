@@ -17,6 +17,7 @@
 8. [Écrans Compte](#8-écrans-compte)
 9. [Écrans Annexes](#9-écrans-annexes)
 10. [Providers Riverpod suggérés](#10-providers-riverpod-suggérés)
+11. [Back Office Admin](#11-back-office-admin)
 
 ---
 
@@ -311,7 +312,7 @@ if (token != null && !JwtDecoder.isExpired(token)) {
 
 **API :** `POST /api/auth/login/`
 ```json
-{ "username": "...", "password": "...", "fcm_token": "..." }
+{ "username": "...", "password": "..." }
 ```
 **Réponse :** `{ access, refresh, user: UserProfile }`
 
@@ -323,7 +324,7 @@ if (token != null && !JwtDecoder.isExpired(token)) {
 - Lien → RegisterScreen
 - Gestion erreur `INVALID_CREDENTIALS`
 
-**Après login :** stocker tokens en `FlutterSecureStorage` → envoyer FCM token → `router.go('/home')`.
+**Après login :** stocker tokens en `FlutterSecureStorage` → envoyer FCM token via `POST /api/auth/fcm-token/` (endpoint dédié, idempotent) → `router.go('/home')`.
 
 ---
 
@@ -779,6 +780,175 @@ final addressesProvider     = StateNotifierProvider<AddressNotifier, List<Addres
 
 // Avis
 final reviewsProvider       = FutureProvider.family<List<Review>, int>((ref, productId) => ...);
+```
+
+---
+
+---
+
+## 11. Back Office Admin
+
+> Accessible uniquement si `UserProfile.isStaff == true`.
+> Ajouter un guard GoRouter : si `!isStaff → router.go('/home')`.
+> Tous les endpoints requièrent le Bearer token et renvoient `403` si `is_staff = false`.
+
+---
+
+### AdminShellScreen
+
+**But :** Shell du back office avec navigation latérale (Drawer ou NavigationRail).
+
+**Entrées du menu :**
+```
+Dashboard | Produits | Commandes | Clients | Inventaire | Rapports
+```
+
+---
+
+### AdminDashboardScreen `/admin/dashboard`
+
+**API :** `GET /api/admin/dashboard/`
+
+**Réponse :**
+```dart
+class AdminDashboard {
+  final int    totalOrders;
+  final int    pendingOrders;
+  final double totalRevenue;
+  final int    totalCustomers;
+  final List<TopProduct> topProducts;    // [{name, sales}]
+  final List<RevenuePoint> revenueChart; // [{date, amount}] — 30 derniers jours
+}
+```
+
+**UI :**
+- 4 KPI cards : Commandes totales, En attente, Revenus, Clients
+- Graphe linéaire 30 jours (package `fl_chart: ^0.69.0`)
+- Liste des top produits (5 max)
+
+---
+
+### AdminProductListScreen `/admin/products`
+
+**API :**
+- `GET /api/admin/products/` — liste complète avec filtres `?search=&category=&in_stock=`
+- `DELETE /api/admin/products/{id}/`
+
+**UI :**
+- Barre de recherche + filtres
+- `ListView` paginé : image miniature, nom, prix, stock, is_available (toggle)
+- FAB "+" → `AdminProductFormScreen` (création)
+- Swipe ou menu contextuel : Modifier / Supprimer
+
+---
+
+### AdminProductFormScreen `/admin/products/new` ou `/admin/products/:id/edit`
+
+**API :**
+- `POST /api/admin/products/` (création)
+- `PATCH /api/admin/products/{id}/` (modification)
+- `POST /api/admin/products/{id}/images/` (upload images)
+
+**Champs :**
+```
+name, description, more_description, additional_info, brand,
+regular_price, solde_price, stock_quantity,
+is_available, is_best_seller, is_new_arrival, is_special_offer,
+categories (multi-select)
+```
+
+**UI :**
+- Formulaire scrollable avec sections regroupées
+- Upload images multiple via `image_picker` → multipart `POST .../images/`
+- Validation locale avant envoi
+
+---
+
+### AdminOrderListScreen `/admin/orders`
+
+**API :** `GET /api/admin/orders/` avec filtres `?status=&is_paid=&search=`
+
+**UI :**
+- Filtres : statut (chips), payé/impayé, recherche nom/email
+- `OrderCard` admin : numéro, client, total, statut, is_paid, méthode paiement, date
+- Tap → `AdminOrderDetailScreen`
+
+---
+
+### AdminOrderDetailScreen `/admin/orders/:id`
+
+**API :**
+- `GET /api/admin/orders/{id}/` — détail complet
+- `PATCH /api/admin/orders/{id}/status/` `{ "status": "processing" }` → déclenche email client
+
+**UI :**
+- En-tête : #commande, client, date, is_paid
+- Sélecteur de statut (DropdownButton) avec les 5 valeurs possibles
+- Bouton "Valider le changement" → PATCH + toast confirmation
+- Table des articles
+- Bloc adresses, recap total
+- Si `paymentMethod == 'Hors Ligne'` et `paymentProof != null` : bouton "Voir preuve" → ouvre l'image en plein écran
+
+---
+
+### AdminCustomerListScreen `/admin/customers`
+
+**API :** `GET /api/admin/customers/`
+
+**UI :**
+- Liste : avatar initiales, nom, email, nombre commandes, date inscription
+- Tap → `AdminCustomerDetailScreen`
+
+---
+
+### AdminCustomerDetailScreen `/admin/customers/:id`
+
+**API :**
+- `GET /api/admin/customers/{id}/` — profil + historique commandes
+- `PATCH /api/admin/customers/{id}/` — modifier (is_active, etc.)
+
+**UI :**
+- Infos profil (nom, email, téléphone, FCM token présent ou non)
+- Liste des commandes du client (cliquable → AdminOrderDetailScreen)
+
+---
+
+### AdminInventoryScreen `/admin/inventory`
+
+**API :**
+- `GET /api/admin/inventory/?threshold=10` — produits en stock faible
+- `PATCH /api/admin/inventory/{id}/` `{ "stock_quantity": n }`
+
+**UI :**
+- Filtre seuil (champ numérique, défaut 10)
+- Liste : produit, stock actuel (rouge si < seuil), champ éditable pour mise à jour rapide
+- Bouton "Mettre à jour" par ligne
+
+---
+
+### AdminReportsScreen `/admin/reports`
+
+**API :**
+- `GET /api/admin/reports/sales/?period=monthly&start=&end=`
+- `GET /api/admin/reports/products/`
+- `GET /api/admin/reports/customers/`
+
+**UI :**
+- Onglets : Ventes | Produits | Clients
+- Sélecteur période (daily / weekly / monthly) + date range picker
+- Graphe barres pour les ventes (`fl_chart`)
+- Tableaux classés pour produits et clients
+
+---
+
+### Providers Riverpod admin
+
+```dart
+final adminDashboardProvider  = FutureProvider<AdminDashboard>(...);
+final adminProductsProvider   = StateNotifierProvider<AdminProductsNotifier, AdminProductsState>(...);
+final adminOrdersProvider     = StateNotifierProvider<AdminOrdersNotifier, AdminOrdersState>(...);
+final adminCustomersProvider  = StateNotifierProvider<AdminCustomersNotifier, AdminCustomersState>(...);
+final adminInventoryProvider  = FutureProvider<List<InventoryItem>>(...);
 ```
 
 ---

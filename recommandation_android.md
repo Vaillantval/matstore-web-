@@ -44,7 +44,36 @@ dependencies:
   # Utilitaires
   intl: ^0.20.1                      # Formatage des prix (HTG, USD)
   connectivity_plus: ^6.1.1          # Détecter si hors ligne
-  shared_preferences: ^2.3.3        # Préférences légères (thème, langue)
+  shared_preferences: ^2.3.3         # Préférences légères (thème, langue)
+  fl_chart: ^0.69.0                  # Graphes (back office admin — dashboard, rapports)
+
+  # Modèles immuables & sérialisation JSON
+  freezed_annotation: ^2.4.4         # Annotations pour classes immuables
+  json_annotation: ^4.9.0            # Annotations pour fromJson/toJson
+
+dev_dependencies:
+  build_runner: ^2.4.13              # Génération de code (lancer : dart run build_runner build)
+  freezed: ^2.5.7                    # Génère copyWith, ==, toString sur les modèles
+  json_serializable: ^6.8.0          # Génère fromJson / toJson
+```
+
+**Usage :**
+```dart
+// Déclarer un modèle
+@freezed
+class Product with _$Product {
+  const factory Product({
+    required int id,
+    required String name,
+    required double price,
+    @JsonKey(name: 'in_stock') required bool inStock,
+  }) = _Product;
+
+  factory Product.fromJson(Map<String, dynamic> json) => _$ProductFromJson(json);
+}
+
+// Régénérer après modification :
+// dart run build_runner build --delete-conflicting-outputs
 ```
 
 ---
@@ -180,6 +209,10 @@ await dio.post('/api/payments/offline/', data: formData);
 ## 4. Push Notifications (FCM)
 
 L'API a un endpoint dédié `POST /api/auth/fcm-token/` pour enregistrer le token.
+
+> **Important :** Ne pas inclure `fcm_token` dans le payload de `POST /auth/login/`.
+> Le login ne retourne que `{ access, refresh, user }`. Le FCM token est envoyé
+> **séparément**, juste après, via l'endpoint dédié ci-dessous.
 
 ```dart
 // Après login réussi, envoyer le token via l'endpoint dédié

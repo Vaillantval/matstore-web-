@@ -25,6 +25,16 @@ def index(request):
     carrier_id = request.GET.get('carrier_id')
     new_shipping_address = request.GET.get('new_shipping_address', '')
     address_billing_id = request.GET.get('address_billing_id', '')
+
+    # ── Pré-sélection automatique de l'adresse (si non fournie dans l'URL) ──
+    if not address_billing_id and request.user.is_authenticated:
+        auto_addr = (
+            request.user.adresses.filter(is_default=True).first()
+            or request.user.adresses.first()
+        )
+        if auto_addr:
+            address_billing_id = auto_addr.id
+
     if address_billing_id and address_billing_id != "":
         address_billing_id = int(address_billing_id)
 
@@ -37,6 +47,17 @@ def index(request):
         ready_to_pay = bool(address_billing_id) and bool(address_shipping_id)
     else:
         ready_to_pay = bool(address_billing_id)
+
+    # ── Pré-sélection automatique du carrier (si aucun en session) ──
+    if not carrier_id and not request.session.get('carrier_id'):
+        first_carrier = Carrier.objects.first()
+        if first_carrier:
+            request.session['carrier_id'] = first_carrier.id
+            request.session['carrier'] = {
+                'id': first_carrier.id,
+                'name': first_carrier.name,
+                'price': float(first_carrier.price),
+            }
 
     if carrier_id and carrier_id != '':
         carrier = Carrier.objects.filter(id=carrier_id).first()
@@ -180,9 +201,11 @@ def offline_payment(request):
         return redirect('checkout')
 
     proof = request.FILES.get('payment_proof')
-    if proof:
-        order.payment_proof = proof
+    if not proof:
+        messages.error(request, "La preuve de paiement est obligatoire pour un paiement hors ligne.")
+        return redirect('checkout')
 
+    order.payment_proof = proof
     order.payment_method = 'Hors Ligne'
     order.is_paid = False
     order.status = 'pending'
@@ -214,7 +237,7 @@ def create_order(request, billing_address, shipping_address=None, payment_method
         fallback_carrier = (
             Carrier.objects.filter(id=session_carrier_id).first()
             if session_carrier_id
-            else Carrier.objects.first()
+            else None
         )
         carrier_name = fallback_carrier.name if fallback_carrier else ''
         carrier_price = float(fallback_carrier.price) if fallback_carrier else 0

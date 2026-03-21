@@ -178,6 +178,12 @@ body { background: #f4f6f9; }
     gap: 24px;
     align-items: start;
 }
+
+/* Séquence : Adresse (1) → Paiement (2) → Livraison (3) */
+.ck-left { display: flex; flex-direction: column; }
+#billing-address-card  { order: 1; }
+#payment-method-card   { order: 2; }
+#carrier-card          { order: 3; }
 @media (max-width: 900px) {
     .ck-body { grid-template-columns: 1fr; }
 }
@@ -586,14 +592,14 @@ body { background: #f4f6f9; }
 
     <!-- ── Steps (4 étapes) ── -->
     <div class="ck-steps" id="ck-steps-bar">
-        <div class="ck-step {% if not ready_to_pay %}active{% else %}done{% endif %}" id="topstep-1">
+        <div class="ck-step {% if ready_to_pay %}done{% else %}active{% endif %}" id="topstep-1">
             <div class="ck-step-num">{% if ready_to_pay %}<i class="ti-check"></i>{% else %}1{% endif %}</div>
-            <span>Paiement</span>
+            <span>Adresse</span>
         </div>
         <div class="ck-step-sep"></div>
         <div class="ck-step {% if ready_to_pay and not cart.carrier_id %}active{% elif ready_to_pay and cart.carrier_id %}done{% endif %}" id="topstep-2">
             <div class="ck-step-num">{% if ready_to_pay and cart.carrier_id %}<i class="ti-check"></i>{% else %}2{% endif %}</div>
-            <span>Adresse</span>
+            <span>Paiement</span>
         </div>
         <div class="ck-step-sep"></div>
         <div class="ck-step {% if ready_to_pay and cart.carrier_id %}active{% endif %}" id="topstep-3">
@@ -623,22 +629,22 @@ body { background: #f4f6f9; }
                     </div>
                 </div>
                 <div class="ck-guide-steps-row">
-                    <div class="ck-gs {% if not ready_to_pay %}gs-active{% else %}gs-done{% endif %}" id="guide-step-1">
+                    <div class="ck-gs {% if ready_to_pay %}gs-done{% else %}gs-active{% endif %}" id="guide-step-1">
                         <div class="ck-gs-num">{% if ready_to_pay %}<i class="ti-check"></i>{% else %}1{% endif %}</div>
-                        <div class="ck-gs-icon"><i class="ti-credit-card"></i></div>
-                        <div class="ck-gs-label">Méthode de paiement</div>
-                    </div>
-                    <div class="ck-gs {% if ready_to_pay and cart.carrier_id %}gs-done{% elif ready_to_pay %}gs-active{% endif %}" id="guide-step-2">
-                        <div class="ck-gs-num">{% if ready_to_pay and cart.carrier_id %}<i class="ti-check"></i>{% else %}2{% endif %}</div>
                         <div class="ck-gs-icon"><i class="ti-map-alt"></i></div>
                         <div class="ck-gs-label">Adresse facturation / livraison</div>
                     </div>
+                    <div class="ck-gs {% if ready_to_pay and not cart.carrier_id %}gs-active{% elif ready_to_pay and cart.carrier_id %}gs-done{% endif %}" id="guide-step-2">
+                        <div class="ck-gs-num">{% if ready_to_pay and cart.carrier_id %}<i class="ti-check"></i>{% else %}2{% endif %}</div>
+                        <div class="ck-gs-icon"><i class="ti-credit-card"></i></div>
+                        <div class="ck-gs-label">Méthode de paiement</div>
+                    </div>
                     <div class="ck-gs {% if ready_to_pay and cart.carrier_id %}gs-active{% endif %}" id="guide-step-3">
-                        <div class="ck-gs-num">{% if ready_to_pay and cart.carrier_id %}<i class="ti-check"></i>{% else %}3{% endif %}</div>
+                        <div class="ck-gs-num">3</div>
                         <div class="ck-gs-icon"><i class="ti-truck"></i></div>
                         <div class="ck-gs-label">Mode de livraison</div>
                     </div>
-                    <div class="ck-gs {% if ready_to_pay and cart.carrier_id %}gs-active{% endif %}" id="guide-step-4">
+                    <div class="ck-gs" id="guide-step-4">
                         <div class="ck-gs-num">4</div>
                         <div class="ck-gs-icon"><i class="ti-shopping-cart"></i></div>
                         <div class="ck-gs-label">Cliquer sur Payer</div>
@@ -689,7 +695,7 @@ body { background: #f4f6f9; }
                 <div class="ck-card-head">
                     <div class="ck-card-head-icon"><i class="ti-credit-card"></i></div>
                     <h5>Méthode de paiement</h5>
-                    <span class="ck-badge">Étape 1</span>
+                    <span class="ck-badge" style="background:#f0f7ff;color:#1a6ab1;border:1px solid #cce3ff;">Étape 2</span>
                 </div>
                 <div class="ck-card-body">
                     <div class="ck-carrier-grid">
@@ -760,11 +766,14 @@ body { background: #f4f6f9; }
                                 Effectuez votre virement ou dépôt sur le compte MatStore Haiti,
                                 puis uploadez ici une <strong>photo ou capture de la preuve de paiement</strong>.
                             </p>
-                            <label class="ck-label" for="id_payment_proof">Preuve de paiement <span style="color:#adb5bd; font-weight:400;">(optionnel mais recommandé)</span></label>
+                            <label class="ck-label" for="id_payment_proof">Preuve de paiement <span style="color:#ef4444; font-weight:600;">*</span></label>
                             <input type="file" id="id_payment_proof" name="payment_proof_preview"
                                    accept="image/*,.pdf"
                                    class="ck-input"
                                    style="padding:8px 12px; cursor:pointer;">
+                            <div id="proof-preview-name" style="font-size:12.5px; color:#22c55e; margin-top:6px; display:none;">
+                                <i class="ti-check" style="margin-right:4px;"></i><span id="proof-preview-filename"></span>
+                            </div>
                             <p style="font-size:12px; color:#adb5bd; margin:8px 0 0;">
                                 Formats acceptés : JPG, PNG, PDF — Max 5 Mo
                             </p>
@@ -775,11 +784,11 @@ body { background: #f4f6f9; }
             </div>
 
             <!-- Billing address -->
-            <div class="ck-card">
+            <div class="ck-card" id="billing-address-card">
                 <div class="ck-card-head">
                     <div class="ck-card-head-icon"><i class="ti-map-alt"></i></div>
                     <h5>Adresse de facturation</h5>
-                    <span class="ck-badge" style="background:#f0f7ff;color:#1a6ab1;border:1px solid #cce3ff;">Étape 2</span>
+                    <span class="ck-badge">Étape 1</span>
                     {% if user.is_authenticated and user.adresses.all %}
                     <small>{{ user.adresses.all|length }} adresse{{ user.adresses.all|length|pluralize }}</small>
                     {% endif %}
@@ -881,7 +890,7 @@ body { background: #f4f6f9; }
 
             <!-- Carrier selection -->
             {% if carriers %}
-            <div class="ck-card">
+            <div class="ck-card" id="carrier-card">
                 <div class="ck-card-head">
                     <div class="ck-card-head-icon"><i class="ti-truck"></i></div>
                     <h5>Mode de livraison</h5>
@@ -1104,18 +1113,28 @@ body { background: #f4f6f9; }
 
                     <div class="ck-form-group">
                         <label class="ck-label" for="modal_payment_proof">
-                            Preuve de paiement
-                            <span style="color:#adb5bd; font-weight:400; text-transform:none;">(optionnel mais recommandé)</span>
+                            Preuve de paiement <span style="color:#ef4444; font-weight:600;">*</span>
                         </label>
+                        <!-- Fichier pré-sélectionné dans la zone upload -->
+                        <div id="modal-file-info" style="display:none; margin-bottom:10px;
+                            background:#f0fff4; border:1px solid #bbf7d0; border-radius:9px;
+                            padding:10px 14px; font-size:13px; color:#166534;">
+                            <i class="ti-check" style="margin-right:6px; color:#22c55e;"></i>
+                            Fichier sélectionné : <strong id="modal-file-name"></strong>
+                            <span style="color:#6c757d; font-weight:400; margin-left:6px;">— vous pouvez le modifier ci-dessous</span>
+                        </div>
                         <input type="file" id="modal_payment_proof" name="payment_proof"
-                               accept="image/*,.pdf"
+                               accept="image/*,.pdf" required
                                class="ck-input" style="padding:9px 12px; cursor:pointer;">
+                        <div id="modal-proof-error" style="font-size:12.5px; color:#ef4444; margin-top:5px; display:none;">
+                            <i class="ti-alert" style="margin-right:4px;"></i>La preuve de paiement est obligatoire.
+                        </div>
                         <div style="font-size:12px; color:#adb5bd; margin-top:5px;">
                             JPG, PNG, PDF — Max 5 Mo
                         </div>
                     </div>
 
-                    <button type="submit"
+                    <button type="submit" id="offline-submit-btn"
                             style="
                                 display:flex; align-items:center; justify-content:center; gap:8px;
                                 width:100%; padding:14px;
@@ -1223,27 +1242,27 @@ document.querySelectorAll('.ck-payment-method').forEach(card => {
         if (radio) radio.checked = true;
         showPayBtn(this.dataset.methodType);
 
-        /* Update guide step 1 → done, step 2 → active (if not already done) */
-        const gs1 = document.getElementById('guide-step-1');
+        /* Update guide step 2 → done, step 3 → active (if not already done) */
         const gs2 = document.getElementById('guide-step-2');
-        if (gs1 && !gs1.classList.contains('gs-done')) {
-            gs1.classList.remove('gs-active'); gs1.classList.add('gs-done');
-            const n = gs1.querySelector('.ck-gs-num');
+        const gs3 = document.getElementById('guide-step-3');
+        if (gs2 && !gs2.classList.contains('gs-done')) {
+            gs2.classList.remove('gs-active'); gs2.classList.add('gs-done');
+            const n = gs2.querySelector('.ck-gs-num');
             if (n) n.innerHTML = '<i class="ti-check"></i>';
         }
-        if (gs2 && !gs2.classList.contains('gs-done') && !gs2.classList.contains('gs-active')) {
-            gs2.classList.add('gs-active');
+        if (gs3 && !gs3.classList.contains('gs-done') && !gs3.classList.contains('gs-active')) {
+            gs3.classList.add('gs-active');
         }
-        /* Update top step bar */
-        const ts1 = document.getElementById('topstep-1');
-        if (ts1 && !ts1.classList.contains('done')) {
-            ts1.classList.remove('active'); ts1.classList.add('done');
-            const n = ts1.querySelector('.ck-step-num');
-            if (n) n.innerHTML = '<i class="ti-check"></i>';
-        }
+        /* Update top step bar: step 2 → done, step 3 → active */
         const ts2 = document.getElementById('topstep-2');
-        if (ts2 && !ts2.classList.contains('done') && !ts2.classList.contains('active')) {
-            ts2.classList.add('active');
+        if (ts2 && !ts2.classList.contains('done')) {
+            ts2.classList.remove('active'); ts2.classList.add('done');
+            const n = ts2.querySelector('.ck-step-num');
+            if (n) n.innerHTML = '<i class="ti-check"></i>';
+        }
+        const ts3 = document.getElementById('topstep-3');
+        if (ts3 && !ts3.classList.contains('done') && !ts3.classList.contains('active')) {
+            ts3.classList.add('active');
         }
     });
 });
@@ -1251,6 +1270,54 @@ document.querySelectorAll('.ck-payment-method').forEach(card => {
 // Auto-sélectionner si une seule méthode disponible
 const pmCards = document.querySelectorAll('.ck-payment-method');
 if (pmCards.length === 1) pmCards[0].click();
+
+/* ── Upload area : afficher le nom du fichier sélectionné ── */
+const previewInput    = document.getElementById('id_payment_proof');
+const previewName     = document.getElementById('proof-preview-name');
+const previewFilename = document.getElementById('proof-preview-filename');
+previewInput?.addEventListener('change', function() {
+    if (this.files.length > 0) {
+        if (previewFilename) previewFilename.textContent = this.files[0].name;
+        if (previewName) previewName.style.display = '';
+    } else {
+        if (previewName) previewName.style.display = 'none';
+    }
+});
+
+/* ── Sync fichier upload area → modal ── */
+document.getElementById('offlinePayModal')?.addEventListener('show.bs.modal', function() {
+    const modalInput   = document.getElementById('modal_payment_proof');
+    const fileInfoDiv  = document.getElementById('modal-file-info');
+    const fileNameSpan = document.getElementById('modal-file-name');
+    if (previewInput && previewInput.files.length > 0 && modalInput) {
+        try {
+            const dt = new DataTransfer();
+            dt.items.add(previewInput.files[0]);
+            modalInput.files = dt.files;
+        } catch(e) {}
+        if (fileInfoDiv && fileNameSpan) {
+            fileNameSpan.textContent = previewInput.files[0].name;
+            fileInfoDiv.style.display = '';
+        }
+    }
+});
+
+/* ── Validation obligatoire preuve avant soumission modal ── */
+document.getElementById('offline-form')?.addEventListener('submit', function(e) {
+    const modalInput = document.getElementById('modal_payment_proof');
+    const errorDiv   = document.getElementById('modal-proof-error');
+    if (!modalInput || !modalInput.files.length) {
+        e.preventDefault();
+        if (errorDiv) errorDiv.style.display = '';
+        modalInput?.focus();
+        return false;
+    }
+    if (errorDiv) errorDiv.style.display = 'none';
+});
+document.getElementById('modal_payment_proof')?.addEventListener('change', function() {
+    const errorDiv = document.getElementById('modal-proof-error');
+    if (this.files.length > 0 && errorDiv) errorDiv.style.display = 'none';
+});
 
 // Clic MonCash → soumettre le formulaire caché
 moncashPayBtn?.addEventListener('click', function() {

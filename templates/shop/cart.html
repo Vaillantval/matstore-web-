@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static price_filters %}
 
 {% block styles %}
 <style>
@@ -355,7 +355,7 @@
                                         <div class="carrier-desc" title="{{ carrier.description }}">{{ carrier.description }}</div>
                                     </div>
                                     <div class="carrier-price {% if carrier.price == 0 %}free{% else %}paid{% endif %}">
-                                        {% if carrier.price == 0 %}Gratuit{% else %}{{ carrier.price|floatformat:2 }} €{% endif %}
+                                        {% if carrier.price == 0 %}Gratuit{% else %}{{ carrier.price|price_convert }}{% endif %}
                                     </div>
                                     <div class="carrier-check"><i class="ti-check"></i></div>
                                 </div>
@@ -526,10 +526,10 @@ $('input[name="carrier"]').on('change', function () {
 
 /* ── Update summary panel ── */
 function updateSummaryUI(s, carrierName, carrierId) {
-    if (s.sub_total_ht)            $('#s-ht').text(s.sub_total_ht);
-    if (s.taxe_amount)             $('#s-tva').text(s.taxe_amount);
-    if (s.sub_total_ttc)           $('#s-ttc').text(s.sub_total_ttc);
-    if (s.sub_total_with_shipping) $('#s-total').text(s.sub_total_with_shipping);
+    if (s.sub_total_ht            != null) $('#s-ht').text(s.sub_total_ht);
+    if (s.taxe_amount             != null) $('#s-tva').text(s.taxe_amount);
+    if (s.sub_total_ttc           != null) $('#s-ttc').text(s.sub_total_ttc);
+    if (s.sub_total_with_shipping != null) $('#s-total').text(s.sub_total_with_shipping);
 
     if (carrierName !== null && carrierName !== undefined) {
         $('#s-carrier-name').text(carrierName);

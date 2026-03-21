@@ -229,7 +229,21 @@ def cart_detail(request):
         summary = _build_summary(cart_details, setting)
 
     carriers = list(Carrier.objects.all())
-    selected_carrier_id = request.session.get('carrier_id') or (carriers[0].id if carriers else None)
+
+    # Pré-sélectionner le premier carrier si aucun en session (cohérent avec checkout)
+    selected_carrier_id = request.session.get('carrier_id')
+    if not selected_carrier_id and carriers:
+        first = carriers[0]
+        selected_carrier_id = first.id
+        request.session['carrier_id'] = first.id
+        request.session['carrier'] = {
+            'id': first.id,
+            'name': first.name,
+            'price': float(first.price),
+        }
+        # Recalculer le résumé avec le carrier désormais en session
+        if summary is not None:
+            summary = _build_summary(CartService.get_cart_details(request), setting)
 
     return render(request, 'shop/cart.html', {
         'items': items,

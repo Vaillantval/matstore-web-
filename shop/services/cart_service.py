@@ -54,9 +54,9 @@ class CartService:
         }
         carrier_id = request.session.get("carrier_id")
         if carrier_id:
-            carrier = Carrier.objects.filter(id=carrier_id).first() or Carrier.objects.first()
+            carrier = Carrier.objects.filter(id=carrier_id).first()
         else:
-            carrier = Carrier.objects.first()
+            carrier = None
 
         for product_id, quantity in cart.items():
             product = Product.objects.filter(id=product_id).first()
