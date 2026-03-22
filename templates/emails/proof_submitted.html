@@ -1,0 +1,38 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Preuve de paiement reçue — Commande #{{ order.id }}{% endblock %}
+
+{% block content %}
+<h2 style="margin:0 0 16px;font-size:22px;color:#333333;">Preuve de paiement soumise</h2>
+<p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.7;">
+  Un client vient de soumettre une preuve de paiement hors ligne sur <strong>MatStore Haiti</strong>.
+  Veuillez vérifier et mettre à jour le statut de la commande.
+</p>
+
+<!-- Infos client -->
+<table width="100%" cellpadding="14" cellspacing="0" border="0"
+       style="background-color:#f9f9f9;border-radius:6px;margin-bottom:24px;border-left:4px solid #e63946;">
+  <tr>
+    <td style="font-size:14px;color:#333333;line-height:1.8;">
+      <strong>Client :</strong> {{ order.client_name }}<br>
+      <strong>Email :</strong> {{ order.author.email }}<br>
+      <strong>Commande #{{ order.id }}</strong> — {{ order.created_at|date:"d/m/Y à H:i" }}<br>
+      <strong>Méthode :</strong> Hors Ligne (virement / dépôt)<br>
+      <strong>Montant total :</strong> {{ order.order_cost_ttc }} HTG<br>
+      <strong>Adresse de livraison :</strong> {{ order.shipping_address }}
+    </td>
+  </tr>
+</table>
+
+<!-- Bouton admin -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td align="center">
+      <a href="{{ admin_url }}"
+         style="display:inline-block;background-color:#e63946;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:15px;font-weight:bold;">
+        Vérifier la preuve dans l'admin
+      </a>
+    </td>
+  </tr>
+</table>
+{% endblock %}

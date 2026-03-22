@@ -186,21 +186,17 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "client_name",
-        "billing_address",
-        "shipping_address",
-        "quantity",
-        "taxe",
-        "order_cost",
         "order_cost_ttc",
+        "payment_method",
+        "payment_status",
         "status",
         "is_paid",
-        "carrier_name",
-        "carrier_price",
         "display_proof",
+        "created_at",
     )
     list_display_links = ("client_name",)
-    list_editable = ("status", "is_paid")
-    list_filter = ("is_paid", "created_at", "updated_at", "payment_method")
+    list_editable = ("status", "is_paid", "payment_status")
+    list_filter = ("is_paid", "payment_status", "payment_method", "status", "created_at")
     search_fields = (
         "client_name",
         "billing_address",
@@ -276,7 +272,6 @@ class SettingAdmin(admin.ModelAdmin):
         "name",
     )
     list_editable = (
-        "base_currency",
         "currency",
         "city",
     )
@@ -316,6 +311,14 @@ class SettingAdmin(admin.ModelAdmin):
         ),
     )
     actions = ["refresh_exchange_rates"]
+
+    def has_add_permission(self, request):
+        """Autorise la création uniquement s'il n'existe pas encore de Setting."""
+        return not Setting.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        """Interdit la suppression du Setting — le site ne peut pas fonctionner sans."""
+        return False
 
     def display_logo(self, obj):
         if obj.logo:

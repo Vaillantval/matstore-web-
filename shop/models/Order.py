@@ -9,6 +9,14 @@ class Order(models.Model):
         ('delivered', 'Delivered'),
         ('canceled', 'Canceled'),
     ]
+
+    PAYMENT_STATUS_CHOICES = [
+        ('unpaid',          'Non payé'),
+        ('proof_submitted', 'Preuve envoyée'),
+        ('verified',        'Vérifié'),
+        ('paid',            'Payé'),
+    ]
+
     client_name = models.CharField(max_length=255)
     billing_address = models.CharField(max_length=255)
     shipping_address = models.CharField(max_length=255)
@@ -23,6 +31,12 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=255)
     stripe_payment_intent = models.CharField(max_length=255, null=True, blank=True)
     payment_proof = models.ImageField(upload_to='order_proofs/', null=True, blank=True)
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS_CHOICES,
+        default='unpaid',
+        verbose_name="Statut paiement",
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

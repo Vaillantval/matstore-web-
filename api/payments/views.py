@@ -7,13 +7,20 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.exceptions import ApiError
-from api.payments.serializers import PaymentInitiateSerializer, PaymentVerifySerializer
+from api.payments.serializers import (
+    OfflinePaymentSerializer,
+    PaymentInitiateSerializer,
+    PaymentVerifySerializer,
+)
+from shop.models.ExchangeRate import ExchangeRate
 from shop.models.Order import Order
+from shop.models.Setting import Setting
 from shop.services.moncash_service import MonCashService
 from shop.services.payment_service import StripeService
 
@@ -79,11 +86,35 @@ class PaymentInitiateView(APIView):
                 stripe_svc = StripeService()
                 if not stripe_svc.is_configured():
                     raise ApiError("PAYMENT_FAILED", "Stripe non configuré.")
+
+                # Conversion vers USD (Stripe ne supporte pas HTG sur comptes standard)
+                setting = Setting.objects.first()
+                base_currency = setting.base_currency if setting else "HTG"
+
+                if base_currency == "USD":
+                    usd_rate = 1.0
+                else:
+                    rate_obj = ExchangeRate.objects.filter(
+                        base_currency=base_currency, target_currency="USD"
+                    ).first()
+                    if not rate_obj:
+                        raise ApiError(
+                            "PAYMENT_FAILED",
+                            f"Taux de change {base_currency} → USD introuvable. "
+                            "Actualisez les taux depuis l'admin.",
+                        )
+                    usd_rate = rate_obj.rate
+
+                amount_usd = order.order_cost_ttc * usd_rate
+                amount_cents = int(round(amount_usd * 100))
+
                 stripe.api_key = stripe_svc.get_secret_key()
                 intent = stripe.PaymentIntent.create(
-                    amount=int(order.order_cost_ttc * 100),
-                    currency="htg",
+                    amount=amount_cents,
+                    currency="usd",
                     metadata={"order_id": order.id},
+                    description=f"matstore — commande #{order.id}",
+                    receipt_email=order.author.email,
                 )
                 order.stripe_payment_intent = intent["id"]
                 order.save(update_fields=["stripe_payment_intent"])
@@ -94,7 +125,8 @@ class PaymentInitiateView(APIView):
                         "client_secret": intent["client_secret"],
                         "public_key": stripe_svc.get_public_key(),
                         "order_id": order.id,
-                        "amount": order.order_cost_ttc,
+                        "amount_htg": order.order_cost_ttc,
+                        "amount_usd": round(amount_usd, 2),
                     },
                 })
 
@@ -164,6 +196,58 @@ class PaymentVerifyView(APIView):
         except Exception as e:
             logger.error(f"Payment verify error for order {order.id}: {e}")
             raise ApiError("PAYMENT_FAILED", str(e))
+
+
+class OfflinePaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    @extend_schema(
+        tags=["Paiements"],
+        request=OfflinePaymentSerializer,
+        summary="Soumettre une preuve de paiement hors ligne",
+        description=(
+            "Upload d'une image (JPG/PNG, max 5 MB) comme preuve de virement ou dépôt. "
+            "La commande doit avoir payment_method='offline' et appartenir à l'utilisateur connecté. "
+            "L'admin reçoit un email de notification automatiquement."
+        ),
+    )
+    def post(self, request):
+        serializer = OfflinePaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        order = serializer.validated_data["order_id"]
+
+        if order.author != request.user and not request.user.is_staff:
+            raise ApiError("PERMISSION_DENIED")
+
+        if order.payment_method != "offline":
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "code": "INVALID_PAYMENT_METHOD",
+                        "message": "Cette commande n'utilise pas le paiement hors ligne.",
+                    },
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        order.payment_proof = serializer.validated_data["payment_proof"]
+        order.payment_status = "proof_submitted"
+        order.save(update_fields=["payment_proof", "payment_status"])
+
+        return Response(
+            {
+                "success": True,
+                "data": {
+                    "order_id": order.id,
+                    "payment_status": order.payment_status,
+                    "message": "Preuve de paiement reçue. L'admin va vérifier et confirmer votre commande.",
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 @method_decorator(csrf_exempt, name="dispatch")

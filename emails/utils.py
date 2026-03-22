@@ -132,6 +132,35 @@ def send_offline_order_notification(order):
         logger.error(f'Email offline non envoyé pour commande #{order.id} : {e}')
 
 
+def send_proof_submitted_notification(order):
+    """Email envoyé à l'admin quand un client soumet une preuve de paiement hors ligne."""
+    try:
+        context = {
+            'order': order,
+            'site_url': settings.SITE_URL,
+            'admin_url': f'{settings.SITE_URL}/admin/shop/order/{order.id}/change/',
+        }
+        subject = f'🧾 Preuve de paiement reçue — Commande #{order.id}'
+        html_content = render_to_string('emails/proof_submitted.html', context)
+        text_content = (
+            f'Le client {order.client_name} ({order.author.email}) a soumis une preuve '
+            f'de paiement pour la commande #{order.id} '
+            f'(montant : {order.order_cost_ttc} HTG). '
+            f'Veuillez vérifier et mettre à jour le statut : '
+            f'{settings.SITE_URL}/admin/shop/order/{order.id}/change/'
+        )
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[settings.ADMINS_NOTIFY],
+        )
+        msg.attach_alternative(html_content, 'text/html')
+        msg.send()
+    except Exception as e:
+        logger.error(f'Email proof_submitted non envoyé pour commande #{order.id} : {e}')
+
+
 def send_welcome_email(user):
     """Email de bienvenue envoyé au client après son inscription."""
     try:

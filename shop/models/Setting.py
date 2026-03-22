@@ -1,5 +1,8 @@
 from django.db import models
 
+from shop.validators import validate_apk_extension
+
+
 CURRENCY_CHOICES = [
     ("HTG", "Gourde haïtienne (HTG)"),
     ("USD", "Dollar américain (USD)"),
@@ -40,7 +43,7 @@ class Setting(models.Model):
     code_postal = models.CharField(max_length=60, blank=False, null=False)
     phone = models.CharField(max_length=60, blank=False, null=False)
     email = models.EmailField(blank=False, null=False)
-    copyright = models.TextField(blank=False, null=True)
+    copyright = models.TextField(blank=True, null=False, default="")
 
     # ── Application mobile ──────────────────────────────────────────────────
     show_app_banner = models.BooleanField(
@@ -51,7 +54,8 @@ class Setting(models.Model):
         upload_to="mobile/apk/",
         blank=True,
         null=True,
-        help_text="Fichier APK Android (.apk). Laisser vide si non disponible.",
+        validators=[validate_apk_extension],
+        help_text="Fichier APK Android (.apk uniquement). Laisser vide si non disponible.",
     )
     apk_version = models.CharField(
         max_length=20,

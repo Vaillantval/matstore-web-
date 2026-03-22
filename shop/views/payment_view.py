@@ -36,16 +36,26 @@ def create_payment_intent(request, order_id):
     # Stripe : toujours facturer en USD (Stripe accepte HTG mais les comptes
     # standard haïtiens posent problème — on convertit depuis la base_currency)
     setting = Setting.objects.first()
-    base_currency = setting.base_currency if setting else "USD"
+    base_currency = setting.base_currency if setting else "HTG"
 
-    # Taux base_currency → USD (1.0 si déjà en USD ou taux introuvable)
+    # Taux base_currency → USD
     if base_currency == "USD":
         usd_rate = 1.0
     else:
         rate_obj = ExchangeRate.objects.filter(
             base_currency=base_currency, target_currency="USD"
         ).first()
-        usd_rate = rate_obj.rate if rate_obj else 1.0
+        if not rate_obj:
+            return JsonResponse(
+                {
+                    "error": (
+                        f"Taux de change {base_currency} → USD introuvable. "
+                        "Actualisez les taux depuis l'admin (Settings → Actualiser les taux)."
+                    )
+                },
+                status=503,
+            )
+        usd_rate = rate_obj.rate
 
     try:
         order = get_object_or_404(Order, id=order_id)

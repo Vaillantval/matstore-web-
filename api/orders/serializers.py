@@ -20,7 +20,7 @@ class DeliveryAddressSerializer(serializers.Serializer):
 
 class CreateOrderSerializer(serializers.Serializer):
     items = OrderItemInputSerializer(many=True, min_length=1)
-    payment_method = serializers.ChoiceField(choices=["moncash", "natcash", "stripe"])
+    payment_method = serializers.ChoiceField(choices=["moncash", "natcash", "stripe", "offline"])
     delivery_address = DeliveryAddressSerializer()
     notes = serializers.CharField(required=False, allow_blank=True)
 
@@ -60,6 +60,17 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     order_details = OrderDetailSerializer(many=True, read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
+    payment_proof_url = serializers.SerializerMethodField()
+
+    def get_payment_proof_url(self, obj):
+        if obj.payment_proof:
+            request = self.context.get("request")
+            return (
+                request.build_absolute_uri(obj.payment_proof.url)
+                if request
+                else obj.payment_proof.url
+            )
+        return None
 
     class Meta:
         model = Order
@@ -67,7 +78,8 @@ class OrderSerializer(serializers.ModelSerializer):
             "id", "client_name", "billing_address", "shipping_address",
             "quantity", "taxe", "order_cost", "order_cost_ttc",
             "is_paid", "carrier_name", "carrier_price",
-            "payment_method", "stripe_payment_intent",
+            "payment_method", "payment_status", "payment_proof_url",
+            "stripe_payment_intent",
             "status", "status_display", "order_details",
             "created_at", "updated_at",
         ]

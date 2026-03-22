@@ -102,9 +102,15 @@ Nécessite l'email du client comme vérification : `?email=client@email.com`
 }
 ```
 
-**Statuts possibles :** `pending` · `processing` · `shipped` · `delivered` · `canceled`
+**`payment_method` acceptés :** `moncash` · `natcash` · `stripe` · `offline`
 
-**Champ `payment_proof`** — présent sur le modèle Order. Visible dans les réponses admin (`/admin/orders/{id}/`). Contient l'URL de la preuve de paiement uploadée pour les commandes hors ligne. `null` pour les autres méthodes.
+**Statuts commande (`status`) :** `pending` · `processing` · `shipped` · `delivered` · `canceled`
+
+**Statuts paiement (`payment_status`) :** `unpaid` · `proof_submitted` · `verified` · `paid`
+
+**Champs paiement hors ligne dans la réponse :**
+- `payment_status` — état du paiement (`unpaid` par défaut, `proof_submitted` après upload de la preuve)
+- `payment_proof_url` — URL absolue de l'image de preuve, `null` si non soumise
 
 ---
 
@@ -112,14 +118,56 @@ Nécessite l'email du client comme vérification : `?email=client@email.com`
 
 | Méthode | Endpoint | Auth | Description |
 |---------|----------|------|-------------|
-| POST | `/payments/initiate/` | Requis | Initier un paiement |
-| POST | `/payments/verify/` | Requis | Vérifier le statut |
+| POST | `/payments/initiate/` | Requis | Initier un paiement MonCash / NatCash / Stripe |
+| POST | `/payments/verify/` | Requis | Vérifier le statut d'un paiement |
+| POST | `/payments/offline/` | Requis | Soumettre une preuve de paiement hors ligne (multipart) |
 | POST | `/payments/webhook/moncash/` | Public | Webhook MonCash |
 | POST | `/payments/webhook/stripe/` | Public | Webhook Stripe |
 
-**Méthodes supportées via API :** `moncash` · `natcash` · `stripe`
+**Méthodes supportées via API :** `moncash` · `natcash` · `stripe` · `offline`
 
-> **Paiement Hors Ligne** — disponible sur l'interface web (`/checkout/offline-pay/`) mais pas encore exposé comme endpoint REST. Le champ `payment_proof` (image) est stocké sur le modèle `Order`. Pour l'app mobile, voir la section correspondante dans `recommandation_android.md`.
+---
+
+### Paiement Hors Ligne — flux complet
+
+Le paiement hors ligne (virement bancaire, dépôt) suit un flux en **2 étapes** :
+
+**Étape 1 — Créer la commande avec `payment_method = "offline"` :**
+```
+POST /api/orders/
+Content-Type: application/json
+
+{
+  "items": [{ "product_id": 1, "quantity": 2 }],
+  "payment_method": "offline",
+  "delivery_address": { "street": "Rue Lamarre", "city": "Pétion-Ville" }
+}
+
+→ { "success": true, "data": { "id": 42, "payment_status": "unpaid", ... } }
+```
+
+**Étape 2 — Uploader la preuve après virement / dépôt :**
+```
+POST /api/payments/offline/
+Content-Type: multipart/form-data
+
+order_id: 42
+payment_proof: <fichier JPG ou PNG, max 5 MB>
+
+→ {
+    "success": true,
+    "data": {
+      "order_id": 42,
+      "payment_status": "proof_submitted",
+      "message": "Preuve de paiement reçue. L'admin va vérifier et confirmer votre commande."
+    }
+  }
+```
+
+**Après upload :**
+- L'admin reçoit un email de notification automatique
+- Il vérifie la preuve dans l'admin Django et met à jour `payment_status` → `verified` puis `paid`
+- Le client peut suivre l'état via `GET /api/orders/{id}/` (champ `payment_status`)
 
 ---
 
@@ -180,8 +228,8 @@ Nécessite l'email du client comme vérification : `?email=client@email.com`
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/admin/orders/` | Toutes les commandes + filtres |
-| GET | `/admin/orders/{id}/` | Détail complet |
-| PATCH | `/admin/orders/{id}/status/` | Changer le statut (déclenche email) |
+| GET | `/admin/orders/{id}/` | Détail complet (inclut `payment_proof_url` et `payment_status`) |
+| PATCH | `/admin/orders/{id}/status/` | Changer le statut de livraison (déclenche email) |
 
 ### Clients
 | Méthode | Endpoint | Description |
@@ -221,9 +269,120 @@ Nécessite l'email du client comme vérification : `?email=client@email.com`
 | `INSUFFICIENT_STOCK` | 409 | Quantité demandée > stock disponible |
 | `ORDER_NOT_CANCELLABLE` | 409 | Commande non annulable (déjà traitée) |
 | `PAYMENT_FAILED` | 402 | Échec du paiement |
+| `INVALID_PAYMENT_METHOD` | 400 | Méthode de paiement incompatible avec cette action |
+| `MISSING_FILE` | 400 | Aucun fichier fourni |
 | `INVALID_CREDENTIALS` | 401 | Identifiants incorrects |
 | `TOKEN_EXPIRED` | 401 | Token JWT expiré |
 | `PERMISSION_DENIED` | 403 | Accès non autorisé |
+
+---
+
+## Notes de migration — Paiement Hors Ligne
+
+> Cette section est destinée à l'équipe Flutter. Elle détaille les changements introduits lors de l'ajout du support offline et ce qu'il faut ajuster dans le code de l'application existante.
+
+---
+
+### Ce qui a changé dans les réponses existantes
+
+Deux nouveaux champs apparaissent désormais dans **toutes** les réponses `Order` (client et admin), y compris les commandes MonCash/Stripe/NatCash déjà existantes :
+
+| Champ | Type | Valeur par défaut | Description |
+|-------|------|-------------------|-------------|
+| `payment_status` | `string` | `"unpaid"` | État du paiement hors ligne |
+| `payment_proof_url` | `string \| null` | `null` | URL absolue de la preuve uploadée |
+
+Ces champs sont **additifs** — ils n'en remplacent aucun. Si ton modèle Freezed utilise `unknownEnumValue` ou `@JsonKey(includeIfNull: false)`, tu n'auras pas d'erreur à la désérialisation, mais tu dois quand même ajouter les champs pour pouvoir les utiliser.
+
+---
+
+### Modèle Dart `Order` — champs à ajouter
+
+```dart
+@freezed
+class Order with _$Order {
+  const factory Order({
+    required int id,
+    // ... champs existants ...
+    required String paymentMethod,
+    required String paymentStatus,      // NOUVEAU — 'unpaid' | 'proof_submitted' | 'verified' | 'paid'
+    String? paymentProofUrl,            // NOUVEAU — null si pas encore soumise
+    required String status,
+    // ...
+  }) = _Order;
+
+  factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
+}
+```
+
+Mapping JSON (snake_case → camelCase avec `json_serializable`) :
+```dart
+@JsonKey(name: 'payment_status')  required String paymentStatus,
+@JsonKey(name: 'payment_proof_url') String? paymentProofUrl,
+```
+
+---
+
+### Enum `PaymentMethod` — valeur à ajouter
+
+Si tu as un enum côté Flutter pour les méthodes de paiement :
+
+```dart
+enum PaymentMethod {
+  moncash,
+  natcash,
+  stripe,
+  offline,   // NOUVEAU
+}
+```
+
+Sans cette valeur, `json_serializable` lèvera une erreur si l'API retourne `"offline"` et que l'enum ne le connaît pas. Ajoute `unknownEnumValue: PaymentMethod.offline` en attendant ou directement la valeur.
+
+---
+
+### Nouveau endpoint à implémenter
+
+```
+POST /api/payments/offline/
+Content-Type: multipart/form-data
+Authorization: Bearer <token>
+
+Champs :
+  order_id       (int)   — ID de la commande
+  payment_proof  (File)  — Image JPG ou PNG, max 5 MB
+```
+
+Exemple avec Dio :
+
+```dart
+Future<void> submitPaymentProof(int orderId, File proofFile) async {
+  final formData = FormData.fromMap({
+    'order_id': orderId,
+    'payment_proof': await MultipartFile.fromFile(
+      proofFile.path,
+      filename: 'proof.jpg',
+      contentType: DioMediaType('image', 'jpeg'),
+    ),
+  });
+
+  final response = await dio.post(
+    '/api/payments/offline/',
+    data: formData,
+  );
+
+  // Réponse attendue :
+  // { "success": true, "data": { "order_id": 42, "payment_status": "proof_submitted", ... } }
+}
+```
+
+---
+
+### Ce qui ne change pas
+
+- Tous les endpoints existants (`/auth/`, `/products/`, `/cart/`, `/orders/`, `/payments/initiate/`, `/payments/verify/`, etc.) fonctionnent exactement comme avant
+- Le champ `is_paid` reste présent et inchangé
+- Les webhooks MonCash et Stripe sont inchangés
+- Les tokens JWT, leur durée et leur rotation sont inchangés
 
 ---
 
