@@ -166,9 +166,9 @@ def site_settings(request):
         "my_mega_categories": my_mega_categories,
         "mega_collections": mega_collections,
         # Application mobile
-        "show_app_banner": getattr(settings_obj, "show_app_banner", False) and bool(getattr(settings_obj, "apk_file", None)),
-        "apk_version": getattr(settings_obj, "apk_version", None),
-        "apk_description": getattr(settings_obj, "apk_description", "Téléchargez notre application mobile"),
+        "show_app_banner": settings_obj.show_app_banner and bool(settings_obj.apk_file),
+        "apk_version": settings_obj.apk_version,
+        "apk_description": settings_obj.apk_description,
     }
 
     return context

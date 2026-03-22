@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib import messages
 from django.db import models as db_models
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django_ckeditor_5.widgets import CKEditor5Widget
 
 from shop import models
@@ -329,7 +330,7 @@ class SettingAdmin(admin.ModelAdmin):
                 '<i class="fas fa-android"></i> Télécharger APK</a>',
                 obj.apk_file.url,
             )
-        return format_html('<span style="color:#999;">— Aucun APK</span>')
+        return mark_safe('<span style="color:#999;">— Aucun APK</span>')
 
     display_apk.short_description = "APK Android"
 

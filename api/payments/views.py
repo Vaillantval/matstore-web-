@@ -54,8 +54,25 @@ class PaymentInitiateView(APIView):
 
         try:
             if method == "moncash":
+                # MonCash n'accepte que des Gourdes haïtiennes — conversion depuis la base_currency
+                setting = Setting.objects.first()
+                base_currency = setting.base_currency if setting else "HTG"
+                if base_currency == "HTG":
+                    amount_htg = round(float(order.order_cost_ttc), 2)
+                else:
+                    rate_obj = ExchangeRate.objects.filter(
+                        base_currency=base_currency, target_currency="HTG"
+                    ).first()
+                    if not rate_obj:
+                        raise ApiError(
+                            "PAYMENT_FAILED",
+                            f"Taux de change {base_currency} → HTG introuvable. "
+                            "Actualisez les taux depuis l'admin (Settings → Actualiser les taux).",
+                        )
+                    amount_htg = round(float(order.order_cost_ttc) * rate_obj.rate, 2)
+
                 result = MonCashService.create_payment(
-                    amount=order.order_cost_ttc,
+                    amount=amount_htg,
                     order_id=str(order.id),
                 )
                 return Response({
@@ -65,7 +82,7 @@ class PaymentInitiateView(APIView):
                         "redirect_url": result["redirect_url"],
                         "payment_token": result["payment_token"],
                         "order_id": order.id,
-                        "amount": order.order_cost_ttc,
+                        "amount": amount_htg,
                     },
                 })
 
