@@ -53,7 +53,7 @@ dépôt) et internationales (Stripe / carte bancaire).
 | Base de données    | PostgreSQL (Railway)                                   |
 | Stockage médias    | Volume persistant Railway (`/app/media`)               |
 | Paiement en ligne  | Stripe PaymentIntents · MonCash REST API               |
-| Notifications      | Mailjet (SMTP/API) · Firebase Cloud Messaging (mobile) |
+| Notifications      | Resend (API) · Firebase Cloud Messaging (mobile)       |
 | Documentation API  | drf-spectacular (OpenAPI 3.0 / Swagger UI)             |
 | Application mobile | Flutter 3.x · Dart · Riverpod · Dio · Freezed          |
 | Déploiement        | Railway (PaaS) · Gunicorn · WhiteNoise                 |
@@ -159,9 +159,8 @@ ALLOWED_HOSTS = votre-domaine.railway.app,localhost
 # -- Base de données --
 DATABASE_URL = postgresql://user:password@host:5432/matstore_db
 
-# -- Email (Mailjet) --
-MAILJET_API_KEY = votre_api_key
-MAILJET_SECRET_KEY = votre_secret_key
+# -- Email (Resend) --
+RESEND_API_KEY = votre_api_key_resend
 DEFAULT_FROM_EMAIL = MatStore Haiti <info@matstorehaiti.online>
 ADMINS_NOTIFY = info@matstorehaiti.online
 SITE_URL = https://matstorehaiti.online

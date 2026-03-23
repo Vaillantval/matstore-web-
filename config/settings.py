@@ -344,11 +344,10 @@ JAZZMIN_UI_TWEAKS = {
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
+    EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
 
 ANYMAIL = {
-    "MAILJET_API_KEY": os.environ.get("MAILJET_API_KEY", ""),
-    "MAILJET_SECRET_KEY": os.environ.get("MAILJET_SECRET_KEY", ""),
+    "RESEND_API_KEY": os.environ.get("RESEND_API_KEY", ""),
 }
 
 DEFAULT_FROM_EMAIL = os.environ.get(
