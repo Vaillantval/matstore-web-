@@ -46,7 +46,8 @@
       "Bash(\"C:\\\\Users\\\\wind\\\\Desktop\\\\Django_docs\\\\e-commerce_Project_octobre2025\\\\myenv\\\\Scripts\\\\pip.exe\" freeze:*)",
       "Bash(cat config/__pycache__/*)",
       "Bash(\"../myenv/Scripts/pip\" install:*)",
-      "Bash(\"../myenv/Scripts/python\" manage.py check)"
+      "Bash(\"../myenv/Scripts/python\" manage.py check)",
+      "Bash(xxd README.md)"
     ]
   }
 }

@@ -1,0 +1,33 @@
+# Force les fins de ligne Unix et l'encodage UTF-8 pour les fichiers texte
+* text=auto eol=lf
+
+# Markdown — toujours UTF-8, fins de ligne Unix
+*.md text eol=lf
+
+# Python
+*.py text eol=lf
+
+# Configs
+*.toml text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.env  text eol=lf
+*.txt  text eol=lf
+*.cfg  text eol=lf
+*.ini  text eol=lf
+
+# Templates HTML
+*.html text eol=lf
+*.css  text eol=lf
+*.js   text eol=lf
+
+# Binaires — ne pas toucher
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.apk  binary
+*.zip  binary
