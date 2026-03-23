@@ -146,6 +146,8 @@ class FcmTokenView(APIView):
         description="Enregistre ou met à jour le token Firebase pour les push notifications Android/iOS.",
     )
     def post(self, request):
+        from notifications.fcm import subscribe_to_topic, TOPIC_MATSTORE, TOPIC_ADMIN
+
         fcm_token = request.data.get("fcm_token", "").strip()
         if not fcm_token:
             return Response(
@@ -159,4 +161,10 @@ class FcmTokenView(APIView):
             )
         request.user.fcm_token = fcm_token
         request.user.save(update_fields=["fcm_token"])
+
+        # Abonnement aux topics FCM
+        subscribe_to_topic(fcm_token, TOPIC_MATSTORE)
+        if request.user.is_staff:
+            subscribe_to_topic(fcm_token, TOPIC_ADMIN)
+
         return Response({"success": True, "message": "FCM token enregistré."})

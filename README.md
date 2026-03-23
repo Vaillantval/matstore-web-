@@ -175,8 +175,10 @@ MONCASH_CLIENT_ID = votre_client_id
 MONCASH_SECRET_KEY = votre_secret_key
 MONCASH_ENVIRONMENT = production   # sandbox | production
 
-# -- Firebase (notifications mobiles) --
-FIREBASE_SERVER_KEY = votre_cle_firebase
+# -- Firebase (notifications push mobiles) --
+# Coller le contenu JSON complet du fichier téléchargé depuis Firebase Console
+# Project Settings → Service Accounts → Generate new private key
+FIREBASE_SERVICE_ACCOUNT_JSON = {"type":"service_account",...}
 ```
 
 ---

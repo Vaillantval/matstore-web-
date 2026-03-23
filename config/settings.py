@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "api",
+    "notifications",
 ]
 # --- CONFIGURATION DU SITE ID ---
 SITE_ID = 1

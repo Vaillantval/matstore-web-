@@ -31,6 +31,9 @@ drf-spectacular==0.29.0
 django-filter==25.2
 PyJWT==2.12.1
 
+# --- Firebase ---
+firebase-admin==6.7.0
+
 # --- Utilitaires ---
 python-slugify==8.0.4
 requests==2.32.5
