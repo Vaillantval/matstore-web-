@@ -511,7 +511,8 @@ preuves de paiement, APK Android) sont persistés entre les déploiements.
 ## Auteur
 
 **Valcin Vaillant**
-Développeur-Ingénieur Full Stack
+Développeur & Ingénieur — Faculté des Sciences (FDS-UEH)
+*Université d'État d'Haïti*
 
 Conception, développement et déploiement complets de la plateforme MatStore Haiti :
 backend Django, API REST, intégrations de paiement (Stripe, MonCash), application mobile Flutter,
