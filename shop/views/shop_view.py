@@ -59,25 +59,21 @@ def _invalidate_shop_list_cache():
     cache.delete('shop_categories')
 
 
+_HOME_TTL = 300  # 5 min
+
 def index(request):
-    sliders = Slider.objects.all()
-    collections = Collection.objects.all()
-    best_sellers = Product.objects.filter(is_best_seller=True)
-    new_arrivals = Product.objects.filter(is_new_arrival=True)
-    special_offers = Product.objects.filter(is_special_offer=True)
-    featured = Product.objects.filter(is_featured=True)
-    return render(
-        request,
-        "shop/index.html",
-        {
-            "sliders": sliders,
-            "collections": collections,
-            "best_sellers": best_sellers,
-            "new_arrivals": new_arrivals,
-            "featured": featured,
-            "special_offers": special_offers,
-        },
-    )
+    ctx = cache.get('home_context')
+    if ctx is None:
+        ctx = {
+            'sliders':       list(Slider.objects.all()),
+            'collections':   list(Collection.objects.all()),
+            'best_sellers':  list(Product.objects.filter(is_best_seller=True).prefetch_related('images')),
+            'new_arrivals':  list(Product.objects.filter(is_new_arrival=True).prefetch_related('images')),
+            'special_offers':list(Product.objects.filter(is_special_offer=True).prefetch_related('images')),
+            'featured':      list(Product.objects.filter(is_featured=True).prefetch_related('images')),
+        }
+        cache.set('home_context', ctx, _HOME_TTL)
+    return render(request, "shop/index.html", ctx)
 
 
 def shop_list(request):
