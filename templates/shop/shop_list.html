@@ -556,7 +556,7 @@
                                 <a href="{% url 'shop_list' %}{% if q %}?q={{ q }}{% endif %}"
                                    class="{% if not category_slug %}active{% endif %}">
                                     Toutes les catégories
-                                    <span class="count">{{ categories.count }}</span>
+                                    <span class="count">{{ categories|length }}</span>
                                 </a>
                             </li>
                             {% for cat in categories %}

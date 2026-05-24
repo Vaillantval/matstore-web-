@@ -1,4 +1,6 @@
+import hashlib
 import os
+from django.core.cache import cache
 from django.http import FileResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, InvalidPage
@@ -8,6 +10,53 @@ from shop.models import Slider, Collection, Product, Page, FAQ, ContactMessage, 
 from shop.models.Setting import Setting
 from shop.forms import ContactForm
 from shop.services.compare_service import CompareService
+
+_SHOP_LIST_TTL    = 300   # 5 min
+_PRODUCT_TTL      = 600   # 10 min
+_CATEGORIES_TTL   = 600   # 10 min
+
+
+class _FakePaginator:
+    """Simule django.core.paginator.Paginator pour la compatibilité template."""
+    def __init__(self, count, num_pages):
+        self.count = count
+        self.num_pages = num_pages
+        self.page_range = range(1, num_pages + 1)
+
+
+class _FakePage:
+    """Simule django.core.paginator.Page pour la compatibilité template."""
+    def __init__(self, object_list, number, paginator):
+        self.object_list = object_list
+        self.number = number
+        self.paginator = paginator
+
+    def __iter__(self):
+        return iter(self.object_list)
+
+    def has_other_pages(self):
+        return self.paginator.num_pages > 1
+
+    def has_previous(self):
+        return self.number > 1
+
+    def has_next(self):
+        return self.number < self.paginator.num_pages
+
+    def previous_page_number(self):
+        return self.number - 1
+
+    def next_page_number(self):
+        return self.number + 1
+
+
+def _invalidate_shop_list_cache():
+    """Supprime tous les caches shop_list et categories."""
+    try:
+        cache.delete_pattern('*shop_list_*')
+    except AttributeError:
+        pass
+    cache.delete('shop_categories')
 
 
 def index(request):
@@ -32,21 +81,35 @@ def index(request):
 
 
 def shop_list(request):
-    products = Product.objects.filter(is_available=True).prefetch_related('images', 'categories')
-    categories = Category.objects.all()
-
-    # Filtres GET
     category_slug = request.GET.get('category', '')
     filter_type   = request.GET.get('filter', '')
     sort          = request.GET.get('sort', 'newest')
     q             = request.GET.get('q', '').strip()
+    page_number   = request.GET.get('page', '1')
+
+    # ── Cache categories (partagé entre toutes les pages de boutique) ──────────
+    categories = cache.get('shop_categories')
+    if categories is None:
+        categories = list(Category.objects.all())
+        cache.set('shop_categories', categories, _CATEGORIES_TTL)
+
+    # ── Cache produits pour cette combinaison de filtres ──────────────────────
+    filter_key = f'{category_slug}|{filter_type}|{sort}|{q}|{page_number}'
+    list_cache_key = 'shop_list_' + hashlib.md5(filter_key.encode()).hexdigest()
+
+    cached = cache.get(list_cache_key)
+    if cached:
+        return render(request, 'shop/shop_list.html', {**cached, 'categories': categories})
+
+    # ── DB queries ────────────────────────────────────────────────────────────
+    products = Product.objects.filter(is_available=True).prefetch_related('images', 'categories')
 
     if q:
-        products = products.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(brand__icontains=q))
-
+        products = products.filter(
+            Q(name__icontains=q) | Q(description__icontains=q) | Q(brand__icontains=q)
+        )
     if category_slug:
         products = products.filter(categories__slug=category_slug)
-
     if filter_type == 'best_seller':
         products = products.filter(is_best_seller=True)
     elif filter_type == 'new_arrival':
@@ -66,34 +129,61 @@ def shop_list(request):
         products = products.order_by('-created_at')
 
     paginator = Paginator(products, 6)
-    page_number = request.GET.get('page', 1)
     try:
         page_obj = paginator.page(page_number)
     except InvalidPage:
         page_obj = paginator.page(1)
 
-    active_category = categories.filter(slug=category_slug).first() if category_slug else None
+    # Évalue les produits et leurs relations pour le cache (pickle)
+    products_list = list(page_obj.object_list)
+    for p in products_list:
+        list(p.images.all())
+        list(p.categories.all())
 
-    return render(request, 'shop/shop_list.html', {
-        'page_obj': page_obj,
-        'categories': categories,
+    active_category = next((c for c in categories if c.slug == category_slug), None)
+
+    fake_page = _FakePage(
+        object_list=products_list,
+        number=page_obj.number,
+        paginator=_FakePaginator(paginator.count, paginator.num_pages),
+    )
+
+    context = {
+        'page_obj': fake_page,
         'active_category': active_category,
         'category_slug': category_slug,
         'filter_type': filter_type,
         'sort': sort,
         'q': q,
         'total': paginator.count,
-    })
+    }
+    cache.set(list_cache_key, context, _SHOP_LIST_TTL)
+
+    return render(request, 'shop/shop_list.html', {**context, 'categories': categories})
 
 
 def product_detail(request, slug):
-    product = Product.objects.prefetch_related('images', 'categories').filter(slug=slug).first()
-    if product is None:
-        raise Http404()
-    images = product.images.all()
-    related = Product.objects.filter(
-        categories__in=product.categories.all(), is_available=True
-    ).exclude(pk=product.pk).prefetch_related('images', 'categories').distinct()[:8]
+    cache_key = f'product_detail_{slug}'
+    cached = cache.get(cache_key)
+
+    if cached:
+        product, images, related = cached
+    else:
+        product = Product.objects.prefetch_related('images', 'categories').filter(slug=slug).first()
+        if product is None:
+            raise Http404()
+
+        images = list(product.images.all())
+        related = list(
+            Product.objects.filter(
+                categories__in=product.categories.all(), is_available=True
+            ).exclude(pk=product.pk).prefetch_related('images', 'categories').distinct()[:8]
+        )
+        for r in related:
+            list(r.images.all())
+            list(r.categories.all())
+
+        cache.set(cache_key, (product, images, related), _PRODUCT_TTL)
 
     discount = 0
     if product.regular_price > product.solde_price > 0:
@@ -163,7 +253,6 @@ def page_detail(request, slug):
 
 
 def download_apk(request):
-    """Sert le fichier APK en téléchargement direct."""
     setting = Setting.objects.first()
     if not setting or not setting.apk_file:
         raise Http404("Aucun APK disponible pour le moment.")
