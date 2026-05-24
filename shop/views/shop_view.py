@@ -59,7 +59,7 @@ def _invalidate_shop_list_cache():
     cache.delete('shop_categories')
 
 
-_HOME_TTL = 300  # 5 min
+_HOME_TTL = 3600  # 1h (invalidé par signal dès qu'un produit/slider/collection change)
 
 def index(request):
     ctx = cache.get('home_context')
