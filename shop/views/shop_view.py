@@ -87,7 +87,9 @@ def shop_list(request):
 
 
 def product_detail(request, slug):
-    product = get_object_or_404(Product.objects.prefetch_related('images', 'categories'), slug=slug)
+    product = Product.objects.prefetch_related('images', 'categories').filter(slug=slug).first()
+    if product is None:
+        raise Http404()
     images = product.images.all()
     related = Product.objects.filter(
         categories__in=product.categories.all(), is_available=True
