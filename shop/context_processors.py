@@ -1,12 +1,11 @@
 from shop.models import Category, Collection
 from shop.models.Setting import Setting
-
-# from shop.models.Social import Social
 from shop.models.Page import Page
+
+_SITE_CTX_TTL = 3600  # 1h — invalidé par signal sur Setting/Category/Page/Collection
 
 
 def _migrate_cart_session(request):
-    """Convertit l'ancien format {id: {dict}} vers le nouveau {id: qty}."""
     cart = request.session.get('cart', {})
     if cart and isinstance(next(iter(cart.values())), dict):
         cart = {k: v.get('qty', 1) for k, v in cart.items()}
@@ -16,7 +15,6 @@ def _migrate_cart_session(request):
 
 
 def cart_context(request):
-    """Injecte le panier et la wishlist dans tous les templates."""
     if request.path.startswith('/admin/'):
         return {}
 
@@ -58,7 +56,7 @@ def cart_context(request):
         for item in preview:
             prod = item['product']
             prod_obj = products_map.get(prod['id'])
-            first_image = prod_obj.images.first() if prod_obj else None
+            first_image = (prod_obj.images.all()[0] if prod_obj and prod_obj.images.all() else None)
             image_url = first_image.image.url if first_image else None
 
             if setting:
@@ -98,77 +96,67 @@ def cart_context(request):
 
 
 def site_settings(request):
-    # Court-circuit sur les pages admin — ces variables ne sont pas utilisées
-    # par les templates Django admin et les requêtes inutiles peuvent causer des 500.
     if request.path.startswith('/admin/'):
         return {}
 
+    from django.core.cache import cache
+
+    cached = cache.get('site_settings_ctx')
+    if cached is not None:
+        return cached
+
     try:
         settings_obj = Setting.objects.first()
-        head_pages = Page.objects.filter(is_head=True)
-        foot_pages = Page.objects.filter(is_foot=True)
-        mega_categories = Category.objects.filter(is_mega=True)
-        mega_collections = Collection.objects.all()[:3]
+        # prefetch_related élimine le N+1 sur les produits des mega catégories
+        mega_categories = Category.objects.filter(is_mega=True).prefetch_related('product_set')
+        head_pages = list(Page.objects.filter(is_head=True).values('name', 'slug'))
+        foot_pages = list(Page.objects.filter(is_foot=True).values('name', 'slug'))
+        mega_collections = list(Collection.objects.all()[:3])
     except Exception:
         return {}
 
-    my_head_pages = []
-    my_foot_pages = []
     my_mega_categories = []
-
     for category in mega_categories:
-        products = category.product_set.all()
-        product_arr = []
-        for product in products:
-            product_arr.append(
-                {
-                    "name": product.name,
-                    "slug": product.slug,
-                }
-            )
-        my_mega_categories.append(
-            {
-                "name": category.name,
-                "slug": category.slug,
-                "product": product_arr,
-            }
-        )
-
-    for item in head_pages:
-        my_head_pages.append({"name": item.name, "slug": item.slug})
-    for item in foot_pages:
-        my_foot_pages.append({"name": item.name, "slug": item.slug})
+        my_mega_categories.append({
+            'name': category.name,
+            'slug': category.slug,
+            'product': [
+                {'name': p.name, 'slug': p.slug}
+                for p in category.product_set.all()
+            ],
+        })
 
     if settings_obj is None:
-        return {
-            "head_pages": my_head_pages,
-            "foot_pages": my_foot_pages,
-            "my_mega_categories": my_mega_categories,
-            "mega_collections": mega_collections,
-            "show_app_banner": False,
+        ctx = {
+            'head_pages': head_pages,
+            'foot_pages': foot_pages,
+            'my_mega_categories': my_mega_categories,
+            'mega_collections': mega_collections,
+            'show_app_banner': False,
         }
+        cache.set('site_settings_ctx', ctx, _SITE_CTX_TTL)
+        return ctx
 
-    context = {
-        "site_name": settings_obj.name,
-        "site_description": settings_obj.description,
-        "site_email": settings_obj.email,
-        "site_currency": settings_obj.currency,
-        "site_base_currency": settings_obj.base_currency,
-        "site_phone": settings_obj.phone,
-        "site_street": settings_obj.street,
-        "site_city": settings_obj.city,
-        "site_code_postal": settings_obj.code_postal,
-        "site_state": settings_obj.state,
-        "site_copyright": settings_obj.copyright,
-        "site_logo": settings_obj.logo,
-        "head_pages": my_head_pages,
-        "foot_pages": my_foot_pages,
-        "my_mega_categories": my_mega_categories,
-        "mega_collections": mega_collections,
-        # Application mobile
-        "show_app_banner": settings_obj.show_app_banner and bool(settings_obj.apk_file),
-        "apk_version": settings_obj.apk_version,
-        "apk_description": settings_obj.apk_description,
+    ctx = {
+        'site_name': settings_obj.name,
+        'site_description': settings_obj.description,
+        'site_email': settings_obj.email,
+        'site_currency': settings_obj.currency,
+        'site_base_currency': settings_obj.base_currency,
+        'site_phone': settings_obj.phone,
+        'site_street': settings_obj.street,
+        'site_city': settings_obj.city,
+        'site_code_postal': settings_obj.code_postal,
+        'site_state': settings_obj.state,
+        'site_copyright': settings_obj.copyright,
+        'site_logo': settings_obj.logo,
+        'head_pages': head_pages,
+        'foot_pages': foot_pages,
+        'my_mega_categories': my_mega_categories,
+        'mega_collections': mega_collections,
+        'show_app_banner': settings_obj.show_app_banner and bool(settings_obj.apk_file),
+        'apk_version': settings_obj.apk_version,
+        'apk_description': settings_obj.apk_description,
     }
-
-    return context
+    cache.set('site_settings_ctx', ctx, _SITE_CTX_TTL)
+    return ctx
