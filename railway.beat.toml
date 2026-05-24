@@ -1,0 +1,8 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "celery -A config beat --loglevel=info"
+restartPolicyType = "always"
+restartPolicyMaxRetries = 10
