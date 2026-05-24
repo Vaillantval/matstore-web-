@@ -1,0 +1,94 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2 style="color:#1a1a2e;font-size:22px;margin:0 0 6px;">Rapport hebdomadaire</h2>
+<p style="color:#6c757d;margin:0 0 28px;font-size:14px;">
+    {{ start|date:"d/m/Y" }} → {{ end|date:"d/m/Y" }}
+</p>
+
+<!-- KPIs principaux -->
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+    <tr>
+        <td width="33%" style="padding:16px;background:#fff7f5;border-radius:10px;text-align:center;border:1px solid #ffe0d6;">
+            <div style="font-size:28px;font-weight:800;color:#ff5722;">{{ total_orders }}</div>
+            <div style="font-size:12px;color:#6c757d;margin-top:4px;">Commandes</div>
+        </td>
+        <td width="4%"></td>
+        <td width="33%" style="padding:16px;background:#f0fff4;border-radius:10px;text-align:center;border:1px solid #c3e6cb;">
+            <div style="font-size:28px;font-weight:800;color:#28a745;">{{ total_revenue }} HTG</div>
+            <div style="font-size:12px;color:#6c757d;margin-top:4px;">CA total</div>
+        </td>
+        <td width="4%"></td>
+        <td width="33%" style="padding:16px;background:#f0f4ff;border-radius:10px;text-align:center;border:1px solid #c3d0e6;">
+            <div style="font-size:28px;font-weight:800;color:#0056b3;">{{ new_customers }}</div>
+            <div style="font-size:12px;color:#6c757d;margin-top:4px;">Nouveaux clients</div>
+        </td>
+    </tr>
+</table>
+
+<!-- CA encaissé -->
+<p style="font-size:14px;color:#495057;margin-bottom:24px;">
+    CA encaissé (commandes payées) :
+    <strong style="color:#28a745;">{{ paid_revenue }} HTG</strong>
+</p>
+
+<!-- Top produits -->
+{% if top_products %}
+<h3 style="font-size:16px;color:#1a1a2e;margin:0 0 12px;border-bottom:2px solid #f0f0f0;padding-bottom:8px;">
+    🏆 Top produits de la semaine
+</h3>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border-collapse:collapse;">
+    <tr style="background:#f8f9fa;">
+        <th style="padding:10px 12px;text-align:left;font-size:13px;color:#6c757d;font-weight:600;">Produit</th>
+        <th style="padding:10px 12px;text-align:center;font-size:13px;color:#6c757d;font-weight:600;">Qté vendue</th>
+        <th style="padding:10px 12px;text-align:right;font-size:13px;color:#6c757d;font-weight:600;">CA</th>
+    </tr>
+    {% for p in top_products %}
+    <tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:10px 12px;font-size:14px;color:#1a1a2e;">{{ p.product_name }}</td>
+        <td style="padding:10px 12px;text-align:center;font-size:14px;font-weight:700;color:#ff5722;">{{ p.qty }}</td>
+        <td style="padding:10px 12px;text-align:right;font-size:14px;color:#28a745;">{{ p.revenue|floatformat:2 }} HTG</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<!-- Répartition par méthode de paiement -->
+{% if by_method %}
+<h3 style="font-size:16px;color:#1a1a2e;margin:0 0 12px;border-bottom:2px solid #f0f0f0;padding-bottom:8px;">
+    💳 Méthodes de paiement
+</h3>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border-collapse:collapse;">
+    {% for method, data in by_method.items %}
+    <tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:10px 12px;font-size:14px;color:#495057;text-transform:capitalize;">{{ method }}</td>
+        <td style="padding:10px 12px;text-align:center;font-size:14px;color:#1a1a2e;">{{ data.n }} cmd</td>
+        <td style="padding:10px 12px;text-align:right;font-size:14px;color:#28a745;">{{ data.rev|floatformat:2 }} HTG</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<!-- Répartition par statut -->
+<h3 style="font-size:16px;color:#1a1a2e;margin:0 0 12px;border-bottom:2px solid #f0f0f0;padding-bottom:8px;">
+    📦 Statuts des commandes
+</h3>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border-collapse:collapse;">
+    {% for status, data in by_status.items %}
+    {% if data.n %}
+    <tr style="border-bottom:1px solid #f0f0f0;">
+        <td style="padding:10px 12px;font-size:14px;color:#495057;text-transform:capitalize;">{{ status }}</td>
+        <td style="padding:10px 12px;text-align:center;font-size:14px;color:#1a1a2e;">{{ data.n }} commande{{ data.n|pluralize }}</td>
+        <td style="padding:10px 12px;text-align:right;font-size:14px;color:#6c757d;">{{ data.rev|floatformat:2 }} HTG</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table>
+
+<div style="text-align:center;margin-top:10px;">
+    <a href="{{ site_url }}/admin/shop/order/"
+       style="background:#ff5722;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block;">
+        Voir toutes les commandes →
+    </a>
+</div>
+{% endblock %}

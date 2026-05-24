@@ -429,6 +429,25 @@ CELERY_TASK_TIME_LIMIT = 300        # 5 min max par tâche
 CELERY_TASK_SOFT_TIME_LIMIT = 240   # avertissement à 4 min
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # fair dispatch entre workers
 
+from celery.schedules import crontab  # noqa: E402
+CELERY_BEAT_SCHEDULE = {
+    # Taux de change rafraîchis toutes les 6h
+    'refresh-exchange-rates': {
+        'task': 'shop.tasks.task_refresh_exchange_rates',
+        'schedule': crontab(hour='*/6', minute=0),
+    },
+    # Rapport hebdomadaire des ventes — lundi à 8h
+    'weekly-sales-report': {
+        'task': 'shop.tasks.task_weekly_sales_report',
+        'schedule': crontab(hour=8, minute=0, day_of_week=1),
+    },
+    # Alerte stock bas — toutes les 4h
+    'low-stock-alert': {
+        'task': 'shop.tasks.task_low_stock_alert',
+        'schedule': crontab(hour='*/4', minute=0),
+    },
+}
+
 # --- DRF SPECTACULAR (OpenAPI docs) ---
 SPECTACULAR_SETTINGS = {
     "TITLE": "MatStore Haiti API",

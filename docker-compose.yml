@@ -56,6 +56,21 @@ services:
       - DATABASE_URL=postgres://matstore:matstore123@db:5432/matstore
       - REDIS_URL=redis://redis:6379/0
 
+  beat:
+    build: .
+    container_name: matstore_beat
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - db
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://matstore:matstore123@db:5432/matstore
+      - REDIS_URL=redis://redis:6379/0
+
 volumes:
   postgres_data:
   static_volume:
