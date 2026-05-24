@@ -34,6 +34,10 @@ PyJWT==2.12.1
 # --- Firebase ---
 firebase-admin==6.7.0
 
+# --- Cache & Sessions ---
+django-redis==5.4.0
+redis==5.2.1
+
 # --- Utilitaires ---
 python-slugify==8.0.4
 requests==2.32.5

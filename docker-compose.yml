@@ -1,5 +1,12 @@
 services:
 
+  redis:
+    image: redis:7-alpine
+    container_name: matstore_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
   db:
     image: postgres:15
     container_name: matstore_db
@@ -27,6 +34,7 @@ services:
       - "8001:8000"
     depends_on:
       - db
+      - redis
     env_file:
       - .env
     environment:
