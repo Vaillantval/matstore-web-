@@ -2,14 +2,16 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 
 from dashboard.models.Adress import Adress
-from shop.models import Product, Category
+from shop.models import Product
 from shop.models.Order import Order
+from shop.cache_helpers import get_shop_counts
 
 
 @login_required(login_url='accounts:signin')
 def overview(request):
-    product_count  = Product.objects.count()
-    category_count = Category.objects.count()
+    counts = get_shop_counts()
+    product_count  = counts['product_count']
+    category_count = counts['category_count']
 
     cart     = request.session.get('cart', {})
     wishlist = request.session.get('wishlist', [])

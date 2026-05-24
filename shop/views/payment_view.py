@@ -8,12 +8,12 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
 from shop.models.Order import Order
-from shop.models.Setting import Setting
-from shop.models.ExchangeRate import ExchangeRate
 import stripe
 from shop.services.payment_service import StripeService
 from shop.services.moncash_service import MonCashService
 from shop.services.cart_service import CartService
+from shop.templatetags.price_filters import _get_setting
+from shop.cache_helpers import get_exchange_rate
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -33,19 +33,14 @@ def create_payment_intent(request, order_id):
         )
     stripe.api_key = private_key
 
-    # Stripe : toujours facturer en USD (Stripe accepte HTG mais les comptes
-    # standard haïtiens posent problème — on convertit depuis la base_currency)
-    setting = Setting.objects.first()
+    setting = _get_setting()
     base_currency = setting.base_currency if setting else "HTG"
 
-    # Taux base_currency → USD
     if base_currency == "USD":
         usd_rate = 1.0
     else:
-        rate_obj = ExchangeRate.objects.filter(
-            base_currency=base_currency, target_currency="USD"
-        ).first()
-        if not rate_obj:
+        usd_rate = get_exchange_rate(base_currency, "USD")
+        if not usd_rate:
             return JsonResponse(
                 {
                     "error": (
@@ -55,7 +50,6 @@ def create_payment_intent(request, order_id):
                 },
                 status=503,
             )
-        usd_rate = rate_obj.rate
 
     try:
         order = get_object_or_404(Order, id=order_id)
@@ -146,23 +140,20 @@ def moncash_initiate(request, order_id):
         )
         return redirect("checkout")
 
-    # Conversion vers HTG (MonCash n'accepte que des Gourdes haïtiennes)
-    setting = Setting.objects.first()
+    setting = _get_setting()
     base_currency = setting.base_currency if setting else "HTG"
     if base_currency == "HTG":
         amount_htg = round(float(order.order_cost_ttc), 2)
     else:
-        rate_obj = ExchangeRate.objects.filter(
-            base_currency=base_currency, target_currency="HTG"
-        ).first()
-        if not rate_obj:
+        htg_rate = get_exchange_rate(base_currency, "HTG")
+        if not htg_rate:
             messages.error(
                 request,
                 f"Taux de change {base_currency} → HTG introuvable. "
                 "Actualisez les taux depuis l'admin (Settings → Actualiser les taux)."
             )
             return redirect("checkout")
-        amount_htg = round(float(order.order_cost_ttc) * rate_obj.rate, 2)
+        amount_htg = round(float(order.order_cost_ttc) * htg_rate, 2)
 
     # orderId unique envoyé à MonCash — retrouvé dans payment.reference au callback
     mc_order_id = f"{order.id}-{uuid.uuid4().hex[:8]}"
@@ -230,17 +221,14 @@ def moncash_callback(request):
         if order.is_paid:
             return render(request, "shop/payment_success.html", {"order": order})
 
-        # Vérification du montant payé vs montant attendu (tolérance 1 HTG)
         paid_amount = float(payment.get("cost", 0))
-        setting = Setting.objects.first()
+        setting = _get_setting()
         base_currency = setting.base_currency if setting else "HTG"
         if base_currency == "HTG":
             expected_htg = float(order.order_cost_ttc)
         else:
-            rate_obj = ExchangeRate.objects.filter(
-                base_currency=base_currency, target_currency="HTG"
-            ).first()
-            expected_htg = float(order.order_cost_ttc) * (rate_obj.rate if rate_obj else 1.0)
+            htg_rate = get_exchange_rate(base_currency, "HTG")
+            expected_htg = float(order.order_cost_ttc) * (htg_rate if htg_rate else 1.0)
 
         if paid_amount < expected_htg - 1:
             messages.error(

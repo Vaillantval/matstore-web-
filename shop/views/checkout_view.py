@@ -14,11 +14,11 @@ import random
 import string
 from django.db import transaction
 from shop.models.Order import Order
-from shop.models.Method import Method
 from dashboard.models.Adress import Adress
 from shop.models.OrderDetail import OrderDetail
 from shop.services.payment_service import StripeService
 from shop.services.moncash_service import MonCashService
+from shop.cache_helpers import get_carriers, get_payment_methods
 
 
 def index(request):
@@ -53,9 +53,11 @@ def index(request):
     else:
         ready_to_pay = bool(address_billing_id)
 
+    carriers = get_carriers()
+
     # ── Pré-sélection automatique du carrier (si aucun en session) ──
     if not carrier_id and not request.session.get('carrier_id'):
-        first_carrier = Carrier.objects.first()
+        first_carrier = carriers[0] if carriers else None
         if first_carrier:
             request.session['carrier_id'] = first_carrier.id
             request.session['carrier'] = {
@@ -65,18 +67,16 @@ def index(request):
             }
 
     if carrier_id and carrier_id != '':
-        carrier = Carrier.objects.filter(id=carrier_id).first()
+        carrier = next((c for c in carriers if str(c.id) == str(carrier_id)), None)
         if carrier:
             request.session['carrier'] = {
                 'id': carrier.id,
                 'name': carrier.name,
                 'price': float(carrier.price),
             }
-            # Sync avec la clé lue par cart_service.get_cart_details()
             request.session['carrier_id'] = carrier.id
 
     cart = CartService.get_cart_details(request)
-    carriers = Carrier.objects.all()
 
     payment_service = StripeService()
     order_id = None
@@ -99,12 +99,10 @@ def index(request):
             if existing_order:
                 existing_order.billing_address = billing_address_str
                 existing_order.shipping_address = shipping_address_str or billing_address_str
-                # Rafraîchir les montants depuis le panier courant
-                fresh_cart = CartService.get_cart_details(request)
-                existing_order.quantity        = fresh_cart['cart_count']
-                existing_order.order_cost      = fresh_cart['sub_total_ht']
-                existing_order.taxe            = fresh_cart['taxe_amount']
-                existing_order.order_cost_ttc  = fresh_cart['sub_total_with_shipping']
+                existing_order.quantity        = cart['cart_count']
+                existing_order.order_cost      = cart['sub_total_ht']
+                existing_order.taxe            = cart['taxe_amount']
+                existing_order.order_cost_ttc  = cart['sub_total_with_shipping']
                 existing_order.save()
                 order_id = existing_order.id
 
@@ -117,8 +115,7 @@ def index(request):
     address_form = CheckoutAddressForm()
     login_form_instance = CustomLoginForm()
 
-    # Méthodes de paiement disponibles (depuis Admin)
-    payment_methods = Method.objects.filter(is_available=True)
+    payment_methods = get_payment_methods()
     moncash_configured = MonCashService.is_configured()
 
     return render(request, 'shop/checkout.html', {

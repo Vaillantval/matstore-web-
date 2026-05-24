@@ -5,6 +5,7 @@ from django.views.decorators.http import require_POST
 from shop.models import Product, Carrier
 from shop.services.cart_service import CartService
 from shop.templatetags.price_filters import _get_setting, _get_rate, _format
+from shop.cache_helpers import get_carriers
 
 
 def _migrate_cart_session(request):
@@ -196,7 +197,8 @@ def cart_detail(request):
 
     # Ensure a default carrier is set in session
     if not request.session.get('carrier_id'):
-        default = Carrier.objects.first()
+        carriers_list = get_carriers()
+        default = carriers_list[0] if carriers_list else None
         if default:
             request.session['carrier_id'] = default.id
             request.session.modified = True
@@ -228,7 +230,7 @@ def cart_detail(request):
 
         summary = _build_summary(cart_details, setting)
 
-    carriers = list(Carrier.objects.all())
+    carriers = get_carriers()
 
     # Pré-sélectionner le premier carrier si aucun en session (cohérent avec checkout)
     selected_carrier_id = request.session.get('carrier_id')

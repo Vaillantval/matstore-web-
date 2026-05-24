@@ -7,6 +7,9 @@ from shop.models.Slider import Slider
 from shop.models.Collection import Collection
 from shop.models.Page import Page
 from shop.models.Setting import Setting
+from shop.models.Carrier import Carrier
+from shop.models.Method import Method
+from shop.models.ExchangeRate import ExchangeRate
 
 
 def _invalidate_home_cache():
@@ -54,3 +57,21 @@ def invalidate_page_cache(sender, instance, **kwargs):
 @receiver(post_save, sender=Setting)
 def invalidate_setting_cache(sender, instance, **kwargs):
     _invalidate_site_settings_cache()
+
+
+@receiver(post_save, sender=Carrier)
+def invalidate_carrier_cache(sender, instance, **kwargs):
+    from shop.cache_helpers import invalidate_carriers
+    invalidate_carriers()
+
+
+@receiver(post_save, sender=Method)
+def invalidate_method_cache(sender, instance, **kwargs):
+    from shop.cache_helpers import invalidate_payment_methods
+    invalidate_payment_methods()
+
+
+@receiver(post_save, sender=ExchangeRate)
+def invalidate_exchange_rate_cache(sender, instance, **kwargs):
+    from shop.cache_helpers import invalidate_exchange_rates
+    invalidate_exchange_rates()
