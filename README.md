@@ -51,6 +51,8 @@ dépôt) et internationales (Stripe / carte bancaire).
 |--------------------|--------------------------------------------------------|
 | Backend            | Python 3.13 · Django 6.0 · Django REST Framework       |
 | Base de données    | PostgreSQL (Railway)                                   |
+| Cache & sessions   | Redis · django-redis 5.4                               |
+| File d'attente     | Celery 5.4 · Celery Beat (tâches planifiées)           |
 | Stockage médias    | Volume persistant Railway (`/app/media`)               |
 | Paiement en ligne  | Stripe PaymentIntents · MonCash REST API               |
 | Notifications      | Resend (API) · Firebase Cloud Messaging (mobile)       |
@@ -65,10 +67,11 @@ dépôt) et internationales (Stripe / carte bancaire).
 ### Boutique
 
 - Navigation par catégories et filtres
-- Recherche produits avec suggestions
+- Recherche produits par nom, description, marque **et nom de catégorie** (sidebar dédiée)
 - Pages produit avec galerie d'images, description, prix HT/TTC
 - Gestion du panier (session ou compte utilisateur)
 - Sélection du transporteur avec mise à jour dynamique du récapitulatif
+- Cache Redis sur les listings et pages produit (5–10 min, invalidé automatiquement)
 
 ### Tunnel de commande
 
@@ -82,8 +85,10 @@ dépôt) et internationales (Stripe / carte bancaire).
 
 - Suivi des statuts : en attente, en cours, expédiée, livrée, annulée
 - Historique des commandes dans le tableau de bord client
-- Notifications email automatiques (confirmation client, alerte admin)
+- Notifications email **asynchrones** via Celery (confirmation client, alerte admin)
+- Notifications push FCM **asynchrones** via Celery (application mobile)
 - Paiement hors ligne avec preuve de paiement jointe
+- Coordonnées MonCash (34084997) et NatCash (55130101) affichées au checkout
 
 ### Compte client
 
@@ -158,6 +163,9 @@ ALLOWED_HOSTS = votre-domaine.railway.app,localhost
 
 # -- Base de données --
 DATABASE_URL = postgresql://user:password@host:5432/matstore_db
+
+# -- Redis (cache, sessions, Celery broker) --
+REDIS_URL = redis://localhost:6379/0
 
 # -- Email (Resend) --
 RESEND_API_KEY = votre_api_key_resend
@@ -482,26 +490,39 @@ d'administration dans la section **Settings > Actualiser les taux**.
 
 Le projet est déployé sur **Railway** (PaaS) avec les services suivants :
 
-- Service Web (Django + Gunicorn)
-- Service PostgreSQL (base de données managée)
-- Volume persistant pour les fichiers médias (`/app/media`)
+| Service | Fichier config | Rôle |
+|---|---|---|
+| `web` | `railway.toml` | Django + Gunicorn (3 workers) |
+| `worker` | `railway.worker.toml` | Celery worker — emails, FCM, tâches async |
+| `beat` | `railway.beat.toml` | Celery Beat — tâches planifiées |
+| `redis` | Add-on Railway | Broker Celery + cache Django + sessions |
+| `postgres` | Add-on Railway | Base de données principale |
+
+### Tâches planifiées (Celery Beat)
+
+| Tâche | Fréquence | Description |
+|---|---|---|
+| Taux de change | Toutes les 6h | Mise à jour automatique des taux |
+| Rapport hebdomadaire | Lundi 8h | Email HTML des ventes aux admins |
+| Alerte stock bas | Toutes les 4h | Notification si stock ≤ 5 unités |
 
 ### Fichiers de déploiement
 
 **`Dockerfile`** — build de l'image avec collectstatic intégré.
 
-**`railway.toml`** — commande de démarrage :
+**`railway.toml`** — commande de démarrage web :
 
 ```bash
 python manage.py migrate --noinput && python init_site.py && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --threads 4 --worker-class gthread --timeout 120
 ```
 
-**`requirements.txt`** inclut `gunicorn`, `psycopg2-binary`, `whitenoise`, `dj-database-url`.
+**`requirements.txt`** inclut `gunicorn`, `psycopg2-binary`, `whitenoise`, `dj-database-url`, `celery[redis]`, `django-redis`.
 
 ### Variables Railway à configurer
 
 Toutes les variables listées dans la section [Variables d'environnement](#variables-denvironnement)
 doivent être définies dans le panneau Railway > Service > Variables.
+La variable `REDIS_URL` doit être partagée avec les services `web`, `worker` et `beat`.
 
 ### Volume persistant
 
