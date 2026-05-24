@@ -107,7 +107,8 @@ def shop_list(request):
     if q:
         products = products.filter(
             Q(name__icontains=q) | Q(description__icontains=q) | Q(brand__icontains=q)
-        )
+            | Q(categories__name__icontains=q)
+        ).distinct()
     if category_slug:
         products = products.filter(categories__slug=category_slug)
     if filter_type == 'best_seller':

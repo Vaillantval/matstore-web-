@@ -548,6 +548,26 @@
             <div class="col-lg-3">
                 <div class="shop_sidebar">
 
+                    <!-- Search -->
+                    <div class="sidebar_widget">
+                        <h5>Rechercher</h5>
+                        <form method="GET" action="{% url 'shop_list' %}" id="sidebarSearchForm">
+                            {% if category_slug %}<input type="hidden" name="category" value="{{ category_slug }}">{% endif %}
+                            {% if filter_type %}<input type="hidden" name="filter" value="{{ filter_type }}">{% endif %}
+                            {% if sort and sort != 'newest' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+                            <div class="page_search" style="border-radius:10px;">
+                                <input type="text" name="q" value="{{ q }}" placeholder="Produit ou catégorie…" id="sidebarSearchInput" autocomplete="off">
+                                <button type="submit" style="border-radius:0 10px 10px 0;"><i class="ion-ios-search-strong"></i></button>
+                            </div>
+                            {% if q %}
+                            <a href="{% url 'shop_list' %}{% if category_slug %}?category={{ category_slug }}{% endif %}"
+                               style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:12px;color:#adb5bd;text-decoration:none;">
+                                <i class="ti-close" style="font-size:10px;"></i> Effacer la recherche
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
+
                     <!-- Categories -->
                     <div class="sidebar_widget">
                         <h5>Catégories</h5>
