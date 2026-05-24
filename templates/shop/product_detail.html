@@ -334,7 +334,7 @@
 
                     <!-- Main image -->
                     <div class="main_img_wrap" id="mainImgWrap">
-                        {% with first_img=images.first %}
+                        {% with first_img=images|first %}
                         {% if first_img %}
                         <img src="{{ first_img.image.url }}" alt="{{ product.name }}" id="mainImg">
                         {% else %}
