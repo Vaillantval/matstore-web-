@@ -32,7 +32,7 @@
                                     <td class="row_title">Image</td>
                                     {% for product in compares %}
                                     <td class="row_img">
-                                        {% with first_img=product.images.first %}
+                                        {% with first_img=product.images.all|first %}
                                         {% if first_img %}
                                         <img src="{{ first_img.image.url }}" alt="{{ product.name }}">
                                         {% else %}

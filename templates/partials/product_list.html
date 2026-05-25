@@ -1,5 +1,5 @@
 {% load static price_filters %}
-{% with first_img=product.images.first pct=product.solde_price|discount_percent:product.regular_price %}
+{% with first_img=product.images.all|first pct=product.solde_price|discount_percent:product.regular_price %}
 
 <div class="plc" onclick="if(!event.target.closest('.plc-actions')) window.location.href='{% url 'product_detail' product.slug %}'"
 

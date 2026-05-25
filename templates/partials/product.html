@@ -1,5 +1,5 @@
 {% load static price_filters %}
-{% with first_img=product.images.first %}
+{% with first_img=product.images.all|first %}
 <div class="product"
      onclick="if(!event.target.closest('.product_action_box, a, button')) window.location.href='{% url 'product_detail' product.slug %}'"
      style="cursor:pointer;">

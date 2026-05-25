@@ -196,7 +196,7 @@
     <div class="ds-wl-grid">
         {% for product in wishlist_products %}
         <a href="{% url 'product_detail' product.slug %}" class="ds-wl-card">
-            {% with img=product.images.first %}
+            {% with img=product.images.all|first %}
             {% if img %}
             <div class="ds-wl-img"><img src="{{ img.image.url }}" alt="{{ product.name }}"></div>
             {% else %}
