@@ -3,6 +3,6 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "python -m celery -A config worker --loglevel=info --concurrency=2 --without-heartbeat"
+startCommand = "sh -c 'python -m celery -A config worker --loglevel=info --concurrency=2 --without-heartbeat'"
 restartPolicyType = "always"
 restartPolicyMaxRetries = 10
