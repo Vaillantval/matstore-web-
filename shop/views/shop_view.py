@@ -67,10 +67,10 @@ def index(request):
         ctx = {
             'sliders':       list(Slider.objects.all()),
             'collections':   list(Collection.objects.all()),
-            'best_sellers':  list(Product.objects.filter(is_best_seller=True).prefetch_related('images')),
-            'new_arrivals':  list(Product.objects.filter(is_new_arrival=True).prefetch_related('images')),
-            'special_offers':list(Product.objects.filter(is_special_offer=True).prefetch_related('images')),
-            'featured':      list(Product.objects.filter(is_featured=True).prefetch_related('images')),
+            'best_sellers':  list(Product.objects.filter(is_best_seller=True).prefetch_related('images')[:8]),
+            'new_arrivals':  list(Product.objects.filter(is_new_arrival=True).prefetch_related('images')[:8]),
+            'special_offers':list(Product.objects.filter(is_special_offer=True).prefetch_related('images')[:8]),
+            'featured':      list(Product.objects.filter(is_featured=True).prefetch_related('images')[:8]),
         }
         cache.set('home_context', ctx, _HOME_TTL)
     return render(request, "shop/index.html", ctx)
