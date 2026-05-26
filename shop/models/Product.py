@@ -6,7 +6,7 @@ from shop.models.Category import Category
 
 class Product(models.Model):
     name = models.CharField(max_length=60, blank=False, null=False)
-    slug = models.SlugField(max_length=255, blank=False, null=False)
+    slug = models.SlugField(max_length=255, unique=True, blank=False, null=False)
     description = models.CharField(max_length=120, blank=False, null=False)
     more_description = models.TextField(blank=True, null=True)
     #   image = models.ImageField(blank=True, null=True)
