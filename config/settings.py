@@ -429,6 +429,7 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 300        # 5 min max par tâche
 CELERY_TASK_SOFT_TIME_LIMIT = 240   # avertissement à 4 min
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # fair dispatch entre workers
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 from celery.schedules import crontab  # noqa: E402
 CELERY_BEAT_SCHEDULE = {
