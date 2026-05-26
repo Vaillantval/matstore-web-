@@ -34,7 +34,7 @@ from shop.views.compare_view import (
     add_to_compare,
     remove_from_compare,
 )
-from shop.views.shop_view import download_apk
+from shop.views.shop_view import download_apk, home_tab
 
 urlpatterns = [
     path("", index, name="home"),
@@ -81,4 +81,7 @@ urlpatterns = [
 
     # Application mobile
     path("app/download/", download_apk, name="download_apk"),
+
+    # Lazy tabs home
+    path("home/tab/<str:section>/", home_tab, name="home_tab"),
 ]

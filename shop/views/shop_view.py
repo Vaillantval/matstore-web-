@@ -1,8 +1,9 @@
 import hashlib
 import os
 from django.core.cache import cache
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.core.paginator import Paginator, InvalidPage
 from django.db.models import Q
 
@@ -74,6 +75,27 @@ def index(request):
         }
         cache.set('home_context_v2', ctx, _HOME_TTL)
     return render(request, "shop/index.html", ctx)
+
+
+_HOME_TAB_SECTIONS = {'best_sellers', 'featured', 'special_offers'}
+
+def home_tab(request, section):
+    if section not in _HOME_TAB_SECTIONS:
+        return HttpResponseNotFound()
+    ctx = cache.get('home_context_v2')
+    if ctx and section in ctx:
+        products = ctx[section]
+    else:
+        filter_map = {
+            'best_sellers':   {'is_best_seller': True},
+            'featured':       {'is_featured': True},
+            'special_offers': {'is_special_offer': True},
+        }
+        products = list(Product.objects.filter(
+            **filter_map[section], is_available=True, stock__gt=0
+        ).prefetch_related('images')[:8])
+    html = render_to_string('partials/home_tab_products.html', {'products': products}, request=request)
+    return HttpResponse(html)
 
 
 def shop_list(request):

@@ -1,0 +1,10 @@
+{% load static %}
+{% for product in products %}
+<div class="col-lg-3 col-md-4 col-6">
+    {% include "partials/product.html" with product=product %}
+</div>
+{% empty %}
+<div class="col-12 text-center py-5">
+    <p class="text-muted">Aucun produit disponible dans cette catégorie.</p>
+</div>
+{% endfor %}

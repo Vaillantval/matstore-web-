@@ -369,37 +369,33 @@
                                     {% include "partials/product.html" with product=product %}
                                 </div>
                                 {% endfor %}
-
                             </div>
                         </div>
                         <div id="sellers" role="tabpanel" aria-labelledby="sellers-tab"
-                             class="tab-pane fade">
+                             class="tab-pane fade"
+                             data-lazy-url="{% url 'home_tab' 'best_sellers' %}">
                             <div class="row shop_container">
-                                {% for product in best_sellers %}
-                                <div class="col-lg-3 col-md-4 col-6">
-                                    {% include "partials/product.html" with product=product %}
+                                <div class="col-12 text-center py-5 tab-spinner">
+                                    <div class="spinner-border text-warning" role="status"></div>
                                 </div>
-                                {% endfor %}
                             </div>
                         </div>
                         <div id="featured" role="tabpanel"
-                             aria-labelledby="featured-tab" class="tab-pane fade">
+                             aria-labelledby="featured-tab" class="tab-pane fade"
+                             data-lazy-url="{% url 'home_tab' 'featured' %}">
                             <div class="row shop_container">
-                                {% for product in featured %}
-                                <div class="col-lg-3 col-md-4 col-6">
-                                    {% include "partials/product.html" with product=product %}
+                                <div class="col-12 text-center py-5 tab-spinner">
+                                    <div class="spinner-border text-warning" role="status"></div>
                                 </div>
-                                {% endfor %}
                             </div>
                         </div>
                         <div id="special" role="tabpanel" aria-labelledby="special-tab"
-                             class="tab-pane fade">
+                             class="tab-pane fade"
+                             data-lazy-url="{% url 'home_tab' 'special_offers' %}">
                             <div class="row shop_container">
-                                {% for product in special_offers %}
-                                <div class="col-lg-3 col-md-4 col-6">
-                                    {% include "partials/product.html" with product=product %}
+                                <div class="col-12 text-center py-5 tab-spinner">
+                                    <div class="spinner-border text-warning" role="status"></div>
                                 </div>
-                                {% endfor %}
                             </div>
                         </div>
                     </div>
@@ -540,6 +536,7 @@
 
 <script>
 (function () {
+    // Scroll animations
     var observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
             if (entry.isIntersecting) {
@@ -548,9 +545,24 @@
             }
         });
     }, { threshold: 0.12 });
-
     document.querySelectorAll('.anim-hidden').forEach(function (el) {
         observer.observe(el);
+    });
+
+    // Lazy tab loading
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (trigger) {
+        trigger.addEventListener('show.bs.tab', function (e) {
+            var targetId = trigger.getAttribute('href') || trigger.dataset.bsTarget;
+            var pane = document.querySelector(targetId);
+            if (!pane || !pane.dataset.lazyUrl || pane.dataset.loaded) return;
+
+            fetch(pane.dataset.lazyUrl)
+                .then(function (r) { return r.text(); })
+                .then(function (html) {
+                    pane.querySelector('.row.shop_container').innerHTML = html;
+                    pane.dataset.loaded = '1';
+                });
+        });
     });
 })();
 </script>
