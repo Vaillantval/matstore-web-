@@ -6,7 +6,7 @@ dockerfilePath = "Dockerfile"
 # 1. On lance les migrations
 # 2. On exécute ton nouveau script init_site.py
 # 3. On lance Gunicorn avec des réglages de production (3 workers pour la performance)
-startCommand = "sh -c 'python manage.py migrate --noinput && python init_site.py && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --threads 4 --worker-class gthread --timeout 120'"
+startCommand = "sh -c 'python manage.py migrate --noinput && python init_site.py && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --threads 4 --worker-class gthread --timeout 120 --access-logfile - --log-level info'"
 # Le chemin de santé que Django accepte maintenant grâce à ALLOWED_HOSTS
 healthcheckPath = "/health/"
 healthcheckTimeout = 120
