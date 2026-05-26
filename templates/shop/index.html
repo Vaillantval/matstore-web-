@@ -192,6 +192,59 @@
         .hs-col-card-img { min-height: 180px; }
         .hs-collections-header { flex-direction: column; align-items: flex-start; gap: 12px; }
     }
+
+    /* ── Animations scroll ── */
+    .anim-hidden {
+        opacity: 0;
+        transform: translateY(36px);
+        transition: opacity .55s ease, transform .55s ease;
+    }
+    .anim-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .anim-hidden.from-left  { transform: translateX(-40px); }
+    .anim-hidden.from-right { transform: translateX(40px); }
+    .anim-hidden.scale-in   { transform: scale(.92); }
+    .anim-hidden.from-left.anim-visible,
+    .anim-hidden.from-right.anim-visible { transform: translateX(0); }
+    .anim-hidden.scale-in.anim-visible   { transform: scale(1); }
+
+    /* délais pour les cartes en cascade */
+    .anim-d1 { transition-delay: .1s; }
+    .anim-d2 { transition-delay: .22s; }
+    .anim-d3 { transition-delay: .34s; }
+    .anim-d4 { transition-delay: .46s; }
+
+    /* pulse sur le bouton CTA */
+    @keyframes pulse-border {
+        0%   { box-shadow: 0 0 0 0 rgba(255,87,34,.45); }
+        70%  { box-shadow: 0 0 0 12px rgba(255,87,34,0); }
+        100% { box-shadow: 0 0 0 0 rgba(255,87,34,0); }
+    }
+    .btn-pulse { animation: pulse-border 2.2s infinite; }
+
+    /* gradient animé sur les titres de section */
+    .gradient-title {
+        background: linear-gradient(90deg, #ff5722, #ff8a65, #ff5722);
+        background-size: 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradient-move 4s linear infinite;
+    }
+    @keyframes gradient-move {
+        0%   { background-position: 0%; }
+        100% { background-position: 200%; }
+    }
+
+    /* ── Cartes Comment ça marche ── */
+    .how-card { padding:30px 20px; border-radius:16px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.07); height:100%; transition:transform .25s, box-shadow .25s; }
+    .how-icon { width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,#ff5722,#ff8a65); display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
+    .how-icon i { font-size:28px; color:#fff; }
+    .how-num { width:28px; height:28px; border-radius:50%; background:#ff5722; color:#fff; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; margin:-54px auto 30px auto; position:relative; top:-10px; left:26px; }
+    .how-card h5 { font-weight:700; margin-bottom:12px; }
+    .how-card p { color:#888; font-size:14px; line-height:1.7; margin:0; }
 </style>
 {% endblock %}
 
@@ -359,12 +412,12 @@
     <div class="section pb_70" style="background:#f8f9fa;">
         <div class="container">
             <div class="row justify-content-center align-items-center text-center" style="padding: 50px 0;">
-                <div class="col-md-8">
+                <div class="col-md-8 anim-hidden scale-in">
                     <h2 style="font-weight:700; margin-bottom:12px;">Découvrez tous nos produits</h2>
                     <p style="color:#666; font-size:16px; margin-bottom:32px;">
                         Explorez notre catalogue complet — électronique, alimentation, mode et bien plus.
                     </p>
-                    <a href="{% url 'shop_list' %}" class="btn btn-fill-out btn-radius"
+                    <a href="{% url 'shop_list' %}" class="btn btn-fill-out btn-radius btn-pulse"
                        style="padding: 14px 48px; font-size:16px; letter-spacing:1px;">
                         Voir la boutique &nbsp;<i class="ti-arrow-right"></i>
                     </a>
@@ -377,52 +430,44 @@
     <div class="section pt_70 pb_70">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-md-6">
+                <div class="col-md-6 anim-hidden">
                     <div class="heading_s1 text-center mb-5">
-                        <h2>Comment ça marche ?</h2>
+                        <h2 class="gradient-title">Comment ça marche ?</h2>
                         <p style="color:#666; margin-top:10px;">Commander sur MatStore en 4 étapes simples</p>
                     </div>
                 </div>
             </div>
             <div class="row text-center g-4">
-                <div class="col-lg-3 col-md-6">
-                    <div style="padding:30px 20px; border-radius:16px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.07); height:100%; transition:transform .2s;" onmouseover="this.style.transform='translateY(-6px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#ff5722,#ff8a65);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-                            <i class="ti-search" style="font-size:28px;color:#fff;"></i>
-                        </div>
-                        <div style="width:28px;height:28px;border-radius:50%;background:#ff5722;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin:-54px auto 30px auto;position:relative;top:-10px;left:26px;">1</div>
-                        <h5 style="font-weight:700;margin-bottom:12px;">Parcourez la boutique</h5>
-                        <p style="color:#888;font-size:14px;line-height:1.7;">Explorez notre catalogue et trouvez les produits qui vous correspondent.</p>
+                <div class="col-lg-3 col-md-6 anim-hidden anim-d1">
+                    <div class="how-card" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(255,87,34,.18)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                        <div class="how-icon"><i class="ti-search"></i></div>
+                        <div class="how-num">1</div>
+                        <h5>Parcourez la boutique</h5>
+                        <p>Explorez notre catalogue et trouvez les produits qui vous correspondent.</p>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
-                    <div style="padding:30px 20px; border-radius:16px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.07); height:100%; transition:transform .2s;" onmouseover="this.style.transform='translateY(-6px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#ff5722,#ff8a65);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-                            <i class="ti-shopping-cart" style="font-size:28px;color:#fff;"></i>
-                        </div>
-                        <div style="width:28px;height:28px;border-radius:50%;background:#ff5722;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin:-54px auto 30px auto;position:relative;top:-10px;left:26px;">2</div>
-                        <h5 style="font-weight:700;margin-bottom:12px;">Ajoutez au panier</h5>
-                        <p style="color:#888;font-size:14px;line-height:1.7;">Sélectionnez vos articles et ajoutez-les à votre panier en un clic.</p>
+                <div class="col-lg-3 col-md-6 anim-hidden anim-d2">
+                    <div class="how-card" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(255,87,34,.18)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                        <div class="how-icon"><i class="ti-shopping-cart"></i></div>
+                        <div class="how-num">2</div>
+                        <h5>Ajoutez au panier</h5>
+                        <p>Sélectionnez vos articles et ajoutez-les à votre panier en un clic.</p>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
-                    <div style="padding:30px 20px; border-radius:16px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.07); height:100%; transition:transform .2s;" onmouseover="this.style.transform='translateY(-6px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#ff5722,#ff8a65);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-                            <i class="ti-credit-card" style="font-size:28px;color:#fff;"></i>
-                        </div>
-                        <div style="width:28px;height:28px;border-radius:50%;background:#ff5722;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin:-54px auto 30px auto;position:relative;top:-10px;left:26px;">3</div>
-                        <h5 style="font-weight:700;margin-bottom:12px;">Passez votre commande</h5>
-                        <p style="color:#888;font-size:14px;line-height:1.7;">Choisissez votre mode de paiement — MonCash, NatCash, virement ou carte.</p>
+                <div class="col-lg-3 col-md-6 anim-hidden anim-d3">
+                    <div class="how-card" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(255,87,34,.18)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                        <div class="how-icon"><i class="ti-credit-card"></i></div>
+                        <div class="how-num">3</div>
+                        <h5>Passez votre commande</h5>
+                        <p>Choisissez votre mode de paiement — MonCash, NatCash, virement ou carte.</p>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
-                    <div style="padding:30px 20px; border-radius:16px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.07); height:100%; transition:transform .2s;" onmouseover="this.style.transform='translateY(-6px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#ff5722,#ff8a65);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-                            <i class="ti-truck" style="font-size:28px;color:#fff;"></i>
-                        </div>
-                        <div style="width:28px;height:28px;border-radius:50%;background:#ff5722;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin:-54px auto 30px auto;position:relative;top:-10px;left:26px;">4</div>
-                        <h5 style="font-weight:700;margin-bottom:12px;">Recevez votre livraison</h5>
-                        <p style="color:#888;font-size:14px;line-height:1.7;">Votre commande est livrée directement chez vous, rapidement et en toute sécurité.</p>
+                <div class="col-lg-3 col-md-6 anim-hidden anim-d4">
+                    <div class="how-card" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(255,87,34,.18)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                        <div class="how-icon"><i class="ti-truck"></i></div>
+                        <div class="how-num">4</div>
+                        <h5>Recevez votre livraison</h5>
+                        <p>Votre commande est livrée directement chez vous, rapidement et en toute sécurité.</p>
                     </div>
                 </div>
             </div>
@@ -433,15 +478,15 @@
     <div class="section pt_70 pb_70" style="background:#f8f9fa;">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-md-6">
+                <div class="col-md-6 anim-hidden">
                     <div class="heading_s1 text-center mb-5">
-                        <h2>Ce que disent nos clients</h2>
+                        <h2 class="gradient-title">Ce que disent nos clients</h2>
                         <p style="color:#666; margin-top:10px;">Des milliers de clients satisfaits à travers Haïti</p>
                     </div>
                 </div>
             </div>
             <div class="row g-4">
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 anim-hidden from-left anim-d1">
                     <div style="background:#fff;border-radius:16px;padding:30px;box-shadow:0 4px 20px rgba(0,0,0,0.07);height:100%;position:relative;">
                         <div style="color:#ff5722;font-size:18px;margin-bottom:14px;">
                             ★★★★★
@@ -458,11 +503,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 anim-hidden anim-d2">
                     <div style="background:#fff;border-radius:16px;padding:30px;box-shadow:0 4px 20px rgba(0,0,0,0.07);height:100%;position:relative;">
-                        <div style="color:#ff5722;font-size:18px;margin-bottom:14px;">
-                            ★★★★★
-                        </div>
+                        <div style="color:#ff5722;font-size:18px;margin-bottom:14px;">★★★★★</div>
                         <p style="color:#444;font-size:15px;line-height:1.8;font-style:italic;margin-bottom:24px;">
                             "Le paiement via MonCash est tellement pratique ! Plus besoin de se déplacer. Je commande depuis mon téléphone et je reçois ma commande le lendemain."
                         </p>
@@ -475,11 +518,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-6 anim-hidden from-right anim-d3">
                     <div style="background:#fff;border-radius:16px;padding:30px;box-shadow:0 4px 20px rgba(0,0,0,0.07);height:100%;position:relative;">
-                        <div style="color:#ff5722;font-size:18px;margin-bottom:14px;">
-                            ★★★★☆
-                        </div>
+                        <div style="color:#ff5722;font-size:18px;margin-bottom:14px;">★★★★☆</div>
                         <p style="color:#444;font-size:15px;line-height:1.8;font-style:italic;margin-bottom:24px;">
                             "Excellente expérience ! Les prix sont compétitifs et le service client répond rapidement. Je recommande MatStore à toute ma famille."
                         </p>
@@ -496,5 +537,22 @@
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('anim-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.anim-hidden').forEach(function (el) {
+        observer.observe(el);
+    });
+})();
+</script>
 
 {% endblock %}
