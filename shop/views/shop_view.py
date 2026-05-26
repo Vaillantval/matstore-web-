@@ -62,7 +62,7 @@ def _invalidate_shop_list_cache():
 _HOME_TTL = 3600  # 1h (invalidé par signal dès qu'un produit/slider/collection change)
 
 def index(request):
-    ctx = cache.get('home_context')
+    ctx = cache.get('home_context_v2')
     if ctx is None:
         ctx = {
             'sliders':       list(Slider.objects.all()),
@@ -72,7 +72,7 @@ def index(request):
             'special_offers':list(Product.objects.filter(is_special_offer=True, is_available=True, stock__gt=0).prefetch_related('images')[:8]),
             'featured':      list(Product.objects.filter(is_featured=True,       is_available=True, stock__gt=0).prefetch_related('images')[:8]),
         }
-        cache.set('home_context', ctx, _HOME_TTL)
+        cache.set('home_context_v2', ctx, _HOME_TTL)
     return render(request, "shop/index.html", ctx)
 
 

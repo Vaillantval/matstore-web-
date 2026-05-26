@@ -14,7 +14,7 @@ from shop.models.ExchangeRate import ExchangeRate
 
 def _invalidate_home_cache():
     from django.core.cache import cache
-    cache.delete('home_context')
+    cache.delete('home_context_v2')
 
 
 def _invalidate_site_settings_cache():
