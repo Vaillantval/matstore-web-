@@ -27,6 +27,13 @@ def health_check(request):
     return JsonResponse({"status": "ok"})
 
 
+def cached_media_serve(request, path, document_root=None):
+    response = serve(request, path, document_root=document_root)
+    if response.status_code == 200:
+        response['Cache-Control'] = 'public, max-age=2592000'  # 30 jours
+    return response
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("ckeditor5/", include("django_ckeditor_5.urls")),
@@ -43,5 +50,5 @@ urlpatterns = [
 ]
 
 urlpatterns += [
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^media/(?P<path>.*)$', cached_media_serve, {'document_root': settings.MEDIA_ROOT}),
 ]
