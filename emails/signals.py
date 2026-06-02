@@ -17,12 +17,15 @@ def capture_old_order_status(sender, instance, **kwargs):
             old = sender.objects.get(pk=instance.pk)
             instance._old_status = old.status
             instance._old_payment_status = old.payment_status
+            instance._old_is_paid = old.is_paid
         except sender.DoesNotExist:
             instance._old_status = None
             instance._old_payment_status = None
+            instance._old_is_paid = None
     else:
         instance._old_status = None
         instance._old_payment_status = None
+        instance._old_is_paid = None
 
 
 @receiver(post_save, sender=Order)
@@ -34,10 +37,14 @@ def order_post_save(sender, instance, created, **kwargs):
             task_send_order_status_update,
             task_send_proof_submitted,
         )
-        if created:
+        # Confirmation uniquement quand le paiement est confirmé (False → True)
+        # Les commandes hors ligne sont gérées directement dans checkout_view.offline_payment
+        old_is_paid = getattr(instance, "_old_is_paid", None)
+        if not created and old_is_paid is False and instance.is_paid:
             task_send_order_confirmation.delay(instance.pk)
             task_send_admin_new_order.delay(instance.pk)
-        else:
+
+        if not created:
             old_status = getattr(instance, "_old_status", None)
             if old_status is not None and old_status != instance.status:
                 task_send_order_status_update.delay(instance.pk)

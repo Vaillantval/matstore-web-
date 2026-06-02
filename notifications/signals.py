@@ -11,7 +11,11 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Order)
 def notify_new_order(sender, instance, created, **kwargs):
-    if not created:
+    # Push uniquement quand le paiement est confirmé (is_paid False → True)
+    if created:
+        return
+    old_is_paid = getattr(instance, "_old_is_paid", None)
+    if old_is_paid is not False or not instance.is_paid:
         return
     try:
         from notifications.tasks import task_notify_new_order
