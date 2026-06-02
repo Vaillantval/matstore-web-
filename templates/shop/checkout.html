@@ -1,5 +1,5 @@
 {% extends "base_checkout.html" %}
-{% load price_filters %}
+{% load price_filters static %}
 
 {% block styles %}
 <style>
@@ -727,8 +727,8 @@ body { background: #f4f6f9; }
                                data-method-type="moncash">
                             <input type="radio" name="payment_method_choice"
                                    value="moncash" id="pm_moncash">
-                            <div class="ck-carrier-img" style="background:#e52329;">
-                                <span style="color:#fff;font-size:11px;font-weight:900;letter-spacing:-.5px;">MON<br>CASH</span>
+                            <div class="ck-carrier-img" style="background:#fff; padding:4px;">
+                                <img src="{% static 'assets/images/logo_moncash.png' %}" alt="MonCash" style="width:100%; height:100%; object-fit:contain;">
                             </div>
                             <div class="ck-carrier-info">
                                 <div class="ck-carrier-name">MonCash</div>
