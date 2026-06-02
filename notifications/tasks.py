@@ -95,6 +95,23 @@ def task_notify_payment_verified(self, order_id):
 
 
 @shared_task(bind=True, max_retries=2, default_retry_delay=30)
+def task_notify_new_customer(self, customer_id):
+    try:
+        from accounts.models.Customer import Customer
+        from notifications.fcm import TOPIC_ADMIN, send_to_topic
+        customer = Customer.objects.get(pk=customer_id)
+        send_to_topic(
+            topic=TOPIC_ADMIN,
+            title="Nouveau client inscrit",
+            body=f"{customer.get_full_name() or customer.username} — {customer.email}",
+            data={"type": "new_customer", "customer_id": str(customer.pk), "email": customer.email},
+        )
+    except Exception as exc:
+        logger.error(f"task_notify_new_customer échoué pour customer #{customer_id} : {exc}")
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=2, default_retry_delay=30)
 def task_notify_new_product(self, product_id):
     try:
         from shop.models.Product import Product

@@ -1,0 +1,32 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Nouveau client — {{ customer.email }}{% endblock %}
+
+{% block content %}
+<h2 style="margin:0 0 16px;font-size:22px;color:#333333;">Nouveau client inscrit</h2>
+<p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.7;">
+  Un nouveau compte vient d'être créé sur <strong>MatStore Haiti</strong>.
+</p>
+
+<table width="100%" cellpadding="14" cellspacing="0" border="0"
+       style="background-color:#f9f9f9;border-radius:6px;margin-bottom:24px;border-left:4px solid #333333;">
+  <tr>
+    <td style="font-size:14px;color:#333333;line-height:1.8;">
+      <strong>Nom :</strong> {{ customer.get_full_name|default:customer.username }}<br>
+      <strong>Email :</strong> {{ customer.email }}<br>
+      <strong>Inscrit le :</strong> {{ customer.date_joined|date:"d/m/Y à H:i" }}
+    </td>
+  </tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td align="center">
+      <a href="{{ admin_url }}"
+         style="display:inline-block;background-color:#333333;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:15px;font-weight:bold;">
+        Voir le client dans l'admin
+      </a>
+    </td>
+  </tr>
+</table>
+{% endblock %}

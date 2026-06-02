@@ -53,6 +53,18 @@ def task_send_proof_submitted(self, order_id):
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def task_send_admin_new_customer(self, customer_id):
+    try:
+        from accounts.models.Customer import Customer
+        from emails.utils import send_admin_new_customer
+        customer = Customer.objects.get(pk=customer_id)
+        send_admin_new_customer(customer)
+    except Exception as exc:
+        logger.error(f"task_send_admin_new_customer échoué pour customer #{customer_id} : {exc}")
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
 def task_send_welcome_email(self, customer_id):
     try:
         from accounts.models.Customer import Customer

@@ -161,6 +161,32 @@ def send_proof_submitted_notification(order):
         logger.error(f'Email proof_submitted non envoyé pour commande #{order.id} : {e}')
 
 
+def send_admin_new_customer(customer):
+    """Email envoyé à l'admin quand un nouveau compte client est créé."""
+    try:
+        context = {
+            'customer': customer,
+            'site_url': settings.SITE_URL,
+            'admin_url': f'{settings.SITE_URL}/admin/accounts/customer/{customer.pk}/change/',
+        }
+        subject = f'Nouveau client inscrit — {customer.email}'
+        html_content = render_to_string('emails/admin_new_customer.html', context)
+        text_content = (
+            f'Nouveau compte créé : {customer.get_full_name() or customer.username} '
+            f'({customer.email}) le {customer.date_joined.strftime("%d/%m/%Y à %H:%M")}.'
+        )
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[settings.ADMINS_NOTIFY],
+        )
+        msg.attach_alternative(html_content, 'text/html')
+        msg.send()
+    except Exception as e:
+        logger.error(f'Email admin_new_customer non envoyé pour {customer.pk} : {e}')
+
+
 def send_welcome_email(user):
     """Email de bienvenue envoyé au client après son inscription."""
     try:

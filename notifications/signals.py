@@ -4,6 +4,7 @@ from django.dispatch import receiver
 
 from shop.models.Order import Order
 from shop.models.Product import Product
+from accounts.models.Customer import Customer
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,17 @@ def notify_payment_verified(sender, instance, created, **kwargs):
         task_notify_payment_verified.delay(instance.pk)
     except Exception as e:
         logger.error(f"notify_payment_verified échoué pour commande #{instance.pk} : {e}")
+
+
+@receiver(post_save, sender=Customer)
+def notify_admin_new_customer(sender, instance, created, **kwargs):
+    if not created or instance.is_staff or instance.is_superuser:
+        return
+    try:
+        from notifications.tasks import task_notify_new_customer
+        task_notify_new_customer.delay(instance.pk)
+    except Exception as e:
+        logger.error(f"notify_admin_new_customer échoué pour customer #{instance.pk} : {e}")
 
 
 @receiver(post_save, sender=Product)

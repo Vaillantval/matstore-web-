@@ -63,7 +63,8 @@ def customer_post_save(sender, instance, created, **kwargs):
     try:
         if created and not instance.is_staff and not instance.is_superuser:
             if instance.email:
-                from emails.tasks import task_send_welcome_email
+                from emails.tasks import task_send_welcome_email, task_send_admin_new_customer
                 task_send_welcome_email.delay(instance.pk)
+                task_send_admin_new_customer.delay(instance.pk)
     except Exception as e:
         logger.error(f"Erreur signal customer_post_save (user #{instance.pk}) : {e}")
