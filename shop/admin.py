@@ -295,6 +295,16 @@ class SettingAdmin(admin.ModelAdmin):
         ),
         ("Textes", {"fields": ("copyright",)}),
         (
+            "💬 WhatsApp",
+            {
+                "fields": ("whatsapp_number",),
+                "description": (
+                    "Numéro au format international sans espaces (ex : <strong>+50912345678</strong>).<br>"
+                    "Laisser vide pour masquer le bouton flottant WhatsApp sur le site."
+                ),
+            },
+        ),
+        (
             "📱 Application Mobile Android",
             {
                 "fields": (
