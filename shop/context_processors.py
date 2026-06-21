@@ -157,6 +157,7 @@ def site_settings(request):
         'show_app_banner': settings_obj.show_app_banner and bool(settings_obj.apk_file),
         'apk_version': settings_obj.apk_version,
         'apk_description': settings_obj.apk_description,
+        'site_whatsapp': settings_obj.whatsapp_number or '',
     }
     cache.set('site_settings_ctx', ctx, _SITE_CTX_TTL)
     return ctx

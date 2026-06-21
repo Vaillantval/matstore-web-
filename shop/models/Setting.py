@@ -71,6 +71,13 @@ class Setting(models.Model):
         help_text="Texte d'invitation affiché dans le bandeau.",
     )
 
+    whatsapp_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Numéro WhatsApp au format international sans espaces (ex : +50912345678). Laisser vide pour masquer le bouton.",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
